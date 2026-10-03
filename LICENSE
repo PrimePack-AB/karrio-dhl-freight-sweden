@@ -1,9 +1,8 @@
-Portions of this software are licensed as follows:
+Copyright (c) 2026 PrimePack AB
 
-* All content that resides under the "ee/" directory of this repository, if that directory exists, is licensed under the license defined in "LICENSE_EE".
-* All third party components incorporated into the Karrio Software are licensed under the original license provided by the owner of the applicable component.
-* Content outside of the above mentioned directories or restrictions above is available under the "GNU LESSER GENERAL PUBLIC LICENSE" license as defined below.
-
+This software is derived from karrio (https://github.com/karrioapi/karrio),
+licensed under the GNU Lesser General Public License v3.0, and is distributed
+under the same license; see the license text below.
 
                    GNU LESSER GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
