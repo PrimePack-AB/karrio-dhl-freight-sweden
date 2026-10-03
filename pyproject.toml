@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "LGPL-3.0"
 authors = [
-    {name = "karrio", email = "hello@karrio.io"}
+    {name = "PrimePack AB"}
 ]
 classifiers = [
     "Intended Audience :: Developers",
@@ -22,7 +22,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/karrioapi/karrio"
+Homepage = "https://github.com/PrimePack-AB/karrio-dhl-freight-sweden"
 
 [project.entry-points."karrio.plugins"]
 dhl_freight_sweden = "karrio.plugins.dhl_freight_sweden:METADATA"
