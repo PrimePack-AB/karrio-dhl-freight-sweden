@@ -1,0 +1,6 @@
+# karrio SDK from a local checkout at ../karrio (editable, subdirectory
+# modules/sdk). This connector uses only upstream SDK surface, so any karrio
+# checkout works; no fork branch is required. git+https cannot install the
+# SDK: pip recursively fetches the monorepo's private karrioapi submodules
+# (ee/insiders, ee/platform) and fails, although modules/sdk needs neither.
+-e ../karrio/modules/sdk
