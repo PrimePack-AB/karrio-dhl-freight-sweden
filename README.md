@@ -12,8 +12,11 @@ It covers shipment booking with a printed label and a URL-only tracking link sur
 ## Installation
 
 ```bash
-pip install karrio.dhl_freight_sweden
+pip install git+https://github.com/PrimePack-AB/karrio-dhl-freight-sweden.git
 ```
+
+The connector registers through the `karrio.plugins` entry point group under the id `dhl_freight_sweden`, so installing the package makes the carrier available to every karrio SDK runtime and uninstalling it removes the carrier.
+The `METADATA` object in `karrio/plugins/dhl_freight_sweden/__init__.py` binds the mapper, proxy, settings, service and option units, and connection configs that the entry point exposes.
 
 ## Usage
 
@@ -312,3 +315,16 @@ The server builds its reference models at boot, so after deploying a new connect
 - The lookups are live carrier calls; cache per address pair when volume justifies it.
 - The static rate-sheet prices are placeholders (rate 0.0) overridden by merchant prices; product matches give the authoritative service list.
 - Sandbox bookings create real transport instructions in the DHL test system, so keep probes bounded.
+
+## Development
+
+The connector consumes only upstream karrio SDK surface, so the published `karrio` package from PyPI satisfies the runtime dependency.
+Its tests import SDK modules such as `karrio.sdk`, `karrio.references`, and `karrio.core.models`, and run from the repository root against an editable SDK checkout:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -v -f tests
+```
+
+Create a virtual environment and install the SDK checkout and the connector with `pip install -r requirements-dev.txt -e .`.
+`requirements-dev.txt` installs the SDK editable from `../karrio/modules/sdk`; that path is a local checkout of the karrio SDK, and any checkout works for this connector, upstream or fork, because it uses no fork-only SDK surface.
+A `git+https` install of the SDK cannot replace the checkout, because pip recursively fetches the monorepo's private submodules that `modules/sdk` does not need.
