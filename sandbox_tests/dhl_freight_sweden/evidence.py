@@ -556,11 +556,59 @@ def suite_label(
     )
 
 
+@evidence("label-2906761222-102-se-se.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "102 within SE booked with consignor phone +46 8 123 456 and consignee phone +46 70 123 45 67, "
+        "printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; "
+        "the label text shows one Phn. line with no number.",
+        "102", "SE 11143 -> SE 11151", "2906761222",
+        "20261005-182136", "001-booking-102", "002-booking-102", "test_booking_approved",
+    )
+
+
+@evidence("label-2906761230-103-se-se-service-point.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "103 within SE to service point SE-982000 booked with consignor phone +46 8 123 456, consignee phone "
+        "+46 70 123 45 67, and no AccessPoint phone, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; "
+        "the label text shows one Phn. line with no number.",
+        "103", "SE 11143 -> SE 11151", "2906761230",
+        "20261005-182145", "003-booking-103", "004-booking-103", "test_booking_pudo",
+    )
+
+
+@evidence("label-2906761255-118-se-se.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "118 within SE booked with consignor phone +46 8 123 456 and consignee phone +46 70 123 45 67, "
+        "printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; "
+        "the label text shows one Phn. line with no number.",
+        "118", "SE 11143 -> SE 11151", "2906761255",
+        "20261005-182938", "002-booking-118", "003-booking-118", "test_booking_approved",
+    )
+
+
+@evidence("label-2906761297-112-se-hu.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "112 SE to HU booked with consignor phone +46 8 123 456 and consignee phone +36 30 000 0000, "
+        "printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; "
+        "the label text shows one Phn. line with no number.",
+        "112", "SE 11143 -> HU 1052", "2906761297",
+        "20261005-183002", "010-booking-112", "011-booking-112", "test_booking_export",
+    )
+
+
 @evidence("label-2906761248-601-se-dk.json")
 def _(b: Builder) -> Json:
     return suite_label(
         b,
-        "601 SE to DK home delivery booked with Consignee Mette Hansen and consignee phone +45 20 12 34 56, "
+        "601 SE to DK home delivery booked with consignor phone +46 8 123 456, Consignee Mette Hansen, and consignee phone +45 20 12 34 56, "
         "printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; "
         "the label text shows one Phn. line with no number and no consignee phone.",
         "601", "SE 11143 -> DK 1620", "2906761248",

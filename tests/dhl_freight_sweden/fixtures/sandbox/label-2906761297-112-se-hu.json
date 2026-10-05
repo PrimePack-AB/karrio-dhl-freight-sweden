@@ -1,0 +1,202 @@
+{
+ "kind": "label",
+ "summary": "112 SE to HU booked with consignor phone +46 8 123 456 and consignee phone +36 30 000 0000, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows one Phn. line with no number.",
+ "captured_at": "2026-10-05T16:30:08Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "112",
+ "route": "SE 11143 -> HU 1052",
+ "booking_id": "2906761297",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export; label PDF decoded from the print response into agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:08Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/010-booking-112.request.json",
+    "sha256": "02a47466dee45b8c89dc0bef6a3a3c337f00ea182fd7a82579024894cb37806f"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/010-booking-112.response.json",
+    "sha256": "a1d6226c75450b15def882629461653f34814da8593a9ab4185a9802b1697f9f"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Budapest",
+       "countryCode": "HU",
+       "postalCode": "1052",
+       "street": "Váci utca 10"
+      },
+      "contactName": "Kovács Anna",
+      "email": "anna.kovacs@example.hu",
+      "name": "Kovács Anna",
+      "phone": "+36 30 000 0000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "023"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "112",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761297",
+     "productCode": "112",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "023"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Kovács Anna",
+       "contactName": "Kovács Anna",
+       "address": {
+        "street": "Váci utca 10",
+        "cityName": "Budapest",
+        "postalCode": "1052",
+        "countryCode": "HU"
+       },
+       "phone": "+36 30 000 0000",
+       "email": "anna.kovacs@example.hu"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025162"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LHU1052+74000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:08Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/011-booking-112.request.json",
+    "sha256": "4cd802f98de9a6e6968c8cbd23d6a8d89bd1aacf7334b3aa9d70853f84075d4c"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/011-booking-112.response.json",
+    "sha256": "5308a07b9429d689691b6313ba9603a7b64c66330eb6f8a6de17fa3bda4923af"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761297"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761297.pdf",
+      "content": "<base64 omitted: 106548 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005/label_2906761297.pdf",
+     "sha256": "c38f16e6ef52be40131e4c4533f6c534b8436d7d297c6c3ed1a5d048b73189e2"
+    },
+    "page_size_pt": [
+     297.638,
+     595.276
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005/label_2906761297.txt",
+     "sha256": "e94c76e774f8f5233fe9f0bb469a2cfb3473ceeac60e9fcf7a76adfb0c0a29a2"
+    },
+    "text": "              DHL Parcel Connect Plus\n     Test Shipper AB\n     Kungsgatan 1\n     11143 Stockholm\n     SWEDEN\n\n\n\n     Kovács Anna\n                                                 T  Cust. No.\n                                                    116768\n                                                    Phn.\n\n\n\n\n                                                    Cust. No.\n\n\n\n\n                                ST\n     Váci utca 10\n     1052 BUDAPEST\n     HUNGARY\n\n\n\n\n Domestic routing\n\n                    200-PL\n\n  Shipment Id:\n\n\n\n                    TE\n                  2906761297\n  Date created: 2026-10-05\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 116768\n  Weight:         1.0 / 1.0\n  Shipping mark: SANDBOX-TEST\n  Delivery instr:\n                                                                  1/1\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\n ST                       (2L)HU1052+74000000\n\n\n\n\nTE                      (00)373221512525025162\n                                                  Print By DHL API FARM\n\f"
+   }
+  }
+ ]
+}

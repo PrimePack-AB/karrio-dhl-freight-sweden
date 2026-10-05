@@ -1,6 +1,6 @@
 {
  "kind": "label",
- "summary": "601 SE to DK home delivery booked with Consignee Mette Hansen and consignee phone +45 20 12 34 56, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows one Phn. line with no number and no consignee phone.",
+ "summary": "601 SE to DK home delivery booked with consignor phone +46 8 123 456, Consignee Mette Hansen, and consignee phone +45 20 12 34 56, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows one Phn. line with no number and no consignee phone.",
  "captured_at": "2026-10-05T16:29:33Z",
  "environment": "test-api.freight-logistics.dhl.com",
  "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
