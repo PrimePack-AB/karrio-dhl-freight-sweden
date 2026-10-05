@@ -1230,8 +1230,10 @@ ShipmentPayload103 = _payload(
 )
 
 # An id-only service point: DHL rejects the AccessPoint party without name
-# and address (validation errors 22001/22006), so the request surfaces a
-# field error instead of a carrier 400.
+# and address (22001 for name and address, 22006 for the postal code, 22026
+# for the absent country code; fixtures/sandbox/
+# rejection-22001-103-se-access-point-id-only.json), so the request surfaces
+# a field error instead of a carrier 400.
 ShipmentPayload103MissingDetails = _payload(
     "dhl_freight_sweden_service_point_b2c",
     _recipient_se,
@@ -1556,8 +1558,9 @@ PrintByIdRequest = {
 }
 
 # Full AccessPoint parties: DHL requires name and address (street, cityName,
-# postalCode, countryCode)
-# alongside the id (validation errors 22001/22006 without them).
+# postalCode, countryCode) alongside the id; without them it answers 22001
+# for name and address, 22006 for the postal code, and 22026 for the country
+# code (fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json).
 AccessPointShop = {
     "id": "SE-230500",
     "type": "AccessPoint",

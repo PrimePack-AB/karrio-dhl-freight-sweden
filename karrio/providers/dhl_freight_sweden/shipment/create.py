@@ -978,9 +978,11 @@ def _service_point_party(
     )
     missing = [key for key, value in details.items() if not value]
 
-    # DHL rejects an AccessPoint party without name and address (validation
-    # errors 22001 and 22006), so incomplete details fail here with the
-    # missing option names instead of as a carrier 400.
+    # DHL rejects an AccessPoint party without name and address: 22001 for
+    # the missing name and address, 22006 for the postal code, and 22026
+    # for the absent country code (tests/dhl_freight_sweden/fixtures/sandbox/
+    # rejection-22001-103-se-access-point-id-only.json). Incomplete details
+    # fail here with the missing option names instead of as a carrier 400.
     if any(missing):
         raise ServicePointDetailsError(
             "The service point option requires the full service point details; "
