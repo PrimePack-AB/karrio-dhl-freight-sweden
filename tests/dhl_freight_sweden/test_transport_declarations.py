@@ -201,12 +201,48 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
 
         self.assertNotIn("additionalInformation", serialized)
 
-    def test_lane_from_hu_does_not_require_a_declaration(self):
+    def test_declaration_products_from_hu_and_ro_without_declaration_fail(self):
+        for service in DeclarationServices:
+            for shipper, option in [
+                (_shipper_hu, "dhl_freight_sweden_ekaer_free"),
+                (_shipper_ro, "dhl_freight_sweden_uit_free"),
+            ]:
+                with self.subTest(service=service, country=shipper["country_code"]):
+                    error = self._error(_import_payload(service, shipper))
+
+                    self.assertEqual(set(error.details), {option})
+                    self.assertIn("to or from", str(error))
+
+    def test_lanes_from_hu_and_ro_send_explicit_declarations(self):
+        cases = [
+            (
+                _shipper_hu,
+                {"dhl_freight_sweden_ekaer_number": "E1234567890123456789"},
+                [
+                    {"code": "EKAER_FREE", "stringValue": "false"},
+                    {"code": "EKAER_NUMBER", "stringValue": "E1234567890123456789"},
+                ],
+            ),
+            (
+                _shipper_ro,
+                {"dhl_freight_sweden_uit_free": True},
+                [{"code": "UIT_FREE", "stringValue": "true"}],
+            ),
+        ]
+
+        for shipper, options, expected in cases:
+            with self.subTest(country=shipper["country_code"]):
+                serialized = self._serialize(
+                    _import_payload(
+                        "dhl_freight_sweden_road_freight_standard", shipper, options
+                    )
+                )
+
+                self.assertEqual(serialized["additionalInformation"], expected)
+
+    def test_other_products_from_hu_do_not_require_a_declaration(self):
         serialized = self._serialize(
-            {
-                **_road_freight(_recipient_se, {"dhl_freight_sweden_payer_code": "EXW"}),
-                "shipper": _shipper_hu,
-            }
+            {**_parcel_connect(_recipient_se), "shipper": _shipper_hu}
         )
 
         self.assertNotIn("additionalInformation", serialized)
@@ -216,6 +252,17 @@ def _declaration_payload(service: str, recipient: dict, options: dict = None) ->
     return _payload(
         service, recipient, {"dhl_freight_sweden_payer_code": "DAP", **(options or {})}
     )
+
+
+def _import_payload(service: str, shipper: dict, options: dict = None) -> dict:
+    return {
+        **_payload(
+            service,
+            _recipient_se,
+            {"dhl_freight_sweden_payer_code": "EXW", **(options or {})},
+        ),
+        "shipper": shipper,
+    }
 
 
 def _road_freight(recipient: dict, options: dict = None) -> dict:
@@ -254,6 +301,12 @@ _shipper_hu = {
     **_recipient_hu,
     "company_name": "Test Shipper Kft.",
     "person_name": "Nagy Anna",
+}
+
+_shipper_ro = {
+    **_recipient_ro,
+    "company_name": "Test Shipper SRL",
+    "person_name": "Popescu Ana",
 }
 
 
