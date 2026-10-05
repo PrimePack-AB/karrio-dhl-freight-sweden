@@ -70,7 +70,7 @@ Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional s
 
 ## Booking rules
 
-The connector checks payer codes, access points, and SENT entries before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
+The connector checks payer codes, access points, and SENT, EKAER, and UIT entries before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
 The rules follow the DHL Freight Sweden product manual, version 5.23, valid from 2025-04-14, which is cited here rather than vendored:
 <https://dhlpaket.se/dashboard/wp-content/uploads/sites/2/2025/04/DHL-FREIGHT-SWEDEN-PRODUCT-MANUAL-v5.23.pdf> (sha256 `c16b0a0dcb1a1cfe8c7ca767ff11e2192d8d86fd233ed6ef77693981fc5d3295`).
 Section and page references below are to that version.
@@ -133,8 +133,36 @@ Without identifiers the connector sends `SENT_FREE` `"true"`, unless `dhl_freigh
 The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", live sandbox 2026-10-05).
 The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
 
-The `dhl_freight_sweden_additional_information` option passes further entries through, as a list of `{"code": ..., "stringValue": ...}` objects (`dateValue` and `numericValue` are also accepted), for example the HU `EKAER_FREE` or RO `UIT_FREE` codes from the same "Related fields" tables.
-Entries follow the SENT entries; an entry without a code, or with a code the SENT options already produce, fails.
+### EKAER and UIT
+
+Lanes with the shipper or the recipient in HU carry EKAER entries, and lanes with the shipper or the recipient in RO carry UIT entries, under the shipment's `additionalInformation`.
+EKAER is the Hungarian electronic road trade and transport control system, governed by decree 13/2020 (XII.23.) PM.
+UIT is the transport identification code of the Romanian RO e-Transport system, governed by OUG 41/2022, art. 8^1.
+
+| Option | Type | Sent as |
+|--------|------|---------|
+| `dhl_freight_sweden_ekaer_free` | boolean | `EKAER_FREE` |
+| `dhl_freight_sweden_ekaer_number` | string, at most 20 characters | `EKAER_NUMBER` |
+| `dhl_freight_sweden_uit_free` | boolean | `UIT_FREE` |
+| `dhl_freight_sweden_uit_number` | string, at most 19 characters, e.g. `1234-5678-9012-3456` | `UIT_NUMBER` |
+
+The "Related fields" tables of products 202 (§5.4 p19), 205 (§5.9 p38), 233 (§5.11 p46), SPI (§5.12 p51), and 601 (§5.21 p87) list these entries for shipments to or from HU and RO; PPI (§5.13 p56) lists them too but is not a connector product.
+A free flag `true` sends `EKAER_FREE` or `UIT_FREE` `"true"`.
+A number sends the free code `"false"` followed by `EKAER_NUMBER` or `UIT_NUMBER`.
+A free flag `true` together with a number fails as contradictory, and a number over its length limit fails.
+`dhl_freight_sweden_ekaer_free` `false` without a number fails, because the manual marks the EKAER number mandatory for a shipment that is not EKAER free.
+`dhl_freight_sweden_uit_free` `false` without a number sends `UIT_FREE` `"false"` alone, because the v5.23 release notes (p7) make the UIT number optional even when the shipment is not UIT free, while asking for it whenever the customer has one.
+
+On products 202, 205, 233, SPI, and 601 to a recipient in HU or RO, a shipment without the free flag or the number fails and asks for an explicit declaration.
+The connector does not declare a shipment EKAER or UIT free by itself: these are legal declarations made on the shipper's or the consignee's behalf, and the connector cannot verify the facts they rest on, such as the risk class of the goods or the aggregation of goods per vehicle.
+On other products, and on lanes from HU or RO, the options are optional and sent when given.
+The sandbox accepted 109 and 112 bookings to HU and RO without these entries (2026-10-05).
+
+### Additional information pass-through
+
+The `dhl_freight_sweden_additional_information` option passes further entries through, as a list of `{"code": ..., "stringValue": ...}` objects (`dateValue` and `numericValue` are also accepted).
+Entries follow the SENT, EKAER, and UIT entries.
+An entry without a code fails, and so does an entry with a SENT, EKAER, or UIT code on a lane where the typed options of that family apply (PL, HU, or RO respectively); on other lanes these codes pass through.
 
 ### Discrepancies
 
@@ -311,7 +339,7 @@ payload = {
     # within it customs data is dropped with a customs_omitted_intra_eu
     # warning. The payer code resolves from dhl_freight_sweden_payer_code,
     # else customs.incoterm, else the product default (see Booking rules);
-    # lanes to or from PL also send SENT entries
+    # lanes to or from PL, HU, or RO also send SENT, EKAER, or UIT entries
 }
 
 details, messages = (
@@ -332,7 +360,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "requires the full service point details; missing ..." | connector field error | fix the option mapping |
 | "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
-| payer code or SENT field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
+| payer code, SENT, EKAER, or UIT field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
 | linehaul failure without postalCode (22006) | DHL validation | reject the candidate |
