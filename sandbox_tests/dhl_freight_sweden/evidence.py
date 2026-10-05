@@ -575,26 +575,62 @@ def _(b: Builder) -> Json:
 SUITE_LABELS = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005"
 
 
+def suite_label(
+    b: Builder, summary: str, product: str, route: str, booking_id: str,
+    run: str, booking_stem: str, print_stem: str, test: str,
+) -> Json:
+    """A suite booking and its print call, with the label PDF decoded into ``SUITE_LABELS``."""
+    d = b.state_root / SUITE_LABELS
+    printed = json.loads((b.suite / run / f"{print_stem}.response.json").read_text())["response"]
+    return b.document(
+        "label", summary, product, route, booking_id, None,
+        f"{SUITE_RUN}: {test}; label PDF decoded from the print response into {SUITE_LABELS}",
+        [b.suite_exchange(run, booking_stem),
+         b.with_label(
+             b.suite_exchange(run, print_stem), printed,
+             d / f"label_{booking_id}.pdf", d / f"label_{booking_id}.txt",
+         )],
+        primary=1,
+    )
+
+
+@evidence("label-2906761248-601-se-dk.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "601 SE to DK home delivery booked with Consignee Mette Hansen and consignee phone +45 20 12 34 56, "
+        "printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; "
+        "the label text shows one Phn. line with no number and no consignee phone.",
+        "601", "SE 11143 -> DK 1620", "2906761248",
+        "20261005-182932", "001-booking-601", "002-booking-601", "test_booking_approved",
+    )
+
+
+@evidence("label-2906761305-109-se-no-parcelshop.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "109 SE to NO ParcelShop 8009-129635 (CHRISTIAN KROHGS GATE 1, 0186 OSLO) booked with Consignee "
+        "Ola Nordmann, Karl Johans gate 10, 0154 Oslo, and consignee phone +47 400 00 000, printed with "
+        "page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows the "
+        "Consignee name below the sender block and the Consignee name and address at the bottom, the "
+        "sender's +46 8 123 456 as the only Phn. line, and no consignee phone.",
+        "109", "SE 11143 -> NO 0154", "2906761305",
+        "20261005-183015", "005-booking-109", "006-booking-109", "test_booking_export",
+    )
+
+
 @evidence("label-2906761354-109-se-dk-parcelshop.json")
 def _(b: Builder) -> Json:
-    run = "20261005-191426"
-    d = b.state_root / SUITE_LABELS
-    response = json.loads((b.suite / run / "006-booking-109.response.json").read_text())["response"]
-    return b.document(
-        "label",
+    return suite_label(
+        b,
         "109 SE to DK ParcelShop 8009-115191 booked with Consignee Mette Hansen, Vesterbrogade 10, "
         "and consignee phone +45 20 12 34 56, printed with page type Label as one 297.638 x 595.276 pt "
         "(105 x 210 mm) PDF page; the label text shows the Consignee name below the sender block and the "
         "Consignee name and address in the TE block, the sender's +46 8 123 456 as the only Phn. line, "
         "and no consignee phone.",
-        "109", "SE 11143 -> DK 1620", "2906761354", None,
-        f"{SUITE_RUN}: test_booking_export; label PDF decoded from the print response into {SUITE_LABELS}",
-        [b.suite_exchange(run, "005-booking-109"),
-         b.with_label(
-             b.suite_exchange(run, "006-booking-109"), response,
-             d / "label_2906761354.pdf", d / "label_2906761354.txt",
-         )],
-        primary=1,
+        "109", "SE 11143 -> DK 1620", "2906761354",
+        "20261005-191426", "005-booking-109", "006-booking-109", "test_booking_export",
     )
 
 

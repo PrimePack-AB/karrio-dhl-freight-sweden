@@ -1,0 +1,277 @@
+{
+ "kind": "label",
+ "summary": "109 SE to NO ParcelShop 8009-129635 (CHRISTIAN KROHGS GATE 1, 0186 OSLO) booked with Consignee Ola Nordmann, Karl Johans gate 10, 0154 Oslo, and consignee phone +47 400 00 000, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows the Consignee name below the sender block and the Consignee name and address at the bottom, the sender's +46 8 123 456 as the only Phn. line, and no consignee phone.",
+ "captured_at": "2026-10-05T16:30:17Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "109",
+ "route": "SE 11143 -> NO 0154",
+ "booking_id": "2906761305",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export; label PDF decoded from the print response into agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:17Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183015/005-booking-109.request.json",
+    "sha256": "8fda68dbe0173fb989b637d79bd0e22d88f74b64f065a41c1e59fd14ed933111"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183015/005-booking-109.response.json",
+    "sha256": "ed863965528ba78bd112298d649a75797865fae87328ba7a510c369d5efa66e3"
+   },
+   "request": {
+    "additionalServices": {
+     "customsHandlingFullService": true
+    },
+    "customsInformation": {
+     "customsCommodities": [
+      {
+       "commodityDescription": "Cotton T-shirt",
+       "countryCodeOfOrigin": "SE",
+       "customsValue": 200.0,
+       "customsValueCurrency": "SEK",
+       "hsItemId": "610910",
+       "netWeight": 0.5,
+       "numberOfUnits": 1,
+       "procedureCode": "1042"
+      }
+     ],
+     "customsDocuments": [
+      {
+       "id": "SANDBOX-INV-1",
+       "invoiceCurrency": "SEK",
+       "invoiceDate": "2026-10-05",
+       "transportMovement": "Export",
+       "type": "ProformaInvoice"
+      }
+     ]
+    },
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Oslo",
+       "countryCode": "NO",
+       "postalCode": "0154",
+       "street": "Karl Johans gate 10"
+      },
+      "contactName": "Ola Nordmann",
+      "email": "ola.nordmann@example.no",
+      "name": "Ola Nordmann",
+      "phone": "+47 400 00 000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "OSLO",
+       "countryCode": "NO",
+       "postalCode": "0186",
+       "street": "CHRISTIAN KROHGS GATE 1"
+      },
+      "id": "8009-129635",
+      "name": "SHOP",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761305",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Ola Nordmann",
+       "contactName": "Ola Nordmann",
+       "address": {
+        "street": "Karl Johans gate 10",
+        "cityName": "Oslo",
+        "postalCode": "0154",
+        "countryCode": "NO"
+       },
+       "phone": "+47 400 00 000",
+       "email": "ola.nordmann@example.no"
+      },
+      {
+       "id": "8009-129635",
+       "type": "AccessPoint",
+       "name": "SHOP",
+       "address": {
+        "street": "CHRISTIAN KROHGS GATE 1",
+        "cityName": "OSLO",
+        "postalCode": "0186",
+        "countryCode": "NO"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {
+      "customsHandlingFullService": true
+     },
+     "customsInformation": {
+      "customsDocuments": [
+       {
+        "id": "SANDBOX-INV-1",
+        "type": "ProformaInvoice",
+        "transportMovement": "Export",
+        "invoiceDate": "2026-10-05T00:00:00",
+        "invoiceCurrency": "SEK",
+        "invoiceAmount": 0.0
+       }
+      ],
+      "customsCommodities": [
+       {
+        "countryCodeOfOrigin": "SE",
+        "customsValueCurrency": "SEK",
+        "customsValue": 200.0,
+        "hsItemId": "610910",
+        "commodityDescription": "Cotton T-shirt",
+        "procedureCode": "1042",
+        "netWeight": 0.5,
+        "numberOfUnits": 1
+       }
+      ]
+     },
+     "pieces": [
+      {
+       "id": [
+        "373221512525025179"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LNO0186+70530001"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:17Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183015/006-booking-109.request.json",
+    "sha256": "173a58e095a305c283fdf73cdf5ce49920a9eab1195fec60f7d26e328399f979"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183015/006-booking-109.response.json",
+    "sha256": "3bf4d43d9a2ec5e79722ee302c588b4049984595239d6c758cfd3b37a7c2cd49"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761305"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761305.pdf",
+      "content": "<base64 omitted: 105196 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005/label_2906761305.pdf",
+     "sha256": "25f4ec24785a927866fb6096b85020b8ac338fa572744abe4702d6149c91295b"
+    },
+    "page_size_pt": [
+     297.638,
+     595.276
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005/label_2906761305.txt",
+     "sha256": "b645a0133510ac5a4128bd1f8ed820738c9783c6eaa2d3eb3946e919c9e60619"
+    },
+    "text": "              DHL PARCEL CONNECT\n\n\n\n\n                                ST\n     Test Shipper AB                                Cust. No.\n     Kungsgatan 1                                   116768\n     11143 Stockholm                                Phn.\n     SWEDEN                                         +46 8 123 456\n\n                                                    Cust. No.\n     Ola Nordmann\n\n\n\n\n                                   T\n     SHOP 8009-129635\n     CHRISTIAN KROHGS GATE 1\n     0186 OSLO\n     NORWAY\n\n\n\n Domestic routing\n\n                    400-NO\nC\n  Shipment Id:\n\n\n\n                    TE\n                  2906761305\n  Date created: 2026-10-05\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 116768\n  Weight:         1.0 / 1.0\n  Shipping mark: SANDBOX-TEST\n  Delivery instr:\n                                                                  1/1\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\nTE\n Ola Nordmann Karl Johans gate 10\n NO 0154 Oslo\n\n\n\n\n  ST                      (2L)NO0186+70530001\n\n\n\n\n                        (00)373221512525025179\n                                                  Print By DHL API FARM\n\f"
+   }
+  }
+ ]
+}
