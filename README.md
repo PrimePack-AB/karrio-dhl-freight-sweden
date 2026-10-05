@@ -502,7 +502,7 @@ DHL_FREIGHT_SWEDEN_SANDBOX=1 .venv/bin/python -m unittest discover -v -s sandbox
 ```
 
 Every test skips unless `DHL_FREIGHT_SWEDEN_SANDBOX=1` and `KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY` are set, and the booking segments also skip without `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`.
-The gateway always runs in test mode, and the run fails if `DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL` names the production host or if a carrier call targets any host other than the gateway's sandbox host.
+The gateway always runs in test mode on the connector's sandbox host `test-api.freight-logistics.dhl.com`, no variable can change the host, and the run fails if a carrier call targets any other host.
 
 | Variable | Default | Effect |
 |----------|---------|--------|
@@ -510,7 +510,6 @@ The gateway always runs in test mode, and the run fails if `DHL_FREIGHT_SWEDEN_S
 | `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS` | all | comma-separated product codes the booking segments may book |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `3` | booking attempts allowed in one process |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR` | `$XDG_STATE_HOME/karrio-dhl-freight-sweden/sandbox/<YYYYmmdd-HHMMSS>` | capture directory (`~/.local/state` when `XDG_STATE_HOME` is unset) |
-| `DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL` | sandbox host | `server_url` connection config override |
 
 The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
 The `booking-approved` segment books 102 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.

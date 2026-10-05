@@ -24,7 +24,7 @@ import karrio.mappers.dhl_freight_sweden.proxy as connector_proxy
 import karrio.mappers.dhl_freight_sweden.settings as connector_settings
 import karrio.sdk as karrio
 
-PRODUCTION_HOST = "api.freight-logistics.dhl.com"
+SANDBOX_HOST = "test-api.freight-logistics.dhl.com"
 SEGMENTS = frozenset({"lookups", "booking-approved", "booking-pudo"})
 BOOKING_SEGMENTS = frozenset({"booking-approved", "booking-pudo"})
 DEFAULT_SEGMENTS = frozenset({"lookups"})
@@ -47,7 +47,6 @@ class SandboxConfig:
     products: typing.Optional[typing.FrozenSet[str]]
     max_bookings: int
     capture_dir: pathlib.Path
-    server_url: typing.Optional[str]
 
 
 def parse_list(value: typing.Optional[str]) -> typing.FrozenSet[str]:
@@ -60,9 +59,10 @@ def load_config(
 ) -> SandboxConfig:
     """Read the sandbox configuration from an environment mapping.
 
-    Unknown segments, a non-integer or negative booking budget, and a
-    ``server_url`` naming the production host raise rather than being
-    ignored, so a typo never widens what a run books.
+    Unknown segments and a non-integer or negative booking budget raise
+    rather than being ignored, so a typo never widens what a run books.
+    No variable selects the host: the gateway always resolves the
+    connector's test-mode sandbox host.
     """
     segments = parse_list(environ.get("DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"))
     unknown = segments - SEGMENTS
@@ -81,10 +81,6 @@ def load_config(
         )
     if max_bookings < 0:
         raise SandboxConfigError("DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS must not be negative")
-
-    server_url = environ.get("DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL") or None
-    if server_url:
-        check_host(server_url)
 
     products = parse_list(environ.get("DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS"))
     state_home = environ.get("XDG_STATE_HOME") or str(
@@ -105,16 +101,15 @@ def load_config(
         products=products or None,
         max_bookings=max_bookings,
         capture_dir=pathlib.Path(capture_dir),
-        server_url=server_url,
     )
 
 
 def check_host(url: str) -> str:
-    """Return the host of ``url``, raising if it is the production host."""
+    """Return the host of ``url``, raising unless it is the sandbox host."""
     host = (urllib.parse.urlparse(url).hostname or "").lower()
-    if host == PRODUCTION_HOST:
+    if host != SANDBOX_HOST:
         raise SandboxConfigError(
-            f"Refusing to run the sandbox suite against the production host {host}"
+            f"Refusing a sandbox carrier call to {host or url!r}; only {SANDBOX_HOST} is allowed"
         )
     return host
 
@@ -187,11 +182,12 @@ class Session:
         self.budget = BookingBudget(config.max_bookings)
         self.sequence = 0
         self.booking_calls = 0
-        self.allowed_host: typing.Optional[str] = None
         self._install_transport_guard()
 
     def gateway(self, connection_config: typing.Optional[dict] = None):
-        """Create a test-mode gateway and pin the transport guard to its host."""
+        """Create a test-mode gateway on the connector's sandbox host."""
+        if "server_url" in (connection_config or {}):
+            raise SandboxConfigError("The sandbox suite does not accept a server_url")
         gateway = karrio.gateway["dhl_freight_sweden"].create(
             dict(
                 id="sandbox",
@@ -199,24 +195,12 @@ class Session:
                 carrier_id="dhl_freight_sweden",
                 client_key=self.config.client_key,
                 account_number=self.config.account_number,
-                config={
-                    **(connection_config or {}),
-                    **(
-                        dict(server_url=self.config.server_url)
-                        if self.config.server_url
-                        else {}
-                    ),
-                },
+                config=connection_config or {},
             )
         )
         if not gateway.settings.test_mode:
             raise SandboxConfigError("The sandbox gateway is not in test mode")
-        host = check_host(gateway.settings.server_url or "")
-        if self.allowed_host not in (None, host):
-            raise SandboxConfigError(
-                f"Sandbox gateways resolved two hosts: {self.allowed_host} and {host}"
-            )
-        self.allowed_host = host
+        check_host(gateway.settings.server_url or "")
         return gateway
 
     def _install_transport_guard(self) -> None:
@@ -229,9 +213,7 @@ class Session:
 
         def guarded_urlopen(request, *args, **kwargs):
             url = request.full_url if hasattr(request, "full_url") else str(request)
-            host = check_host(url)
-            if host != self.allowed_host:
-                raise SandboxConfigError(f"Refusing a carrier call to {host}")
+            check_host(url)
             if urllib.parse.urlparse(url).path.endswith(BOOKING_PATH):
                 self.booking_calls += 1
                 if self.booking_calls > self.budget.attempts:
