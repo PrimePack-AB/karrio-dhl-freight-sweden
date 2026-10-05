@@ -43,7 +43,7 @@ Connection settings are passed through the gateway's `config` dict (e.g. `config
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| `label_type` | `PDF` | Tags the returned document format when the carrier response does not identify it. The Print API exposes no format parameter, so the emitted format is governed by the DHL account (live-verified PDF A4, 2026-09-10); the connector derives the tag from the decoded document's magic prefix (`%PDF-`, `^XA`) first, then the report `contentType`, and uses this setting as the last resort. |
+| `label_type` | `PDF` | Tags the returned document format when the carrier response does not identify it. The Print API exposes no format parameter, so the emitted format is governed by the DHL account (the sandbox returned a one-page PDF of 105 × 210 mm, 297.638 × 595.276 pt, for page type `Label`, 2026-10-05: [label-2906761354-109-se-dk-parcelshop.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json)); the connector derives the tag from the decoded document's magic prefix (`%PDF-`, `^XA`) first, then the report `contentType`, and uses this setting as the last resort. |
 | `label_page_type` | `Label` | Print page layout (`Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, `LabelCompact2x2PortraitA4`); the `dhl_freight_sweden_label_page_type` option overrides it per shipment. |
 | `address_validation` | `off` | Booking pre-flight against the postal-code route: `off`, `warn`, or `enforce` (see [Address validation](#address-validation)). |
 | `server_url` | | Overrides the API Farm host selected by `test_mode`. |
@@ -51,7 +51,7 @@ Connection settings are passed through the gateway's `config` dict (e.g. `config
 ## Label printing behavior
 
 The connector always transmits the consignee `phone_number` on the booking; DHL's label renderer decides per destination country whether it prints (live-verified 2026-09-10: suppressed for SE→DE, absent on a DK PUDO label — in both cases only the sender phone printed, as `Phn.`; [label-2906724865-109-se-de.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906724865-109-se-de.json), [label-2906723800-109-se-dk-parcelshop.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906723800-109-se-dk-parcelshop.json)).
-For parcelshop/parcelstation-addressed 109 shipments the mandatory "Customer information" label section is auto-composed from the Consignee party, so no connector input is needed.
+For parcelshop/parcelstation-addressed 109 shipments the mandatory "Customer information" label section is auto-composed from the Consignee party, so no connector input is needed (sandbox 2026-10-05: the label of 109 booking 2906761354 to DK ParcelShop 8009-115191 prints the Consignee name and address; [label-2906761354-109-se-dk-parcelshop.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json)).
 `parties[].references` exists as the optional shipper-controlled free-text channel for custom label print text.
 Phone format per product manual v5.23 Appendix D (§10.5 p200): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only — dots, letters, and slash are forbidden.
 The connector transmits `phone_number` as given, so callers should pre-format numbers to those constraints.
