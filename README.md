@@ -87,7 +87,7 @@ Section and page references below are to that version.
 | 402, 502 | 3, 4 | none | §5.20 p82 |
 | 107 | 001 | 001 | §5.17 p70 |
 | 109 | 022, 023 (023 only with customs joint declaration) | 022 | §5.16 p67 |
-| 112 | 022, 023 | 023 | §5.3 p15 (023 only); 022 per sandbox booking 2906761149 |
+| 112 | 022, 023 | 023 | §5.3 p15 (023 only); 022 per sandbox booking 2906761149 ([booking-2906761149-112-se-pl-payer-022.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json)) |
 | 232 | DAP, DDP | none | §5.10 p42 |
 | 202, 233, SPI, 601 | export EXW, FCA, CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.4 p20, §5.11 p47, §5.12 p52, §5.21 p88 |
 | 205 | export CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.9 p39 |
@@ -112,11 +112,12 @@ The `dhl_freight_sweden_service_point` options produce an AccessPoint party only
 | 109 | AT, BE, BG, CZ, DK, EE, FI, HU, LT, LV, NL, PL, SK | ParcelShop, ParcelStation | Appendix B.3, §10.3.2 p196-197 |
 | 109 | DE, ES, FR, GB, HR, IT, NO, PT, RO, SI | ParcelShop | Appendix B.3, §10.3.2 p196-197 |
 
-Every other product and country accepts no AccessPoint party, including 109 to IE and LU and all of 112 (§5.3 p14), for which DHL answers 22015 "AccessPoint Party is not allowed for this product".
+Every other product and country accepts no AccessPoint party, including 109 to IE and LU and all of 112 (§5.3 p14), for which DHL answers 22015 "AccessPoint Party is not allowed for this product" (sandbox, 2026-10-05: [rejection-22015-112-se-pl-access-point.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json)).
 A `dhl_freight_sweden_service_point` value that is a sub type or location type name (`ParcelShop`, `ParcelStation`, `servicepoint`, `locker`, `postoffice`, `postbank`, in any case) is rejected: the option takes the service point id, and the sub type goes in `dhl_freight_sweden_service_point_type`.
 
 Appendix M (§10.14.2 p237, §10.14.3.2 p240) states that the AccessPoint `subtype` carries the location type (`servicepoint`, `locker`, `postoffice`), while the transport-instruction booking spec enumerates `ParcelShop` and `ParcelStation`.
-The connector sends `ParcelShop` and `ParcelStation`, and live sandbox bookings for DK and PL were accepted with `ParcelShop`.
+The connector sends `ParcelShop` and `ParcelStation`.
+The sandbox accepted 109 bookings with `ParcelShop` to PL, RO, and NO and with `ParcelStation` to a HU locker (2026-10-05: [booking-2906761123-109-se-pl.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761123-109-se-pl.json), [booking-2906761263-109-se-ro.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761305-109-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json), [booking-2906761289-109-se-hu.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
 ### SENT
 
@@ -133,7 +134,8 @@ Both identifiers send `SENT_REF` and `SENT_CARKEY`; one without the other fails,
 A shipment with neither the free flag nor the identifiers fails and asks for an explicit SENT declaration.
 The connector does not declare a shipment SENT free by itself: like EKAER and UIT, SENT free is a legal declaration made on the shipper's or the consignee's behalf, and the connector cannot verify the facts it rests on, such as the risk class of the goods or the aggregation of goods per vehicle.
 The opt-in sandbox suite declares its 109 and 112 bookings to PL SENT free with `dhl_freight_sweden_sent_free`.
-The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", live sandbox 2026-10-05).
+The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", sandbox 2026-10-05: [rejection-22001-109-se-pl-without-sent.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json)).
+The sandbox accepted 109 and 112 bookings to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123-109-se-pl.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761123-109-se-pl.json), [booking-2906761131-112-se-pl.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761131-112-se-pl.json)).
 The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
 
 ### EKAER and UIT
@@ -154,12 +156,15 @@ A free flag `true` sends `EKAER_FREE` or `UIT_FREE` `"true"`.
 A number sends the free code `"false"` followed by `EKAER_NUMBER` or `UIT_NUMBER`.
 A free flag `true` together with a number fails as contradictory, and a number over its length limit fails.
 `dhl_freight_sweden_ekaer_free` `false` without a number fails, because the manual marks the EKAER number mandatory for a shipment that is not EKAER free.
+The sandbox accepted 601 to HU with `EKAER_FREE` `"false"` and the made-up `EKAER_NUMBER` `E0000SANDBOX0001` (2026-10-05: [booking-2906761339-601-se-hu.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761339-601-se-hu.json)).
 `dhl_freight_sweden_uit_free` `false` without a number sends `UIT_FREE` `"false"` alone, because the v5.23 release notes (p7) make the UIT number optional even when the shipment is not UIT free, while asking for it whenever the customer has one.
+The sandbox accepted 601 to RO with `UIT_FREE` `"false"` and no `UIT_NUMBER` (2026-10-05: [booking-2906761347-601-se-ro.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761347-601-se-ro.json)).
 
 On products 202, 205, 233, SPI, and 601, a shipment with the shipper or the recipient in HU or RO without the free flag or the number fails and asks for an explicit declaration, following the manual's "to/from" wording in the same tables.
 The connector does not declare a shipment EKAER or UIT free by itself: these are legal declarations made on the shipper's or the consignee's behalf, and the connector cannot verify the facts they rest on, such as the risk class of the goods or the aggregation of goods per vehicle.
 On other products the options are optional and sent when given.
-The sandbox accepted 109 and 112 bookings to HU and RO without these entries (2026-10-05).
+The sandbox accepted 109 and 112 bookings to HU and RO without these entries (2026-10-05: [booking-2906761263-109-se-ro.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761271-112-se-ro.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761271-112-se-ro.json), [booking-2906761289-109-se-hu.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json), [booking-2906761297-112-se-hu.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761297-112-se-hu.json)).
+601 to HU or RO without these entries has not been sent to the sandbox.
 
 ### Additional information pass-through
 
@@ -169,8 +174,8 @@ An entry without a code fails, and so does an entry with a SENT, EKAER, or UIT c
 
 ### Discrepancies
 
-For 112 the DHL Product API catalog (`GET /productapi/v1/products/112`, test host, 2026-10-05) lists CPT, CIP, DAP, DPU, DDP, 022, and 023, while the manual (§5.3 p15) lists only 023.
-The live sandbox rejected payer code 1 for 112 (22020 "Payercode 1 is not valid for product") and accepted both 023 and 022 (booking 2906761149, 2026-10-05).
+For 112 the DHL Product API catalog (`GET /productapi/v1/products/112`, test host, 2026-10-05: [lookup-products-109-112-payer-codes.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json)) lists CPT, CIP, DAP, DPU, DDP, 022, and 023, while the manual (§5.3 p15) lists only 023.
+The sandbox rejected payer code 1 for 112 (22020 "Payercode 1 is not valid for product": [rejection-22020-112-se-pl-payer-code-1.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json)) and accepted both 023 ([booking-2906761131-112-se-pl.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761131-112-se-pl.json)) and 022 (booking 2906761149: [booking-2906761149-112-se-pl-payer-022.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json)), 2026-10-05.
 The connector therefore accepts 022 and 023 for 112 and keeps the manual's 023 as the default; the catalog's Incoterm codes are untested and reach 112 only through the Combiterm translation.
 
 ## Capabilities
@@ -444,7 +449,7 @@ details, messages = karrio.Address.validate(
 
 Scoped to product 118 through `options.service` (karrio service code or carrier product code `"118"`), `details.success` reports `homeDeliveryParcel`; unscoped, it reports the route's general `bookable` flag.
 `details.complete_address` carries DHL's canonical city for the code.
-A failed lookup returns the DHL `ErrorResult` as messages (the live API uses PascalCase `Status`, `ErrorCode`, `UserMessage`; 16010 is "post code not found", 16012 "not supported").
+A failed lookup returns the DHL `ErrorResult` as messages (the live API uses PascalCase `Status`, `ErrorCode`, `UserMessage`; 16010 is "post code not found", 16012 "not supported"; sandbox 16010 response: [lookup-postal-code-se-99999-16010.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json)).
 
 The `address_validation` connection setting adds the same check to `create_shipment` for product 118 to Swedish consignees:
 
@@ -523,7 +528,7 @@ It checks product matches for the lane first and skips when 601 is not offered.
 The `rejections` segment sends payloads the connector refuses locally and asserts the DHL error code, so the local rules stay anchored to live behaviour: 109 to PL without its SENT entries (22001), 112 to PL with an AccessPoint party (22015), and 112 to PL with payer code 1 (22020).
 Each case builds a valid request through the connector and `harness.mutated_request` changes the serialized TransportInstruction just before the call, so connector validation stays intact.
 Rejection attempts count against the booking budget, and a response carrying a shipment id fails the test and reports the id as a finding.
-The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05), so the capacity check runs against PL.
+The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05: [lookup-service-points-pl-capacity-too-large.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-pl-capacity-too-large.json), [lookup-service-points-se-capacity-not-applied.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-se-capacity-not-applied.json)), so the capacity check runs against PL.
 
 Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
 To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
@@ -531,3 +536,7 @@ Every live call writes its request and response as JSON to the capture directory
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
 Planned segments, not yet implemented: a wider customs matrix covering the other customs services and non-EU destinations, and the freight products.
+
+The sandbox findings so far, with every booking, rejection, and deviation from the product manual, are in [docs/notes/sandbox/sandbox-findings.md](docs/notes/sandbox/sandbox-findings.md).
+Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256, and `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks those files offline.
+A new sandbox finding gets its own evidence file there before the README or the findings note cites it.
