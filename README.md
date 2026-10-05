@@ -508,7 +508,7 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 |----------|---------|--------|
 | `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` | `lookups` | comma-separated segments to run |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS` | all | comma-separated product codes the booking segments may book |
-| `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `3` | booking attempts allowed in one process |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `10` | booking attempts allowed in one process |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR` | `$XDG_STATE_HOME/karrio-dhl-freight-sweden/sandbox/<YYYYmmdd-HHMMSS>` | capture directory (`~/.local/state` when `XDG_STATE_HOME` is unset) |
 
 The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
