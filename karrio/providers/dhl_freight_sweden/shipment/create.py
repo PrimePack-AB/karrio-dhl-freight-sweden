@@ -41,6 +41,12 @@ class ServicePointDetailsError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class SentInformationError(errors.ShippingSDKDetailedError):
+    """Raised when the SENT options for a lane to or from PL are inconsistent."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 def parse_shipment_response(
     _response: lib.Deserializable[typing.List[dict]],
     settings: provider_utils.Settings,
@@ -185,6 +191,9 @@ def shipment_request(
         options.dhl_freight_sweden_customs_procedure_code.state or "1042"
     )
     service_point_party = _service_point_party(options)
+    sent_information = _sent_information(
+        options, {shipper.country_code, recipient.country_code}
+    )
     customs_options = lib.to_customs_info(
         payload.customs, option_type=provider_units.CustomsOption
     ).options
@@ -313,6 +322,7 @@ def shipment_request(
             **customs_services,
         ),
         customsInformation=customs,
+        additionalInformation=sent_information,
     )
 
     print_options = dhl_freight_sweden_print.OptionsType(
@@ -550,6 +560,85 @@ def _check_customs_service_identifiers(
                 for field, label in missing.items()
             },
         )
+
+
+def _sent_information(
+    options: units.ShippingOptions,
+    country_codes: typing.Set[str],
+) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
+    if provider_units.SENT_COUNTRY not in country_codes:
+        return []
+
+    codes = provider_units.AdditionalInformationCode
+    identifiers = [
+        (
+            "dhl_freight_sweden_sent_ref",
+            codes.SENT_REF,
+            (options.dhl_freight_sweden_sent_ref.state or "").strip(),
+        ),
+        (
+            "dhl_freight_sweden_sent_carkey",
+            codes.SENT_CARKEY,
+            (options.dhl_freight_sweden_sent_carkey.state or "").strip(),
+        ),
+    ]
+    given = [(name, code, value) for name, code, value in identifiers if value]
+    missing = [name for name, _, value in identifiers if not value]
+    too_long = [
+        name
+        for name, _, value in given
+        if len(value) > provider_units.SENT_VALUE_MAX_LENGTH
+    ]
+    sent_free = options.dhl_freight_sweden_sent_free.state
+
+    if any(too_long):
+        raise SentInformationError(
+            f"SENT values are limited to {provider_units.SENT_VALUE_MAX_LENGTH} "
+            f"characters: {', '.join(too_long)}",
+            details={
+                name: dict(
+                    code="invalid",
+                    message=f"at most {provider_units.SENT_VALUE_MAX_LENGTH} characters",
+                )
+                for name in too_long
+            },
+        )
+
+    if len(given) == len(identifiers):
+        return [
+            dhl_freight_sweden_req.AdditionalInformationType(
+                code=code.value, stringValue=value
+            )
+            for _, code, value in given
+        ]
+
+    if any(given) or sent_free is False:
+        raise SentInformationError(
+            "A shipment to or from PL that is not SENT free requires both the "
+            f"SENT reference and carrier key; missing {', '.join(missing)}",
+            details={
+                name: dict(code="required", message="SENT identifier is required")
+                for name in missing
+            },
+        )
+
+    if sent_free is None and options.dangerous_good.state:
+        raise SentInformationError(
+            "A dangerous goods shipment to or from PL requires an explicit SENT "
+            "choice: dhl_freight_sweden_sent_free, or "
+            "dhl_freight_sweden_sent_ref with dhl_freight_sweden_sent_carkey",
+            details={
+                "dhl_freight_sweden_sent_free": dict(
+                    code="required", message="explicit SENT choice is required"
+                )
+            },
+        )
+
+    return [
+        dhl_freight_sweden_req.AdditionalInformationType(
+            code=codes.SENT_FREE.value, stringValue="true"
+        )
+    ]
 
 
 def _service_point_party(

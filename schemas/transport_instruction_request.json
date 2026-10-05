@@ -123,5 +123,13 @@
         "goodsDescription": "Machinery parts"
       }
     ]
-  }
+  },
+  "additionalInformation": [
+    {
+      "code": "SENT_REF",
+      "stringValue": "123456789A",
+      "dateValue": "2026-08-12T00:00:00",
+      "numericValue": 1.5
+    }
+  ]
 }
