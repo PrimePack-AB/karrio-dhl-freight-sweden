@@ -1,5 +1,5 @@
 {
-  "include": ["karrio"],
+  "include": ["karrio", "sandbox_tests"],
   "extraPaths": ["../karrio/modules/sdk"],
   "venvPath": ".",
   "venv": ".venv",
