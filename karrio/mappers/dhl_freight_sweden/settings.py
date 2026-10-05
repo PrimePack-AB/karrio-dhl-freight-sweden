@@ -14,11 +14,16 @@ class Settings(provider_utils.Settings, rating_proxy.RatingMixinSettings):
     """DHL Freight (Sweden API Farm) connection settings."""
 
     # API Farm authenticates with a single API key sent as the `client-key` header.
-    client_key: str
-    account_number: str = None
+    # attrs places redeclared fields in this class's order, so the mandatory
+    # client_key follows no inherited default; pyright orders them as
+    # dataclasses would and reports a false positive.
+    client_key: str  # pyright: ignore[reportGeneralTypeIssues]
+    account_number: typing.Optional[str] = None
 
     # generic properties
-    id: str = None
+    # Redeclared for attrs field ordering; the type mirrors the SDK base
+    # declaration `id: str = None`, which an Optional override would violate.
+    id: str = None  # pyright: ignore[reportAssignmentType]
     test_mode: bool = False
     carrier_id: str = "dhl_freight_sweden"
     account_country_code: str = "SE"

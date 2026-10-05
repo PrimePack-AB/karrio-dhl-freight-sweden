@@ -1,3 +1,4 @@
+import typing
 import karrio.lib as lib
 import karrio.core as core
 
@@ -6,7 +7,7 @@ class Settings(core.Settings):
     """DHL Freight (Sweden API Farm) connection settings."""
 
     client_key: str
-    account_number: str = None
+    account_number: typing.Optional[str] = None
 
     @property
     def carrier_name(self):
@@ -52,7 +53,7 @@ class Settings(core.Settings):
         return "https://www.dhl.com/se-en/home/tracking/tracking-freight.html?submit=1&tracking-id={}"
 
     @property
-    def connection_config(self) -> lib.units.Options:
+    def connection_config(self) -> lib.units.ConnectionConfigOptions:
         from karrio.providers.dhl_freight_sweden.units import ConnectionConfig
 
         return lib.to_connection_config(
