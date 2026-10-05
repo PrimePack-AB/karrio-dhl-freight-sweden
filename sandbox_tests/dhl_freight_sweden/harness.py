@@ -187,6 +187,15 @@ class BookingBudget:
         return True
 
 
+def capture_secrets(config: SandboxConfig) -> typing.Tuple[typing.Optional[str], ...]:
+    """The values masked in captures: the client key only.
+
+    The account number stays in the captures because DHL API Farm support
+    traces sandbox bookings by it, and it is not a credential.
+    """
+    return (config.client_key,)
+
+
 def redact(value: typing.Any, secrets: typing.Iterable[typing.Optional[str]]) -> typing.Any:
     """Copy ``value`` with secret headers and every secret substring masked."""
     masked = [secret for secret in secrets if secret]
@@ -267,7 +276,7 @@ class Session:
         return self.config.capture_dir
 
     def _write(self, name: str, content: typing.Any) -> None:
-        safe = redact(content, (self.config.client_key, self.config.account_number))
+        safe = redact(content, capture_secrets(self.config))
         (self.capture_dir / name).write_text(
             json.dumps(safe, ensure_ascii=False, indent=1, default=str) + "\n"
         )
@@ -307,7 +316,7 @@ class Session:
             test=test,
         )
         with (self.capture_dir / "bookings.jsonl").open("a") as log:
-            log.write(json.dumps(redact(entry, (self.config.account_number,))) + "\n")
+            log.write(json.dumps(redact(entry, capture_secrets(self.config))) + "\n")
 
 
 def settings_of(gateway) -> connector_settings.Settings:
