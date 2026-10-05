@@ -186,7 +186,16 @@ request = product_matches.product_matches_request(
     {
         "shipper": {"postal_code": "11120", "country_code": "SE"},
         "recipient": {"postal_code": "00-251", "country_code": "PL"},
-        "parcels": [{"weight": 2.5, "length": 40, "width": 30, "height": 15}],
+        "parcels": [
+            {
+                "weight": 2.5,
+                "weight_unit": "KG",
+                "length": 40,
+                "width": 30,
+                "height": 15,
+                "dimension_unit": "CM",
+            }
+        ],
     },
     gateway.settings,
 )
@@ -196,6 +205,12 @@ products, messages = product_matches.parse_product_matches_response(
 ```
 
 Both `shipper` and `recipient` (postal code and country) are required; the connector raises a field error before any carrier call when one is missing.
+`parcels` is optional and takes karrio parcel dicts, the same shape as `ShipmentRequest.parcels`; each becomes one piece criterion.
+Parcel fields the lookup does not use (`description`, `items`, `options`, `reference_number`, ...) are ignored.
+A parcel without `weight_unit` or `dimension_unit` is read as KG or CM, and LB/IN parcels are converted, so pieces always go out in KG and CM with a volume in m³ when all three dimensions are set.
+No `packageType` is sent, because the connector has no mapping from karrio packaging types to DHL package type codes.
+The optional shipment totals are `total_weight`, `total_volume`, `total_number_of_pieces`, `total_loading_meters`, `total_pallet_places`, and `import_export`, sent as given.
+Any other top-level key raises a field error naming it before any carrier call, so a misspelled or unsupported key (for example `piece` or `services`) is never silently dropped.
 Each product carries `code`, `name`, `from_countries`, `to_countries`, `to_country_postal_excludes`, and `rules_for_country_delivery_types`; the delivery-type rules signal whether a product delivers to a service point.
 
 ### Step 2: service points
@@ -307,7 +322,8 @@ A driver that cannot import the connector can split the flow: the lookups go dir
 The hosts are `https://test-api.freight-logistics.dhl.com` (test) and `https://api.freight-logistics.dhl.com` (production), and every call carries the `client-key` header.
 Karrio never returns stored connection credentials over REST, so the driver needs the client key through its own secret channel.
 
-The product matches body is the `MatchCriteria` shape that `product_matches_request` builds; both parties are required:
+The product matches body is the `MatchCriteria` shape that `product_matches_request` builds; both parties are required.
+Piece weights are in kg, dimensions in cm, and `volume` in m³:
 
 ```json
 {
@@ -315,7 +331,7 @@ The product matches body is the `MatchCriteria` shape that `product_matches_requ
     {"type": "Consignor", "address": {"countryCode": "SE", "postalCode": "11120"}},
     {"type": "Consignee", "address": {"countryCode": "PL", "postalCode": "00-251"}}
   ],
-  "pieces": [{"weight": 2.5, "length": 40, "width": 30, "height": 15}]
+  "pieces": [{"weight": 2.5, "length": 40, "width": 30, "height": 15, "volume": 0.018}]
 }
 ```
 
