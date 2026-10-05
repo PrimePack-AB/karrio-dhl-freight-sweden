@@ -41,6 +41,12 @@ class ServicePointDetailsError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class ServicePointEligibilityError(errors.ShippingSDKDetailedError):
+    """Raised when the product or destination accepts no such access point."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class PayerCodeError(errors.ShippingSDKDetailedError):
     """Raised when no payer code valid for the product can be resolved."""
 
@@ -195,7 +201,9 @@ def shipment_request(
     procedure_code = (
         options.dhl_freight_sweden_customs_procedure_code.state or "1042"
     )
-    service_point_party = _service_point_party(options)
+    service_point_party = _service_point_party(
+        options, service, recipient.country_code
+    )
     sent_information = _sent_information(
         options, {shipper.country_code, recipient.country_code}
     )
@@ -731,11 +739,55 @@ def _sent_information(
 
 def _service_point_party(
     options,
+    product_code: str,
+    country_code: typing.Optional[str],
 ) -> typing.Optional[dhl_freight_sweden_req.PartyType]:
     service_point = options.dhl_freight_sweden_service_point.state
 
     if not service_point:
         return None
+
+    if service_point.strip().lower() in provider_units.ACCESS_POINT_TYPE_NAMES:
+        raise ServicePointEligibilityError(
+            f"The service point option carries the type name {service_point!r} "
+            "instead of a service point id; set the id there and the sub type "
+            "in dhl_freight_sweden_service_point_type",
+            details={
+                "dhl_freight_sweden_service_point": dict(
+                    code="invalid",
+                    message="expected a service point id, not a type name",
+                )
+            },
+        )
+
+    sub_type = provider_units.PartySubType.map(
+        options.dhl_freight_sweden_service_point_type.state
+        or provider_units.PartySubType.ParcelShop.value
+    ).value_or_key
+    allowed_sub_types = provider_units.ACCESS_POINT_SUB_TYPES.get(
+        product_code, {}
+    ).get(country_code, frozenset())
+
+    if sub_type not in allowed_sub_types:
+        raise ServicePointEligibilityError(
+            f"Product {product_code} to {country_code} accepts "
+            + lib.identity(
+                f"only {', '.join(sorted(allowed_sub_types))} access points"
+                if any(allowed_sub_types)
+                else "no access point"
+            )
+            + f"; got {sub_type}",
+            details={
+                lib.identity(
+                    "dhl_freight_sweden_service_point_type"
+                    if any(allowed_sub_types)
+                    else "dhl_freight_sweden_service_point"
+                ): dict(
+                    code="invalid",
+                    message="access point not available for product and country",
+                )
+            },
+        )
 
     # Keys double as the ``dhl_freight_sweden_service_point_{key}`` option names.
     details = dict(
@@ -765,10 +817,7 @@ def _service_point_party(
     return dhl_freight_sweden_req.PartyType(
         id=service_point,
         type=provider_units.PartyType.AccessPoint.value,
-        subType=provider_units.PartySubType.map(
-            options.dhl_freight_sweden_service_point_type.state
-            or provider_units.PartySubType.ParcelShop.value
-        ).value_or_key,
+        subType=sub_type,
         name=details["name"],
         address=dhl_freight_sweden_req.AddressType(
             street=details["street"],
