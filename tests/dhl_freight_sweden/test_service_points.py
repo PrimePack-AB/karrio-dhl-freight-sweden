@@ -15,6 +15,7 @@ from unittest.mock import patch
 from .fixture import gateway
 
 import karrio.lib as lib
+import karrio.core.errors as errors
 import karrio.providers.dhl_freight_sweden.service_points as service_points
 
 
@@ -27,6 +28,21 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
             ServicePointsParams, gateway.settings
         )
         self.assertEqual(lib.to_dict(request.serialize()), ServicePointsRequest)
+
+    def test_create_service_points_unexpected_keys(self):
+        with self.assertRaises(errors.ShippingSDKDetailedError) as context:
+            service_points.service_points_request(
+                {**ServicePointsParams, "parcels": [{"weight": 25}]},
+                gateway.settings,
+            )
+
+        exception = context.exception
+        self.assertEqual(exception.code, "SHIPPING_SDK_FIELD_ERROR")
+        self.assertIn("parcels", str(exception))
+        self.assertEqual(
+            exception.details,
+            {"parcels": dict(code="unexpected", message="unexpected payload key")},
+        )
 
     def test_find_service_points(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:

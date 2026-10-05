@@ -12,14 +12,25 @@ import typing
 import karrio.lib as lib
 import karrio.core.models as models
 import karrio.providers.dhl_freight_sweden.error as error
+import karrio.providers.dhl_freight_sweden.lookup as lookup
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
+
+
+ACCEPTED_PAYLOAD_KEYS = frozenset(
+    {"address", "location_types", "max_items", "distance", "piece"}
+)
 
 
 def service_points_request(
     payload: dict,
     settings: provider_utils.Settings,
 ) -> lib.Serializable:
-    """Build a ``NearestServicePointRequest`` body from a lookup payload."""
+    """Build a ``NearestServicePointRequest`` body from a lookup payload.
+
+    Top-level keys outside ``ACCEPTED_PAYLOAD_KEYS`` raise a field error
+    rather than being silently dropped.
+    """
+    lookup.guard_payload_keys(payload, ACCEPTED_PAYLOAD_KEYS, "service points")
     address = payload.get("address") or {}
     distance = payload.get("distance") or {}
     piece = payload.get("piece") or {}
