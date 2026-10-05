@@ -722,6 +722,20 @@ class TestDHLFreightShipment(unittest.TestCase):
             [_expected_details("TI-232-0001", "232"), []],
         )
 
+    def test_parse_shipment_response_without_print_body(self):
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.side_effect = [BookingResponse102, "null"]
+            parsed_response = (
+                karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload102))
+                .from_(gateway)
+                .parse()
+            )
+
+        self.assertListEqual(
+            lib.to_dict(parsed_response),
+            [{**_expected_details("TI-102-0001", "102"), "docs": {}}, []],
+        )
+
     def test_parse_shipment_response_401(self):
         self._assert_labelled_parse(ShipmentPayload401, "TI-401-0001", 401)
 
