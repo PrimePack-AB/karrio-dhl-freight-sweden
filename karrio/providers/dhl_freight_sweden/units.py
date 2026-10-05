@@ -64,17 +64,6 @@ class LocationType(lib.StrEnum):
     postbank = "postbank"
 
 
-# AccessPoint subType derivation from the transport-instruction spec:
-# a locationType of "locker" books as a ParcelStation, every other
-# location type books as a ParcelShop.
-SUB_TYPE_BY_LOCATION_TYPE: typing.Dict[LocationType, PartySubType] = {
-    LocationType.servicepoint: PartySubType.ParcelShop,
-    LocationType.locker: PartySubType.ParcelStation,
-    LocationType.postoffice: PartySubType.ParcelShop,
-    LocationType.postbank: PartySubType.ParcelShop,
-}
-
-
 class AdditionalInformationCode(lib.StrEnum):
     """Shipment additionalInformation codes produced by typed options."""
 
