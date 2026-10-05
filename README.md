@@ -407,3 +407,14 @@ PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -v -f tests
 Create a virtual environment and install the SDK checkout and the connector with `pip install -r requirements-dev.txt -e .`.
 `requirements-dev.txt` installs the SDK editable from `../karrio/modules/sdk`; that path is a local checkout of the karrio SDK, and any checkout works for this connector, upstream or fork, because it uses no fork-only SDK surface.
 A `git+https` install of the SDK cannot replace the checkout, because pip recursively fetches the monorepo's private submodules that `modules/sdk` does not need.
+
+Type-check the connector with pyright from the repository root:
+
+```bash
+pyright
+```
+
+`pyrightconfig.json` resolves the SDK from the same `../karrio/modules/sdk` checkout and the project venv from `.venv`, and checks `karrio/` only.
+At runtime `karrio` is a `pkgutil.extend_path` namespace shared by the SDK and this repository, which pyright cannot follow: the SDK's regular `karrio`, `karrio.providers`, `karrio.mappers`, `karrio.schemas`, and `karrio.plugins` packages would shadow this repository's directories.
+The empty `__init__.pyi` files in those five directories make them regular packages for pyright, so imports of both the SDK and the connector resolve.
+They have no runtime effect and are excluded from the wheel by `[tool.setuptools.exclude-package-data]`, so an installed connector never shadows the SDK's `karrio/__init__.py`.

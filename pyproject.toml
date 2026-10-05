@@ -37,3 +37,5 @@ include-package-data = true
 [tool.setuptools.packages.find]
 exclude = ["tests.*", "tests"]
 namespaces = true
+[tool.setuptools.exclude-package-data]
+"*" = ["__init__.pyi"]
