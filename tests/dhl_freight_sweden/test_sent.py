@@ -77,6 +77,30 @@ class TestDHLFreightSent(unittest.TestCase):
         self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_carkey"})
         self.assertIn("dhl_freight_sweden_sent_carkey", str(error))
 
+    def test_sent_free_with_identifiers_fails(self):
+        cases = [
+            {"dhl_freight_sweden_sent_ref": "123456789A"},
+            {"dhl_freight_sweden_sent_carkey": "82727166666"},
+            {
+                "dhl_freight_sweden_sent_ref": "123456789A",
+                "dhl_freight_sweden_sent_carkey": "82727166666",
+            },
+        ]
+
+        for identifiers in cases:
+            with self.subTest(identifiers=sorted(identifiers)):
+                error = self._error(
+                    _parcel_connect(
+                        _recipient_pl,
+                        {"dhl_freight_sweden_sent_free": True, **identifiers},
+                    )
+                )
+
+                self.assertEqual(
+                    set(error.details),
+                    {"dhl_freight_sweden_sent_free", *identifiers},
+                )
+
     def test_sent_free_false_without_identifiers_fails(self):
         error = self._error(
             _parcel_connect(_recipient_pl, {"dhl_freight_sweden_sent_free": False})

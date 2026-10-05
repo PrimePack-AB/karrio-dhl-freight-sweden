@@ -713,6 +713,18 @@ def _sent_information(
             },
         )
 
+    if sent_free is True and any(given):
+        given_names = [name for name, _, _ in given]
+        raise SentInformationError(
+            "dhl_freight_sweden_sent_free contradicts the SENT identifiers "
+            f"{', '.join(given_names)}; send either SENT free or the SENT "
+            "reference and carrier key",
+            details={
+                name: dict(code="invalid", message="SENT free with SENT identifiers")
+                for name in ["dhl_freight_sweden_sent_free", *given_names]
+            },
+        )
+
     if len(given) == len(identifiers):
         return [
             dhl_freight_sweden_req.AdditionalInformationType(
