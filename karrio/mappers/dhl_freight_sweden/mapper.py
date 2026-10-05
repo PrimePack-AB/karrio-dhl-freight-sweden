@@ -9,7 +9,10 @@ import karrio.mappers.dhl_freight_sweden.settings as provider_settings
 
 
 class Mapper(mapper.Mapper):
-    settings: provider_settings.Settings
+    # Narrows the SDK base attribute to the connector settings the gateway
+    # constructs this mapper with; pyright treats mutable attributes as invariant.
+    settings: provider_settings.Settings  # pyright: ignore[reportIncompatibleVariableOverride]
+
     def create_address_validation_request(
         self, payload: models.AddressValidationRequest
     ) -> lib.Serializable:
@@ -43,9 +46,13 @@ class Mapper(mapper.Mapper):
         return provider.shipment_cancel_request(payload, self.settings)
     
     
-    def parse_cancel_shipment_response(
+    # The SDK base annotates a non-optional ConfirmationDetails, but the
+    # unsupported-cancellation stub returns None details with a message.
+    def parse_cancel_shipment_response(  # pyright: ignore[reportIncompatibleMethodOverride]
         self, response: lib.Deserializable[dict]
-    ) -> typing.Tuple[models.ConfirmationDetails, typing.List[models.Message]]:
+    ) -> typing.Tuple[
+        typing.Optional[models.ConfirmationDetails], typing.List[models.Message]
+    ]:
         return provider.parse_shipment_cancel_response(response, self.settings)
     
     def parse_shipment_response(
