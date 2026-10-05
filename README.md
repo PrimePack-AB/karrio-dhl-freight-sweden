@@ -532,7 +532,8 @@ The sandbox enforced the capacity filter for PL but returned the same SE points 
 
 Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
 To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
-Every live call writes its request and response as JSON to the capture directory, with the `client-key` header, the client key, and the account number redacted.
+Every live call writes its request and response as JSON to the capture directory, with the `client-key` header and the client key redacted.
+The account number stays in the captures, because DHL API Farm support traces sandbox bookings by it.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
 Planned segments, not yet implemented: a wider customs matrix covering the other customs services and non-EU destinations, and the freight products.

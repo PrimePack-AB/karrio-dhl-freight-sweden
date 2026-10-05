@@ -143,6 +143,25 @@ class TestSandboxHarnessBudget(unittest.TestCase):
 
 
 class TestSandboxHarnessRedaction(unittest.TestCase):
+    def test_captures_mask_the_client_key_and_keep_the_account_number(self):
+        config = harness.load_config(LIVE, NOW)
+        record = {
+            "request_headers": {"client-key": "secret-key"},
+            "data": {"parties": [{"id": "7654321", "type": "Consignor"}], "note": "via secret-key"},
+        }
+
+        self.assertEqual(harness.capture_secrets(config), ("secret-key",))
+        self.assertEqual(
+            harness.redact(record, harness.capture_secrets(config)),
+            {
+                "request_headers": {"client-key": "<redacted>"},
+                "data": {
+                    "parties": [{"id": "7654321", "type": "Consignor"}],
+                    "note": "via <redacted>",
+                },
+            },
+        )
+
     def test_redacts_secret_headers_and_values(self):
         record = {
             "url": "https://test-api.freight-logistics.dhl.com/x",
