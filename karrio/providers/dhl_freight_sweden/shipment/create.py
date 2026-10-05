@@ -41,6 +41,12 @@ class ServicePointDetailsError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class PayerCodeError(errors.ShippingSDKDetailedError):
+    """Raised when no payer code valid for the product can be resolved."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class SentInformationError(errors.ShippingSDKDetailedError):
     """Raised when the SENT options for a lane to or from PL are inconsistent."""
 
@@ -178,13 +184,12 @@ def shipment_request(
         initializer=provider_units.shipping_options_initializer,
     )
 
-    # PayerCode carries the product's terms-of-delivery code (see the product
-    # documentation): domestic products use the freight-payer codes 1/3/4,
-    # international products use Incoterms or Combiterm codes.
-    payer_code = lib.identity(
-        options.dhl_freight_sweden_payer_code.state
-        or (payload.customs.incoterm if payload.customs else None)
-        or "1"
+    payer_code = _payer_code(
+        service,
+        options,
+        payload.customs.incoterm if payload.customs else None,
+        shipper.country_code,
+        recipient.country_code,
     )
     shipping_date = lib.fdate(payload.options.get("shipment_date"))
     procedure_code = (
@@ -560,6 +565,89 @@ def _check_customs_service_identifiers(
                 for field, label in missing.items()
             },
         )
+
+
+def _payer_code(
+    product_code: str,
+    options: units.ShippingOptions,
+    incoterm: typing.Optional[str],
+    shipper_country: typing.Optional[str],
+    recipient_country: typing.Optional[str],
+) -> typing.Optional[str]:
+    explicit = (options.dhl_freight_sweden_payer_code.state or "").strip().upper()
+    incoterm = (incoterm or "").strip().upper()
+    payer_codes = provider_units.PAYER_CODES.get(product_code)
+
+    if payer_codes is None:
+        return explicit or incoterm or "1"
+
+    is_import = recipient_country == "SE" and shipper_country != "SE"
+    valid_codes = lib.identity(
+        payer_codes.import_codes
+        if is_import and payer_codes.import_codes is not None
+        else payer_codes.codes
+    )
+    lane = " (import)" if is_import and payer_codes.import_codes is not None else ""
+    combiterms_only = set(valid_codes) <= set(
+        provider_units.COMBITERM_BY_INCOTERM.values()
+    )
+
+    if explicit:
+        payer_code, field = explicit, "dhl_freight_sweden_payer_code"
+    elif incoterm and (incoterm in valid_codes or combiterms_only):
+        payer_code = lib.identity(
+            provider_units.COMBITERM_BY_INCOTERM.get(incoterm, incoterm)
+            if combiterms_only
+            else incoterm
+        )
+        field = "customs.incoterm"
+    else:
+        payer_code = payer_codes.default or provider_units.default_payer_code(
+            valid_codes
+        )
+        field = "dhl_freight_sweden_payer_code"
+
+    if payer_code is None:
+        raise PayerCodeError(
+            f"Product {product_code}{lane} has no default payer code; set "
+            f"dhl_freight_sweden_payer_code to one of {', '.join(valid_codes)}",
+            details={
+                field: dict(
+                    code="required",
+                    message=f"one of {', '.join(valid_codes)} is required",
+                )
+            },
+        )
+
+    if payer_code not in valid_codes:
+        raise PayerCodeError(
+            f"Payer code {payer_code} is not valid for product {product_code}{lane}; "
+            f"valid codes: {', '.join(valid_codes)}",
+            details={
+                field: dict(
+                    code="invalid",
+                    message=f"valid codes: {', '.join(valid_codes)}",
+                )
+            },
+        )
+
+    if (
+        payer_code in payer_codes.joint_declaration_codes
+        and not options.dhl_freight_sweden_customs_joint_declaration.state
+    ):
+        raise PayerCodeError(
+            f"Payer code {payer_code} for product {product_code} requires the "
+            "customs joint declaration service "
+            "(dhl_freight_sweden_customs_joint_declaration)",
+            details={
+                "dhl_freight_sweden_customs_joint_declaration": dict(
+                    code="required",
+                    message=f"required by payer code {payer_code}",
+                )
+            },
+        )
+
+    return payer_code
 
 
 def _sent_information(
