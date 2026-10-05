@@ -317,6 +317,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 
 | Failure | Origin | Action |
 |---------|--------|--------|
+| "The product matches lookup does not accept ..." / "The service points lookup does not accept ..." | connector field error | send only the lookup's accepted top-level keys (`parcels` for product matches, `parcel` for service points) |
 | "requires the full service point details; missing ..." | connector field error | fix the option mapping |
 | "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
