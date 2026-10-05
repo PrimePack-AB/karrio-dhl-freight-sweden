@@ -2,9 +2,10 @@
 
 Payer codes are validated per product against the "Payer codes" tables of
 DHL Freight Sweden product manual v5.23. The expected PL bookings mirror the
-transport instructions the live sandbox accepted on 2026-10-05 (bookings
-2906761073 and 2906761081), with the piece volume at karrio's two-decimal
-cubic-metre precision.
+transport instructions the sandbox accepted as bookings 2906761073 and
+2906761081 (fixtures/sandbox/booking-2906761073-109-se-pl.json and
+booking-2906761081-112-se-pl.json), with the piece volume at karrio's
+two-decimal cubic-metre precision.
 """
 
 import typing

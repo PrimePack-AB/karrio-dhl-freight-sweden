@@ -72,11 +72,10 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
             "209",
             "211",
         }
-        # Recipient footprints mirrored from the DHL Product API catalog
-        # (test host, fetched 2026-09-10): 109 covers 24 from-SE countries,
-        # 112 the same list minus FR, 232 26 countries adding CH/GB/GR and
-        # dropping HR; 107 is the reverse lane (EU -> SE), gated on the
-        # recipient, so Sweden only.
+        # Recipient footprints mirrored from the DHL Product API catalog:
+        # 109 covers 24 from-SE countries, 112 the same list minus FR, 232 26
+        # countries adding CH/GB/GR and dropping HR; 107 is the reverse lane
+        # (EU -> SE), gated on the recipient, so Sweden only.
         europe = {
             "109": ParcelConnectB2CCountries,
             "112": ParcelConnectPlusCountries,

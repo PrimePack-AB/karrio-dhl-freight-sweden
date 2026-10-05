@@ -6,8 +6,8 @@ The SE API Farm pricequote API is not integrated, so ``get_rates``
 issues no carrier call; the rate=0.0 placeholders are overridden by the
 merchant's negotiated prices at runtime.
 
-Zone coverage follows the DHL Product API destination footprint (fetched
-2026-09-10, test host): the outbound parcel family (109/112/232) rates to
+Zone coverage follows the DHL Product API destination footprint: the
+outbound parcel family (109/112/232) rates to
 its from-SE Europe country lists, and 107 — the reverse lane to Sweden —
 rates when the recipient is in Sweden.
 """

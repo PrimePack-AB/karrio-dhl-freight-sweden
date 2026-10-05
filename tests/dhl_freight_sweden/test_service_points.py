@@ -1,11 +1,10 @@
 """DHL Freight service point locator tests (connector-local capability).
 
-The two fixture points were captured live from the sandbox on 2026-09-10
-(POST /servicepoint/findnearestservicepoints, Warszawa 00-251: one
-unfiltered call returning parcelshops, one ``locationTypes: ["locker"]``
-call returning parcelstations). ``ServicePointsResponse`` merges one point
-from each capture, trimmed to the fields the normalizer consumes; all
-point values are verbatim from the captures. ``ErrorResponse`` is
+``ServicePointsResponse`` holds the parcelshop 8005-PL-4516440 and the
+parcelstation 8005-PL-4599334, trimmed to the fields the normalizer
+consumes; both appear with these values in the unfiltered Warszawa 00-251
+lookup of fixtures/sandbox/lookup-service-points-pl-capacity-too-large.json.
+``ErrorResponse`` is
 constructed to the spec's in-band ``status``/``errorMessage`` shape (the
 endpoint declares no 4xx responses).
 """
