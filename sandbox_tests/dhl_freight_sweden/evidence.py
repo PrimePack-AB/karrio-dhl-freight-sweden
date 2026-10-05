@@ -534,44 +534,6 @@ def _(b: Builder) -> Json:
     )
 
 
-PHONE_PROBE = "agent-logs/karrio/phone-print-probe"
-
-
-@evidence("label-2906724865-109-se-de.json")
-def _(b: Builder) -> Json:
-    d = b.state_root / PHONE_PROBE
-    return b.document(
-        "label",
-        "109 SE to DE booked directly with consignee phone +49 170 7000 777 and printed with page type Label; "
-        "the label text shows one Phn. line, the sender's +46 8 123 456, and no consignee phone.",
-        "109", "SE 11143 -> DE 10115", "2906724865", None,
-        f"{PHONE_PROBE} (curl calls 1 and 2 in live-probe-results.md)",
-        [b.file_exchange(d / "de-booking-request.json", d / "de-booking-response.json", "POST", TI, 200),
-         b.with_label(
-             b.file_exchange(d / "de-print-request.json", d / "de-print-response.json", "POST", PRINT, 200),
-             json.loads((d / "de-print-response.json").read_text()), d / "label_2906724865.pdf", d / "label_2906724865.txt",
-         )],
-        primary=1,
-    )
-
-
-@evidence("label-2906723800-109-se-dk-parcelshop.json")
-def _(b: Builder) -> Json:
-    d = b.state_root / PHONE_PROBE
-    return b.document(
-        "label",
-        "Reprint with page type Label of 109 SE to DK ParcelShop 8009-591479 booking 2906723800; "
-        "the label text shows one Phn. line, the sender's +46 8 123 456, and no consignee phone. "
-        "The booking call itself was not captured, so the phone it sent is not part of this evidence.",
-        "109", "SE 11143 -> DK 1620", "2906723800", None,
-        f"{PHONE_PROBE} (curl call 3 in live-probe-results.md)",
-        [b.with_label(
-            b.file_exchange(d / "dk-reprint-request.json", d / "dk-reprint-response.json", "POST", PRINT, 200),
-            json.loads((d / "dk-reprint-response.json").read_text()), d / "label_2906723800.pdf", d / "label_2906723800.txt",
-        )],
-    )
-
-
 SUITE_LABELS = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005"
 
 

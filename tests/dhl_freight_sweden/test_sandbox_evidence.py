@@ -58,10 +58,6 @@ EXCHANGE_KEYS = (
 )
 OPTIONAL_EXCHANGE_KEYS = {"response_reduced", "label"}
 LABEL_KEYS = ("pdf_source", "page_size_pt", "text_extraction", "text_source", "text")
-OTHER_CONSIGNOR_IDS = {
-    # These captures sent 1234567 as the Consignor party id instead of the customer number.
-    "label-2906724865-109-se-de.json": "1234567",
-}
 TI_PATH = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
 PRINT_PATH = "/printapi/v1/print/printdocumentsbyid"
 CAPTURED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
@@ -153,9 +149,7 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
                     for party in (body or {}).get("parties", []):
                         if party["type"] == "Consignor":
                             with self.subTest(path.name):
-                                self.assertEqual(
-                                    party["id"], OTHER_CONSIGNOR_IDS.get(path.name, ACCOUNT_NUMBER)
-                                )
+                                self.assertEqual(party["id"], ACCOUNT_NUMBER)
 
     def test_labels_cite_their_pdf_and_text(self):
         labels = 0
