@@ -96,6 +96,14 @@ RECIPIENTS = {
     },
 }
 ADDRESS_FIELDS = ("street", "city", "postal_code", "country_code")
+# Test shipments carry no goods subject to SENT monitoring, so the suite
+# declares lanes to PL SENT free; the connector requires the declaration.
+SENT_FREE = {"dhl_freight_sweden_sent_free": True}
+
+
+def declaration_options(recipient: dict) -> dict:
+    """Transport declaration options the suite makes for a lane from ``SHIPPER``."""
+    return SENT_FREE if recipient["country_code"] == "PL" else {}
 
 
 def offered_products(
