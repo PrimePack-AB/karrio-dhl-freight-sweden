@@ -30,9 +30,11 @@ PARCEL = {
 }
 
 
-def require_product(test: unittest.TestCase, session: harness.Session, product: str) -> None:
-    """Skip unless ``product`` is selected and a booking attempt remains."""
-    reason = harness.product_skip_reason(session.config, product)
+def require_booking(
+    test: unittest.TestCase, session: harness.Session, product: str, country: str
+) -> None:
+    """Skip unless the product and recipient country are selected and a booking attempt remains."""
+    reason = harness.booking_skip_reason(session.config, product, country)
     if reason:
         test.skipTest(reason)
     if session.budget.attempts >= session.budget.limit:
@@ -55,7 +57,9 @@ def book(
     whether or not DHL returns a shipment id, because sandbox bookings
     cannot be cancelled through the API.
     """
-    require_product(test, session, product)
+    require_booking(
+        test, session, product, str(payload["recipient"]["country_code"]).upper()
+    )
     if not session.budget.reserve():
         test.skipTest("booking budget exhausted")
 

@@ -45,6 +45,7 @@ class SandboxConfig:
     account_number: typing.Optional[str]
     segments: typing.FrozenSet[str]
     products: typing.Optional[typing.FrozenSet[str]]
+    countries: typing.Optional[typing.FrozenSet[str]]
     max_bookings: int
     capture_dir: pathlib.Path
 
@@ -83,6 +84,10 @@ def load_config(
         raise SandboxConfigError("DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS must not be negative")
 
     products = parse_list(environ.get("DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS"))
+    countries = frozenset(
+        code.upper()
+        for code in parse_list(environ.get("DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES"))
+    )
     state_home = environ.get("XDG_STATE_HOME") or str(
         pathlib.Path(environ.get("HOME") or pathlib.Path.home()) / ".local" / "state"
     )
@@ -99,6 +104,7 @@ def load_config(
         account_number=environ.get("KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER") or None,
         segments=segments or DEFAULT_SEGMENTS,
         products=products or None,
+        countries=countries or None,
         max_bookings=max_bookings,
         capture_dir=pathlib.Path(capture_dir),
     )
@@ -127,9 +133,14 @@ def skip_reason(config: SandboxConfig, segment: str) -> typing.Optional[str]:
     return None
 
 
-def product_skip_reason(config: SandboxConfig, product: str) -> typing.Optional[str]:
+def booking_skip_reason(
+    config: SandboxConfig, product: str, country: str
+) -> typing.Optional[str]:
+    """Why a booking of ``product`` to ``country`` is filtered out, or None."""
     if config.products is not None and product not in config.products:
         return f"product {product} is not in DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS"
+    if config.countries is not None and country not in config.countries:
+        return f"country {country} is not in DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES"
     return None
 
 

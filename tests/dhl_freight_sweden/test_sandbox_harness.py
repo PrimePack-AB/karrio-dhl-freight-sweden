@@ -99,16 +99,27 @@ class TestSandboxHarnessConfig(unittest.TestCase):
                     reason,
                 )
 
-    def test_product_skip_reason(self):
+    def test_booking_skip_reason(self):
         narrowed = harness.load_config(
-            {**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS": "102"}, NOW
+            {
+                **LIVE,
+                "DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS": "109,112",
+                "DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES": "ro, no",
+            },
+            NOW,
         )
-
-        self.assertIsNone(harness.product_skip_reason(narrowed, "102"))
-        self.assertIsNotNone(harness.product_skip_reason(narrowed, "601"))
-        self.assertIsNone(
-            harness.product_skip_reason(harness.load_config(LIVE, NOW), "601")
+        cases = (
+            (narrowed, "109", "RO", None),
+            (narrowed, "112", "NO", None),
+            (narrowed, "601", "NO", "product 601 is not in DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS"),
+            (narrowed, "109", "HU", "country HU is not in DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES"),
+            (harness.load_config(LIVE, NOW), "601", "DK", None),
         )
+        for config, product, country, reason in cases:
+            with self.subTest(product=product, country=country):
+                self.assertEqual(
+                    harness.booking_skip_reason(config, product, country), reason
+                )
 
 
 class TestSandboxHarnessBudget(unittest.TestCase):

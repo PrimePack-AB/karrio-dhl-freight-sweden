@@ -101,7 +101,7 @@ class TestSandboxBookingPudo(unittest.TestCase):
         return candidate
 
     def test_book_103_service_point_se(self):
-        booking.require_product(self, self.session, "103")
+        booking.require_booking(self, self.session, "103", "SE")
         point = self.nearest_point("service-points-103-se", SE_RECIPIENT)
 
         booking.book(
@@ -119,7 +119,7 @@ class TestSandboxBookingPudo(unittest.TestCase):
         )
 
     def test_book_109_service_point_pl(self):
-        booking.require_product(self, self.session, "109")
+        booking.require_booking(self, self.session, "109", "PL")
         point = self.nearest_point("service-points-109-pl", PL_RECIPIENT)
 
         booking.book(

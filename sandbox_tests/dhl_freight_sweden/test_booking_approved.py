@@ -73,7 +73,7 @@ class TestSandboxBookingApproved(unittest.TestCase):
         )
 
     def test_book_118_home_delivery_enforced(self):
-        booking.require_product(self, self.session, "118")
+        booking.require_booking(self, self.session, "118", "SE")
         enforce_gateway = self.session.gateway(dict(address_validation="enforce"))
 
         booking.book(
