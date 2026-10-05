@@ -12,7 +12,8 @@ The manual uses the deprecated names DHL EUROCONNECT, DHL EUROLINE, and DHL EURA
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31 its rejection and declaration segments at 16:53, and its 109 DK ParcelShop case at 17:14, and a manual capacity probe with the connector ran at 16:21.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31.
+A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
 An evidence file holds the request and response bodies of the calls behind the finding, with metadata naming the endpoint, product, route, booking id or error code, and the capturing script or suite test.
@@ -66,7 +67,7 @@ The 103 and 109 bookings to RO, HU, NO, and DK were preceded by the service poin
 
 ## Rejections
 
-The suite's rejection segment built a valid request through the connector and changed the serialized payload just before sending, and DHL answered each with HTTP 400 and one validation error.
+The suite's rejection segment built a valid request through the connector and changed the serialized payload just before sending, and DHL answered each with HTTP 400, the first three with one validation error and the 103 case with four.
 No booking was created by any of them.
 
 | Error code | Field | Message | Payload | Evidence |
@@ -74,6 +75,10 @@ No booking was created by any of them.
 | 22001 | `AdditionalInformation` | SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true. | 109 SE → PL 30-079, payer code 022, ParcelShop 8005-PL-4504339, no SENT entries | [rejection-22001][r-22001] |
 | 22015 | `Parties[2]` | AccessPoint Party is not allowed for this product | 112 SE → PL 30-079, payer code 023, `SENT_FREE` `"true"`, added AccessPoint ParcelShop 8005-PL-4504339 | [rejection-22015][r-22015] |
 | 22020 | `PayerCode.Code` | Payercode 1 is not valid for product | 112 SE → PL 30-079, payer code 1, `SENT_FREE` `"true"` | [rejection-22020][r-22020] |
+| 22001 | `Parties[2].Address.Address` | Address is mandatory for party AccessPoint | 103 SE → SE 11151, AccessPoint SE-982000 with only id, type, and sub type | [rejection-22001-103][r-22001-103] |
+| 22001 | `Parties[2].Name` | Name is mandatory for party AccessPoint | same request | [rejection-22001-103][r-22001-103] |
+| 22026 | `Parties[2]` | AccessPoint CountryCode is not valid for this product | same request | [rejection-22001-103][r-22001-103] |
+| 22006 | `Parties[2].PostalCode` | Error retrieving gateway linehaul for shipment | same request | [rejection-22001-103][r-22001-103] |
 
 The PostalCode API rejected the unknown SE postal code 99999 with HTTP 400 and the PascalCase ErrorResult `{"ErrorCode": 16010, "Status": 400, "UserMessage": "Post code '99999' not found."}` ([lookup-postal-code-se-99999-16010.json][l-pc-99999]).
 Its route lookup for PL 30-079 answered HTTP 400 with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), which matches the manual listing the route service only for domestic products (p236).
@@ -177,6 +182,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [b-347]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761347-601-se-ro.json
 [b-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
+[r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json
 [r-22015]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json
 [r-22020]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json
 [l-pc-99999]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json
