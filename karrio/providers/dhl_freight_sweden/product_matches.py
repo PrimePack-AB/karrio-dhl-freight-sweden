@@ -49,6 +49,10 @@ def product_matches_request(
     so incomplete parties fail here with the missing payload keys instead of
     as a carrier error. Top-level keys outside ``ACCEPTED_PAYLOAD_KEYS`` fail
     the same way rather than being silently dropped.
+
+    ``parcels`` are karrio ``Parcel``-shaped dicts sent as KG/CM pieces with
+    an m³ volume. No ``packageType`` is sent: the connector has no mapping
+    from karrio packaging types to DHL package type codes.
     """
     lookup.guard_payload_keys(payload, ACCEPTED_PAYLOAD_KEYS, "product matches")
     shipper = payload.get("shipper") or {}
@@ -85,15 +89,8 @@ def product_matches_request(
             ),
         ],
         pieces=[
-            dict(
-                packageType=piece.get("package_type"),
-                weight=piece.get("weight"),
-                length=piece.get("length"),
-                width=piece.get("width"),
-                height=piece.get("height"),
-                volume=piece.get("volume"),
-            )
-            for piece in payload.get("parcels") or []
+            lookup.to_metric_measurements(parcel)
+            for parcel in payload.get("parcels") or []
         ],
         totalVolume=payload.get("total_volume"),
         totalNumberOfPieces=payload.get("total_number_of_pieces"),

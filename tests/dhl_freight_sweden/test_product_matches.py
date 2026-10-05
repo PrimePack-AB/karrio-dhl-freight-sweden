@@ -3,8 +3,9 @@
 ``ProductMatchesResponse`` was captured live from the sandbox on 2026-09-10
 (POST /productmatches, Consignor SE 11120 -> Consignee PL 00001, one 2.5 kg
 piece) and is trimmed to the fields the normalizer consumes; all values are
-verbatim from the capture. ``ProductMatchRequest`` is the exact body of that
-call.
+verbatim from the capture. ``ProductMatchRequest`` is the body of that call
+with the piece's ``packageType`` dropped and its m³ ``volume`` added, as the
+builder now derives pieces from karrio parcels.
 """
 
 import unittest
@@ -63,6 +64,14 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
         self.assertEqual(set(exception.details), {"piece", "services"})
         self.assertEqual(exception.details["piece"]["code"], "unexpected")
 
+    def test_create_product_matches_request_from_karrio_parcels(self):
+        request = product_matches.product_matches_request(
+            KarrioParcelsParams, gateway.settings
+        )
+        self.assertEqual(
+            lib.to_dict(request.serialize())["pieces"], KarrioParcelsPieces
+        )
+
     def test_find_product_matches(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = "[]"
@@ -111,12 +120,50 @@ ProductMatchParams = {
     "shipper": {"postal_code": "11120", "country_code": "SE"},
     "recipient": {"postal_code": "00001", "country_code": "PL"},
     "parcels": [
-        {"package_type": "PC", "weight": 2.5, "length": 40, "width": 30, "height": 15}
+        {
+            "weight": 2.5,
+            "weight_unit": "KG",
+            "length": 40,
+            "width": 30,
+            "height": 15,
+            "dimension_unit": "CM",
+        }
     ],
     "total_weight": 2.5,
     "total_number_of_pieces": 1,
     "import_export": "E",
 }
+
+KarrioParcelsParams = {
+    "shipper": {"postal_code": "11120", "country_code": "SE"},
+    "recipient": {"postal_code": "00001", "country_code": "PL"},
+    "parcels": [
+        {
+            "id": "parcel_1",
+            "weight": 5,
+            "weight_unit": "LB",
+            "length": 10,
+            "width": 10,
+            "height": 10,
+            "dimension_unit": "IN",
+            "packaging_type": "small_box",
+            "description": "Books",
+            "reference_number": "REF-1",
+            "options": {"insurance": 100},
+            "items": [
+                {"title": "Book", "quantity": 1, "weight": 5, "weight_unit": "LB"}
+            ],
+        },
+        {"weight": 2.5, "length": 40, "width": 30, "height": 15},
+        {"weight": 1, "length": 20},
+    ],
+}
+
+KarrioParcelsPieces = [
+    {"weight": 2.27, "length": 25.4, "width": 25.4, "height": 25.4, "volume": 0.016387},
+    {"weight": 2.5, "length": 40, "width": 30, "height": 15, "volume": 0.018},
+    {"weight": 1, "length": 20},
+]
 
 MissingPartiesParams = {
     "shipper": {"postal_code": "11120", "country_code": "SE"},
@@ -128,7 +175,7 @@ ProductMatchRequest = {
         {"type": "Consignee", "address": {"countryCode": "PL", "postalCode": "00001"}},
     ],
     "pieces": [
-        {"packageType": "PC", "weight": 2.5, "length": 40, "width": 30, "height": 15}
+        {"weight": 2.5, "length": 40, "width": 30, "height": 15, "volume": 0.018}
     ],
     "totalWeight": 2.5,
     "totalNumberOfPieces": 1,
