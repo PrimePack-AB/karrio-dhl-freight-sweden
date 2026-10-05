@@ -46,14 +46,12 @@ class Mapper(mapper.Mapper):
         return provider.shipment_cancel_request(payload, self.settings)
     
     
-    # The SDK base annotates a non-optional ConfirmationDetails, but the
-    # unsupported-cancellation stub returns None details with a message.
-    def parse_cancel_shipment_response(  # pyright: ignore[reportIncompatibleMethodOverride]
+    def parse_cancel_shipment_response(
         self, response: lib.Deserializable[dict]
-    ) -> typing.Tuple[
-        typing.Optional[models.ConfirmationDetails], typing.List[models.Message]
-    ]:
-        return provider.parse_shipment_cancel_response(response, self.settings)
+    ) -> typing.Tuple[models.ConfirmationDetails, typing.List[models.Message]]:
+        # The SDK base annotates non-optional ConfirmationDetails, but the
+        # unsupported-cancellation stub returns None details with a message.
+        return provider.parse_shipment_cancel_response(response, self.settings)  # pyright: ignore[reportReturnType]
     
     def parse_shipment_response(
         self, response: lib.Deserializable[typing.List[dict]]
