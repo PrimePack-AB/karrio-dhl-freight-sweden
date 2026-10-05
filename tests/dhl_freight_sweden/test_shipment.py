@@ -1698,8 +1698,7 @@ BookingResponse102 = _booking("TI-102-0001", 102)
 BookingResponse232 = _booking("TI-232-0001", 232)
 BookingResponse118 = _booking("TI-118-0001", 118)
 
-# Route fixtures captured live from the sandbox PostalCodes API on
-# 2026-09-17 (GET /postalcodes/SE/{pc}/route); values are verbatim.
+# PostalCodes API route fixtures (GET /postalcodes/SE/{pc}/route).
 # Göteborg 41103 is servable for product 118; Kiruna 98138 is generally
 # bookable without home delivery (homeDeliveryParcel false).
 RouteResponseGoteborg = """{

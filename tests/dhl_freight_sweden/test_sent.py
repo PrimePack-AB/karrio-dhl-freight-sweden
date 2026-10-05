@@ -3,7 +3,8 @@
 Lanes to or from PL carry SENT entries under the shipment's
 additionalInformation: SENT_REF with SENT_CARKEY (product manual v5.23
 §5.4 p19), or SENT_FREE "true", which the live API requires when neither
-identifier is sent (validation error 22001, sandbox 2026-10-05). The
+identifier is sent (validation error 22001,
+fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json). The
 connector requires one of them explicitly.
 """
 

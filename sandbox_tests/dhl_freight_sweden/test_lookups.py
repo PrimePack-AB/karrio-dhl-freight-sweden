@@ -173,8 +173,10 @@ class TestSandboxLookups(unittest.TestCase):
     def test_service_points_parcel_capacity(self):
         """An oversized parcel empties the PL result with an in-band 400.
 
-        The SE sandbox returned the same points for both parcels on
-        2026-10-05, so the capacity filter is exercised against PL.
+        The SE sandbox returned the same points for both parcels
+        (tests/dhl_freight_sweden/fixtures/sandbox/
+        lookup-service-points-se-capacity-not-applied.json), so the capacity
+        filter is exercised against PL.
         """
         fitting, fitting_messages = self.nearest(
             "service-points-pl-parcel",
