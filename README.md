@@ -508,6 +508,7 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 |----------|---------|--------|
 | `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` | `lookups` | comma-separated segments to run |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS` | all | comma-separated product codes the booking segments may book |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES` | all | comma-separated ISO recipient country codes the booking segments may book to |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `10` | booking attempts allowed in one process |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR` | `$XDG_STATE_HOME/karrio-dhl-freight-sweden/sandbox/<YYYYmmdd-HHMMSS>` | capture directory (`~/.local/state` when `XDG_STATE_HOME` is unset) |
 
@@ -517,7 +518,7 @@ The `booking-pudo` segment looks up the service points nearest the recipient and
 The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05), so the capacity check runs against PL.
 
 Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
-To book a single product, narrow both selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
+To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
 Every live call writes its request and response as JSON to the capture directory, with the `client-key` header, the client key, and the account number redacted.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
