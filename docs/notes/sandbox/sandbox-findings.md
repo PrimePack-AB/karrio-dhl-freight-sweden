@@ -91,7 +91,7 @@ No booking sent `SENT_REF` and `SENT_CARKEY`, so the sandbox's acceptance of rea
 The manual lists EKAER (HU) and UIT (RO) entries in the related-fields tables of 202 (p19), 205 (p38), 233 (p46), SPI (p51), PPI (p56), and 601 (p87), and not for 109 or 112.
 The sandbox accepted 109 and 112 to RO and HU without these entries ([booking-2906761263][b-263], [booking-2906761271][b-271], [booking-2906761289][b-289], [booking-2906761297][b-297]), which matches the manual.
 For 601 it accepted `EKAER_FREE` `"false"` with a placeholder EKAER number to HU ([booking-2906761339][b-339]) and `UIT_FREE` `"false"` without a UIT number to RO ([booking-2906761347][b-347]); the latter matches the v5.23 release note that the UIT code is not mandatory even when a shipment is not UIT free (p7).
-The sandbox accepted a made-up EKAER number, so it did not validate the number against the Hungarian registry.
+The EKAER number in that booking, `E0000SANDBOX0001`, is made up, and the sandbox accepted it.
 
 ### Service point capacity filter
 
