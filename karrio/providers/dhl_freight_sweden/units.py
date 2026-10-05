@@ -450,6 +450,13 @@ class ShippingOption(lib.Enum):
     dhl_freight_sweden_sent_ref = lib.OptionEnum("SENT_REF", str)
     dhl_freight_sweden_sent_carkey = lib.OptionEnum("SENT_CARKEY", str)
 
+    # Further shipment additionalInformation entries ({code, stringValue,
+    # dateValue, numericValue}, e.g. the HU EKAER or RO UIT codes), sent
+    # after the SENT entries.
+    dhl_freight_sweden_additional_information = lib.OptionEnum(
+        "additionalInformation", list
+    )
+
     """ Unified Option type mapping """
     email_notification = dhl_freight_sweden_notification
     insurance = dhl_freight_sweden_insurance

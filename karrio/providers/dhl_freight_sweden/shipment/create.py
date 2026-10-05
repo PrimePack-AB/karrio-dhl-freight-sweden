@@ -47,6 +47,12 @@ class ServicePointEligibilityError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class AdditionalInformationError(errors.ShippingSDKDetailedError):
+    """Raised when a pass-through additionalInformation entry is invalid."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class PayerCodeError(errors.ShippingSDKDetailedError):
     """Raised when no payer code valid for the product can be resolved."""
 
@@ -207,6 +213,13 @@ def shipment_request(
     sent_information = _sent_information(
         options, {shipper.country_code, recipient.country_code}
     )
+    additional_information = [
+        *sent_information,
+        *_additional_information(
+            options.dhl_freight_sweden_additional_information.state or [],
+            {entry.code for entry in sent_information},
+        ),
+    ]
     customs_options = lib.to_customs_info(
         payload.customs, option_type=provider_units.CustomsOption
     ).options
@@ -335,7 +348,7 @@ def shipment_request(
             **customs_services,
         ),
         customsInformation=customs,
-        additionalInformation=sent_information,
+        additionalInformation=additional_information,
     )
 
     print_options = dhl_freight_sweden_print.OptionsType(
@@ -734,6 +747,41 @@ def _sent_information(
         dhl_freight_sweden_req.AdditionalInformationType(
             code=codes.SENT_FREE.value, stringValue="true"
         )
+    ]
+
+
+def _additional_information(
+    entries: typing.List[typing.Any],
+    sent_codes: typing.Set[str],
+) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
+    def invalid(message: str) -> AdditionalInformationError:
+        return AdditionalInformationError(
+            message,
+            details={
+                "dhl_freight_sweden_additional_information": dict(
+                    code="invalid", message=message
+                )
+            },
+        )
+
+    if any(not isinstance(entry, dict) or not entry.get("code") for entry in entries):
+        raise invalid("Each additionalInformation entry requires a code")
+
+    duplicates = sorted({entry["code"] for entry in entries} & sent_codes)
+    if any(duplicates):
+        raise invalid(
+            f"additionalInformation codes {', '.join(duplicates)} are already "
+            "produced by the SENT options"
+        )
+
+    return [
+        dhl_freight_sweden_req.AdditionalInformationType(
+            code=entry["code"],
+            stringValue=entry.get("stringValue"),
+            dateValue=entry.get("dateValue"),
+            numericValue=entry.get("numericValue"),
+        )
+        for entry in entries
     ]
 
 
