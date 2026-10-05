@@ -6,7 +6,12 @@ import unittest
 
 import karrio.core.models as models
 import karrio.lib as lib
-from sandbox_tests.dhl_freight_sweden import booking, harness, rejection
+from sandbox_tests.dhl_freight_sweden import (
+    booking,
+    harness,
+    rejection,
+    test_booking_declarations as declarations,
+)
 
 from .fixture import gateway
 
@@ -255,3 +260,32 @@ class TestSandboxRejectionPayloads(unittest.TestCase):
         )
         self.assertEqual(mutated["parties"], [*plain["parties"], connector_access_point])
 
+
+class TestSandboxDeclarationPayloads(unittest.TestCase):
+    def test_601_declarations_serialize_as_not_free(self):
+        cases = {
+            "HU": [
+                {"code": "EKAER_FREE", "stringValue": "false"},
+                {"code": "EKAER_NUMBER", "stringValue": declarations.EKAER_NUMBER},
+            ],
+            "RO": [{"code": "UIT_FREE", "stringValue": "false"}],
+        }
+
+        for country, expected in cases.items():
+            with self.subTest(country=country):
+                serialized = _serialize(
+                    gateway.mapper.create_shipment_request(
+                        models.ShipmentRequest(
+                            service=declarations.PRODUCT,
+                            shipper=booking.SHIPPER,
+                            recipient=booking.RECIPIENTS[country],
+                            parcels=[booking.PARCEL],
+                            options={
+                                "dhl_freight_sweden_payer_code": "DAP",
+                                **declarations.DECLARATIONS[country],
+                            },
+                        )
+                    )
+                )
+
+                self.assertEqual(serialized["additionalInformation"], expected)
