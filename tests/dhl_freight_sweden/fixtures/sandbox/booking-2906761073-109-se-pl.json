@@ -1,0 +1,188 @@
+{
+ "kind": "booking",
+ "summary": "109 SE to PL with payer code 022, ParcelShop 8005-PL-4507446, and SENT_FREE true, sent directly to TransportInstruction.",
+ "captured_at": "2026-10-05T14:31:56Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": "2906761073",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/book.py",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<ACCOUNT>",
+   "__ACCOUNT__"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T14:31:56Z",
+   "date_basis": "response capture file mtime",
+   "request_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/B1-109-022-shop-free.request.json",
+    "sha256": "daafcca72dd3a1ff2e51347318cef5a5b4e2ff53b68f79bd9dda27c2deae71c5"
+   },
+   "response_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/B1-109-022-shop-free.response.json",
+    "sha256": "a2e70a33261ebc9445f6d5a3212d8915783f09cc429704a57e7d33e7736a6b14"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     },
+     {
+      "id": "8005-PL-4507446",
+      "type": "AccessPoint",
+      "subType": "ParcelShop",
+      "name": "DHL Parcelshop",
+      "address": {
+       "street": "Al. Kijowska 57/LU5",
+       "cityName": "KRAKÓW",
+       "postalCode": "30-079",
+       "countryCode": "PL"
+      }
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "REF-TEST-1",
+      "numberOfPieces": 1,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0,
+    "additionalInformation": [
+     {
+      "code": "SENT_FREE",
+      "stringValue": "true"
+     }
+    ]
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761073",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.006,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Jan Kowalski",
+       "contactName": "Jan Kowalski",
+       "address": {
+        "street": "ul. Królewska 10",
+        "cityName": "Kraków",
+        "postalCode": "30-079",
+        "countryCode": "PL"
+       },
+       "phone": "+48 600 000 000",
+       "email": "jan.kowalski@example.pl"
+      },
+      {
+       "id": "8005-PL-4507446",
+       "type": "AccessPoint",
+       "name": "DHL Parcelshop",
+       "address": {
+        "street": "Al. Kijowska 57/LU5",
+        "cityName": "KRAKÓW",
+        "postalCode": "30-079",
+        "countryCode": "PL"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525024943"
+       ],
+       "marksAndNumbers": "REF-TEST-1",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.006,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LPL30079+70530000",
+     "additionalInformation": [
+      {
+       "code": "SENT_FREE",
+       "stringValue": "true",
+       "numericValue": 0.0
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

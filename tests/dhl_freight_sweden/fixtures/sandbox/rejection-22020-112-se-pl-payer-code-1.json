@@ -1,0 +1,102 @@
+{
+ "kind": "rejection",
+ "summary": "112 SE to PL with payer code 1 and SENT_FREE true was rejected with 22020.",
+ "captured_at": "2026-10-05T16:53:29Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "112",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": null,
+ "error_code": "22020",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_rejections.test_112_pl_with_payer_code_1_is_rejected_with_22020",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-05T16:53:29Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185322/009-rejection-112-pl-payer-code-1.request.json",
+    "sha256": "01fd03f681d4735bab93efe81916b1119664da47051768a822015a0581fa282d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185322/009-rejection-112-pl-payer-code-1.response.json",
+    "sha256": "b171ce6a88367fe6afcf276cf66e69189c66c42de3366cbb843f304956a01556"
+   },
+   "request": {
+    "additionalInformation": [
+     {
+      "code": "SENT_FREE",
+      "stringValue": "true"
+     }
+    ],
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "112",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22020,
+      "field": "PayerCode.Code",
+      "message": "Payercode 1 is not valid for product"
+     }
+    ]
+   }
+  }
+ ]
+}

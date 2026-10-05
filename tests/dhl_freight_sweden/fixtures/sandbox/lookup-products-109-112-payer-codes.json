@@ -1,0 +1,125 @@
+{
+ "kind": "lookup",
+ "summary": "The Product API catalog lists payer codes CPT, 022, DPU, DAP, 023, CIP, and DDP for 109 and 112, with customs true only for DDP.",
+ "captured_at": "2026-10-05T14:14:21Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /productapi/v1/products/109",
+ "product": "109, 112",
+ "route": null,
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "agent-logs/karrio-dhl-freight-sweden/probe-20261005-161414/run.sh",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /productapi/v1/products/109",
+   "http_status": 200,
+   "date": "2026-10-05T14:14:21Z",
+   "date_basis": "response capture file mtime",
+   "request_source": null,
+   "response_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/probe-20261005-161414/product-109.json",
+    "sha256": "45f03b87f9577ccc470ab0467de39a935827bb342192854c145c757167de1f7e"
+   },
+   "request": null,
+   "response": {
+    "code": "109",
+    "name": "DHL Parcel Connect",
+    "payerCodes": [
+     {
+      "code": "CPT",
+      "name": "Carriage Paid To",
+      "customs": false
+     },
+     {
+      "code": "022",
+      "name": "022: Consignor pays freight cost and export customs clearance",
+      "customs": false
+     },
+     {
+      "code": "DPU",
+      "name": "Delivered At Place Undloaded",
+      "customs": false
+     },
+     {
+      "code": "DAP",
+      "name": "Delivered at place",
+      "customs": false
+     },
+     {
+      "code": "023",
+      "name": "023: Consignor pays freight cost and both export and import customs clearance",
+      "customs": false
+     },
+     {
+      "code": "CIP",
+      "name": "Cariiage and Insurance Paid to",
+      "customs": false
+     },
+     {
+      "code": "DDP",
+      "name": "Delivered duty paid",
+      "customs": true
+     }
+    ]
+   },
+   "response_reduced": "keeps code, name, and payerCodes; the full body is identified by response_source.sha256"
+  },
+  {
+   "endpoint": "GET /productapi/v1/products/112",
+   "http_status": 200,
+   "date": "2026-10-05T14:14:24Z",
+   "date_basis": "response capture file mtime",
+   "request_source": null,
+   "response_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/probe-20261005-161414/product-112.json",
+    "sha256": "120edbb766733a0e9c1e3aaba5d72b13101268510b44a824e1c81de52f5d13da"
+   },
+   "request": null,
+   "response": {
+    "code": "112",
+    "name": "DHL Parcel Connect Plus",
+    "payerCodes": [
+     {
+      "code": "CPT",
+      "name": "Carriage Paid To",
+      "customs": false
+     },
+     {
+      "code": "022",
+      "name": "022: Consignor pays freight cost and export customs clearance",
+      "customs": false
+     },
+     {
+      "code": "DPU",
+      "name": "Delivered At Place Undloaded",
+      "customs": false
+     },
+     {
+      "code": "DAP",
+      "name": "Delivered at place",
+      "customs": false
+     },
+     {
+      "code": "023",
+      "name": "023: Consignor pays freight cost and both export and import customs clearance",
+      "customs": false
+     },
+     {
+      "code": "CIP",
+      "name": "Cariiage and Insurance Paid to",
+      "customs": false
+     },
+     {
+      "code": "DDP",
+      "name": "Delivered duty paid",
+      "customs": true
+     }
+    ]
+   },
+   "response_reduced": "keeps code, name, and payerCodes; the full body is identified by response_source.sha256"
+  }
+ ]
+}

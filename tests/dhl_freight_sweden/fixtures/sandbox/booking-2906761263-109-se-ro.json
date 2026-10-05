@@ -1,0 +1,370 @@
+{
+ "kind": "booking",
+ "summary": "109 SE to RO with payer code 022 to ParcelShop 8023-231652 without UIT entries, then printed.",
+ "captured_at": "2026-10-05T16:29:49Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> RO 030031",
+ "booking_id": "2906761263",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-05T16:29:49Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182947/003-service-points-109-ro.request.json",
+    "sha256": "593ccee8ae5e20583532f5e8b554ad82c1251bf7804d5f4e476a275d94ad4127"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182947/003-service-points-109-ro.response.json",
+    "sha256": "109c2c17ef3184f962bf08266b234fb8da1f363370ee96eb024db815605e8fe9"
+   },
+   "request": {
+    "address": {
+     "cityName": "București",
+     "countryCode": "RO",
+     "postalCode": "030031",
+     "street": "Strada Lipscani 10"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 10.0,
+     "length": 30.0,
+     "weight": 1.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "servicePoints": [
+     {
+      "id": "231652",
+      "servicePointId": "8023-231652",
+      "street": "Splaiul Independentei 1-3",
+      "name": "RO Punct livrare",
+      "shopName": "Punct Froo Splaiul I",
+      "cityName": "BUCURESTI",
+      "postalCode": "040011",
+      "countryCode": "RO",
+      "distance": 0.44,
+      "routeDistance": 0.44,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 44.42895,
+      "longitude": 26.10023,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "231063",
+      "servicePointId": "8023-231063",
+      "street": "Piata Natiunile Unite 3 - 5",
+      "name": "RO Punct livrare",
+      "shopName": "Punct Strada Piata N",
+      "cityName": "BUCURESTI",
+      "postalCode": "040012",
+      "countryCode": "RO",
+      "distance": 0.44,
+      "routeDistance": 0.44,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 44.428807,
+      "longitude": 26.096802,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "231558",
+      "servicePointId": "8023-231558",
+      "street": "Strada Academiei 39-41",
+      "name": "RO Punct livrare",
+      "shopName": "Punct Str. Academiei",
+      "cityName": "BUCURESTI",
+      "postalCode": "010013",
+      "countryCode": "RO",
+      "distance": 0.61,
+      "routeDistance": 0.61,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 44.43806,
+      "longitude": 26.09792,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "231193",
+      "servicePointId": "8023-231193",
+      "street": "Strada Patriei 2",
+      "name": "RO Punct livrare",
+      "shopName": "Punct Strada Patriei",
+      "cityName": "BUCURESTI",
+      "postalCode": "030206",
+      "countryCode": "RO",
+      "distance": 0.63,
+      "routeDistance": 0.63,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 44.429326,
+      "longitude": 26.104663,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "231486",
+      "servicePointId": "8023-231486",
+      "street": "Bulevardul Coposu Corneliu 2",
+      "name": "RO Punct livrare",
+      "shopName": "Punct Carrefour B-du",
+      "cityName": "BUCURESTI",
+      "postalCode": "030605",
+      "countryCode": "RO",
+      "distance": 0.74,
+      "routeDistance": 0.74,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 44.428963,
+      "longitude": 26.105991,
+      "clickAndCollectId": ""
+     }
+    ],
+    "residentialAddressing": false
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:29:49Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182947/005-booking-109.request.json",
+    "sha256": "549ccb1841015946607bcc85db046b4cb31259b5b1f6fcec3ccaf14c3462c9b4"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182947/005-booking-109.response.json",
+    "sha256": "f3f87667b13acfd8ee328747b32db9ce36e528bb144638eae406e8a3a0070d70"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "București",
+       "countryCode": "RO",
+       "postalCode": "030031",
+       "street": "Strada Lipscani 10"
+      },
+      "contactName": "Ion Popescu",
+      "email": "ion.popescu@example.ro",
+      "name": "Ion Popescu",
+      "phone": "+40 721 000 000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "BUCURESTI",
+       "countryCode": "RO",
+       "postalCode": "040011",
+       "street": "Splaiul Independentei 1-3"
+      },
+      "id": "8023-231652",
+      "name": "RO Punct livrare",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761263",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Ion Popescu",
+       "contactName": "Ion Popescu",
+       "address": {
+        "street": "Strada Lipscani 10",
+        "cityName": "București",
+        "postalCode": "030031",
+        "countryCode": "RO"
+       },
+       "phone": "+40 721 000 000",
+       "email": "ion.popescu@example.ro"
+      },
+      {
+       "id": "8023-231652",
+       "type": "AccessPoint",
+       "name": "RO Punct livrare",
+       "address": {
+        "street": "Splaiul Independentei 1-3",
+        "cityName": "BUCURESTI",
+        "postalCode": "040011",
+        "countryCode": "RO"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025131"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LRO040011+70530000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:29:49Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182947/006-booking-109.request.json",
+    "sha256": "e3c3a6d1f72732704eacc232e665194ff516ff8133bb8992b5529754df3e88e5"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182947/006-booking-109.response.json",
+    "sha256": "eb076e2fe693a254e522204ac754a02c7ffce34118ca0cf585a90da089748a2f"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761263"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761263.pdf",
+      "content": "<base64 omitted: 105508 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,114 @@
+{
+ "kind": "rejection",
+ "summary": "112 SE to PL with payer code 023, SENT_FREE true, and an added AccessPoint party was rejected with 22015.",
+ "captured_at": "2026-10-05T16:53:28Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "112",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": null,
+ "error_code": "22015",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_rejections.test_112_pl_with_access_point_is_rejected_with_22015",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-05T16:53:28Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185322/007-rejection-112-pl-access-point.request.json",
+    "sha256": "71a32a61ec24ac866b9fa6cd35e7dcc2ca51dfb88483dac3b4ed1ccb1fab52b8"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185322/007-rejection-112-pl-access-point.response.json",
+    "sha256": "f84adcc6289f091b1c2652de72ea02bf45b9fddcf6f16a5510c52c634dbddb4f"
+   },
+   "request": {
+    "additionalInformation": [
+     {
+      "code": "SENT_FREE",
+      "stringValue": "true"
+     }
+    ],
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "KRAKÓW",
+       "countryCode": "PL",
+       "postalCode": "30-074",
+       "street": "Kazimierza Wielkiego 82"
+      },
+      "id": "8005-PL-4504339",
+      "name": "DHL Parcelshop",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "023"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "112",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22015,
+      "field": "Parties[2]",
+      "message": "AccessPoint Party is not allowed for this product"
+     }
+    ]
+   }
+  }
+ ]
+}

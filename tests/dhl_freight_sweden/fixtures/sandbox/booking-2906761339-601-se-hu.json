@@ -1,0 +1,208 @@
+{
+ "kind": "booking",
+ "summary": "601 SE to HU with payer code DAP, EKAER_FREE false, and a placeholder EKAER_NUMBER, then printed.",
+ "captured_at": "2026-10-05T16:53:40Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "601",
+ "route": "SE 11143 -> HU 1052",
+ "booking_id": "2906761339",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_declarations",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:53:40Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185338/003-booking-601.request.json",
+    "sha256": "8585f6dcf23f3e30d0237d24faf5fd7329aa8b2a4a246ab5e60cff4570f1b303"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185338/003-booking-601.response.json",
+    "sha256": "187606ffafaf35a87b1e78e8af138e5168be9b0856f543e6a2aa478e1bc7bf5b"
+   },
+   "request": {
+    "additionalInformation": [
+     {
+      "code": "EKAER_FREE",
+      "stringValue": "false"
+     },
+     {
+      "code": "EKAER_NUMBER",
+      "stringValue": "E0000SANDBOX0001"
+     }
+    ],
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Budapest",
+       "countryCode": "HU",
+       "postalCode": "1052",
+       "street": "Váci utca 10"
+      },
+      "contactName": "Kovács Anna",
+      "email": "anna.kovacs@example.hu",
+      "name": "Kovács Anna",
+      "phone": "+36 30 000 0000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "601",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761339",
+     "productCode": "601",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "DAP"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Kovács Anna",
+       "contactName": "Kovács Anna",
+       "address": {
+        "street": "Váci utca 10",
+        "cityName": "Budapest",
+        "postalCode": "1052",
+        "countryCode": "HU"
+       },
+       "phone": "+36 30 000 0000",
+       "email": "anna.kovacs@example.hu"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025193"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LHU1052+00000000",
+     "additionalInformation": [
+      {
+       "code": "EKAER_FREE",
+       "stringValue": "false",
+       "numericValue": 0.0
+      },
+      {
+       "code": "EKAER_NUMBER",
+       "stringValue": "E0000SANDBOX0001",
+       "numericValue": 0.0
+      }
+     ]
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:53:45Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185338/004-booking-601.request.json",
+    "sha256": "2bc40c81cb125308fd6d3659fcceb5d8c021bb208c069221b3ce80fbe892d41c"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185338/004-booking-601.response.json",
+    "sha256": "59985650aa99ebccd102048248a76fb7e1dc67a9eb1850369ee1a149497fef09"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761339"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761339.pdf",
+      "content": "<base64 omitted: 107072 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

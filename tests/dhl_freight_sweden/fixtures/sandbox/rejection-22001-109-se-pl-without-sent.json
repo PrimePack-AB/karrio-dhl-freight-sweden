@@ -1,0 +1,108 @@
+{
+ "kind": "rejection",
+ "summary": "109 SE to PL with payer code 022 and ParcelShop 8005-PL-4504339 but no SENT entries was rejected with 22001.",
+ "captured_at": "2026-10-05T16:53:27Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": null,
+ "error_code": "22001",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_rejections.test_109_pl_without_sent_is_rejected_with_22001",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-05T16:53:27Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185322/003-rejection-109-pl-without-sent.request.json",
+    "sha256": "186f2d3d8ba177ea08b7e779bb5aaea16e416148aa9853ffa92260601f5fe525"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185322/003-rejection-109-pl-without-sent.response.json",
+    "sha256": "3b84ce48370d37463bc8b2c6afe3a9b12ce4899ec842dd2a37133ce3fb095af9"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "KRAKÓW",
+       "countryCode": "PL",
+       "postalCode": "30-074",
+       "street": "Kazimierza Wielkiego 82"
+      },
+      "id": "8005-PL-4504339",
+      "name": "DHL Parcelshop",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22001,
+      "field": "AdditionalInformation",
+      "message": "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true."
+     }
+    ]
+   }
+  }
+ ]
+}

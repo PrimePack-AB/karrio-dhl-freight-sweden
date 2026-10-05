@@ -1,0 +1,199 @@
+{
+ "kind": "booking",
+ "summary": "601 SE to RO with payer code DAP and UIT_FREE false without UIT_NUMBER, then printed.",
+ "captured_at": "2026-10-05T16:53:52Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "601",
+ "route": "SE 11143 -> RO 030031",
+ "booking_id": "2906761347",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_declarations",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:53:52Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185350/003-booking-601.request.json",
+    "sha256": "38b8867118ce1531867b5f34bd95fac3712c30ba7d03f25d4c916c7bc82aff7a"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185350/003-booking-601.response.json",
+    "sha256": "668157732f8db6810419babb884273407630b73c14f46dec7a38dea2482cc6e0"
+   },
+   "request": {
+    "additionalInformation": [
+     {
+      "code": "UIT_FREE",
+      "stringValue": "false"
+     }
+    ],
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "București",
+       "countryCode": "RO",
+       "postalCode": "030031",
+       "street": "Strada Lipscani 10"
+      },
+      "contactName": "Ion Popescu",
+      "email": "ion.popescu@example.ro",
+      "name": "Ion Popescu",
+      "phone": "+40 721 000 000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "601",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761347",
+     "productCode": "601",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "DAP"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Ion Popescu",
+       "contactName": "Ion Popescu",
+       "address": {
+        "street": "Strada Lipscani 10",
+        "cityName": "București",
+        "postalCode": "030031",
+        "countryCode": "RO"
+       },
+       "phone": "+40 721 000 000",
+       "email": "ion.popescu@example.ro"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025209"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LRO030031+00000000",
+     "additionalInformation": [
+      {
+       "code": "UIT_FREE",
+       "stringValue": "false",
+       "numericValue": 0.0
+      }
+     ]
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:53:52Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185350/004-booking-601.request.json",
+    "sha256": "f508ea0b0e4f12d5cfcd576dcdfd7739e9d0f56cae0c4b61fbfaf0dcac2fc9dc"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-185350/004-booking-601.response.json",
+    "sha256": "3686c65845ab7fcb9ad35d152de74607caa25e1041cb0a713fbc619b42d88648"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761347"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761347.pdf",
+      "content": "<base64 omitted: 106420 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

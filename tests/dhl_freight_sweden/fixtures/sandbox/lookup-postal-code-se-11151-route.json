@@ -1,0 +1,43 @@
+{
+ "kind": "lookup",
+ "summary": "PostalCode route for SE 11151 answered bookable true and homeDeliveryParcel true.",
+ "captured_at": "2026-10-05T16:20:46Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/11151/route",
+ "product": null,
+ "route": "SE 11151",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/11151/route",
+   "http_status": 200,
+   "date": "2026-10-05T16:20:46Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/001-postal-code-se-11151-118.request.json",
+    "sha256": "8cb452d7c478da33e2c1d9256bb3270b17623c006eb5425c9ca38f5a80551722"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/001-postal-code-se-11151-118.response.json",
+    "sha256": "cbfde2ed955ba6e1bc956409c2776a664da3962a04ff144677cd4ffb2a5159ac"
+   },
+   "request": null,
+   "response": {
+    "countryCode": "SE",
+    "postalCode": "11151",
+    "city": "STOCKHOLM",
+    "lineHaul": "110",
+    "terminalId": "4210",
+    "deviating": "0",
+    "updatedDate": "2006-01-11T00:00:00",
+    "bookable": true,
+    "homeDeliveryParcel": true
+   }
+  }
+ ]
+}

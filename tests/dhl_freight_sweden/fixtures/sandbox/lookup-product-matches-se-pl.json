@@ -1,0 +1,109 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to PL 00-251 returned HDI, 109, 202, 112, 601, and 233.",
+ "captured_at": "2026-10-05T16:20:47Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> PL 00-251",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-05T16:20:47Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/007-product-matches-se-pl.request.json",
+    "sha256": "1c219c1bde8499126d920284bae58793d8be664c21257d0e27579bdcc9b6820a"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/007-product-matches-se-pl.response.json",
+    "sha256": "d0f1594c831c234bede57d01158b6e263eb1fc539c6f01e92b38ac55f68714e7"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "PL",
+       "postalCode": "00-251"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 40.0,
+      "volume": 0.018,
+      "weight": 2.5,
+      "width": 30.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "109",
+      "name": "DHL Parcel Connect",
+      "shortName": null,
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "112",
+      "name": "DHL Parcel Connect Plus",
+      "shortName": null,
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "601",
+      "name": "DHL Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, and isDomestic; the full body is identified by response_source.sha256"
+  }
+ ]
+}

@@ -1,0 +1,371 @@
+{
+ "kind": "lookup",
+ "summary": "Nearest service points for Warszawa returned points for a 2.5 kg piece and answered 400 'The dimensions are too large' for a 500 kg 300x200x200 cm piece, with and without locationTypes locker.",
+ "captured_at": "2026-10-05T16:21:09Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+ "product": null,
+ "route": "PL 00-251",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 400,
+ "captured_by": "manual capacity probe with the connector (20261005-182045-capacity-probe)",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-05T16:21:08Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045-capacity-probe/001-pl-fit.request.json",
+    "sha256": "faefb0206cb6a41ae60d28976df60afdfe167c4108e3b4ae4fbe4462b9c27e46"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045-capacity-probe/001-pl-fit.response.json",
+    "sha256": "28d6b2c78ac474644a3212f60e366a665c29c17328055b0dde1decbba88a55c7"
+   },
+   "request": {
+    "address": {
+     "cityName": "Warszawa",
+     "countryCode": "PL",
+     "postalCode": "00-251",
+     "street": "Nowogrodzka 31"
+    },
+    "maxNumberOfItems": 10,
+    "piece": {
+     "height": 15.0,
+     "length": 40.0,
+     "weight": 2.5,
+     "width": 30.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "servicePoints": [
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4516440",
+      "street": "SENATORSKA 2",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "WARSZAWA",
+      "postalCode": "00-075",
+      "countryCode": "PL",
+      "distance": 0.06,
+      "routeDistance": 0.06,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.246463,
+      "longitude": 21.012219,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4512267",
+      "street": "ul. Piwna 7 lok. LU1",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "WARSZAWA",
+      "postalCode": "00-265",
+      "countryCode": "PL",
+      "distance": 0.18,
+      "routeDistance": 0.18,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.248001,
+      "longitude": 21.012975,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4527995",
+      "street": "Moliera 8",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "Warszawa",
+      "postalCode": "00-076",
+      "countryCode": "PL",
+      "distance": 0.24,
+      "routeDistance": 0.24,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.244591,
+      "longitude": 21.011423,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4503281",
+      "street": "Kilińskiego 3/",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "Warszawa",
+      "postalCode": "00-257",
+      "countryCode": "PL",
+      "distance": 0.34,
+      "routeDistance": 0.34,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.24935,
+      "longitude": 21.008785,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4506997",
+      "street": "Miodowa 23",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "WARSZAWA",
+      "postalCode": "00-246",
+      "countryCode": "PL",
+      "distance": 0.39,
+      "routeDistance": 0.39,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.248458,
+      "longitude": 21.00649,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4509577",
+      "street": "Długa 31 lok.A",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "WARSZAWA",
+      "postalCode": "00-238",
+      "countryCode": "PL",
+      "distance": 0.49,
+      "routeDistance": 0.49,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.246293,
+      "longitude": 21.004217,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "104",
+      "servicePointId": "8005-PL-4508390",
+      "street": "Solidarności 68/5u-39",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "WARSZAWA",
+      "postalCode": "00-240",
+      "countryCode": "PL",
+      "distance": 0.62,
+      "routeDistance": 0.62,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.245234,
+      "longitude": 21.002611,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "102",
+      "servicePointId": "8005-PL-4512007",
+      "street": "Corazziego 4",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "WARSZAWA",
+      "postalCode": "00-087",
+      "countryCode": "PL",
+      "distance": 0.63,
+      "routeDistance": 0.63,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.244126,
+      "longitude": 21.003248,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "501",
+      "servicePointId": "8005-PL-4599334",
+      "street": "Plac Bankowy 2",
+      "name": "DHL Parcelstation",
+      "shopName": "Automat DHL BOX 24/7",
+      "cityName": "Warszawa",
+      "postalCode": "00-095",
+      "countryCode": "PL",
+      "distance": 0.66,
+      "routeDistance": 0.66,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:drop-off-unregistered",
+       "cash-on-delivery",
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 52.244046,
+      "longitude": 21.00276,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4503247",
+      "street": "Franciszkańska 6/",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "Warszawa",
+      "postalCode": "00-214",
+      "countryCode": "PL",
+      "distance": 0.82,
+      "routeDistance": 0.82,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 52.252986,
+      "longitude": 21.005036,
+      "clickAndCollectId": ""
+     }
+    ],
+    "residentialAddressing": true
+   }
+  },
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 400,
+   "date": "2026-10-05T16:21:09Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045-capacity-probe/003-pl-oversized.request.json",
+    "sha256": "396eda459ffa3c610e83346b31dc3ffd261eaf409c1620e572b58c938edb4571"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045-capacity-probe/003-pl-oversized.response.json",
+    "sha256": "9fa564f0d1bd6ffe0e37ae922ba93d96200d543a5f18d251b9b5a9ece4d010cb"
+   },
+   "request": {
+    "address": {
+     "cityName": "Warszawa",
+     "countryCode": "PL",
+     "postalCode": "00-251",
+     "street": "Nowogrodzka 31"
+    },
+    "maxNumberOfItems": 10,
+    "piece": {
+     "height": 200.0,
+     "length": 300.0,
+     "weight": 500.0,
+     "width": 200.0
+    }
+   },
+   "response": {
+    "errorMessage": "The dimensions are too large for servicepoint",
+    "status": "Error"
+   }
+  },
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 400,
+   "date": "2026-10-05T16:21:09Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045-capacity-probe/005-pl-locker-oversized.request.json",
+    "sha256": "bbcc5cb4134b0967d7419231afe001fdc162dbdded048c8077a5238edd62dc16"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045-capacity-probe/005-pl-locker-oversized.response.json",
+    "sha256": "7588e912085374437d1b46e337fc140e581626bc33e17c4e5a1df439c0765c93"
+   },
+   "request": {
+    "address": {
+     "cityName": "Warszawa",
+     "countryCode": "PL",
+     "postalCode": "00-251",
+     "street": "Nowogrodzka 31"
+    },
+    "locationTypes": [
+     "locker"
+    ],
+    "maxNumberOfItems": 10,
+    "piece": {
+     "height": 200.0,
+     "length": 300.0,
+     "weight": 500.0,
+     "width": 200.0
+    }
+   },
+   "response": {
+    "errorMessage": "The dimensions are too large for locationtype locker",
+    "status": "Error"
+   }
+  }
+ ]
+}

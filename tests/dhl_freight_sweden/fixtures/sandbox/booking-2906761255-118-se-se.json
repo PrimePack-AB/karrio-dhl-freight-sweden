@@ -1,0 +1,212 @@
+{
+ "kind": "booking",
+ "summary": "118 within SE after a PostalCode route check with homeDeliveryParcel true (address_validation enforce), then printed.",
+ "captured_at": "2026-10-05T16:29:38Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "118",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": "2906761255",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_approved",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/11151/route",
+   "http_status": 200,
+   "date": "2026-10-05T16:29:38Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182938/001-booking-118.request.json",
+    "sha256": "65564c9a86b8538894ee81d85137424520b46b22ca185417fcfad69051703341"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182938/001-booking-118.response.json",
+    "sha256": "722200adc2e09d6136c04d7c66f2a769e9d9ecd9a4d1894b6f1845b70f1b6634"
+   },
+   "request": null,
+   "response": {
+    "countryCode": "SE",
+    "postalCode": "11151",
+    "city": "STOCKHOLM",
+    "lineHaul": "110",
+    "terminalId": "4210",
+    "deviating": "0",
+    "updatedDate": "2006-01-11T00:00:00",
+    "bookable": true,
+    "homeDeliveryParcel": true
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:29:38Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182938/002-booking-118.request.json",
+    "sha256": "8dccd5cc0e6faf6356e9b786e8a310062073d80c5cb25a1f28c0690fc7916795"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182938/002-booking-118.response.json",
+    "sha256": "6efdc8cd005302c8e33e87f034969d8249435e90bd5aa50fe1f853a9d91b6874"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "118",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761255",
+     "productCode": "118",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "1"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Anna Andersson",
+       "contactName": "Anna Andersson",
+       "address": {
+        "street": "Drottninggatan 10",
+        "cityName": "Stockholm",
+        "postalCode": "11151",
+        "countryCode": "SE"
+       },
+       "phone": "+46 70 123 45 67",
+       "email": "anna.andersson@example.se"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025124"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LSE11151+02000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:29:39Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182938/003-booking-118.request.json",
+    "sha256": "6196f1882b326cf7139ad9a47642b532b2a7b549bd9d248b4ceeb22ca3607099"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182938/003-booking-118.response.json",
+    "sha256": "c4ccd052fdcc0093707b40749618f16182dc7724f13641699cf4245d9199e336"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761255"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761255.pdf",
+      "content": "<base64 omitted: 102768 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

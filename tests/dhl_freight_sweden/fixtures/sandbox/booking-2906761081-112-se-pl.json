@@ -1,0 +1,164 @@
+{
+ "kind": "booking",
+ "summary": "112 SE to PL with payer code 023, home delivery, and SENT_FREE true, sent directly to TransportInstruction.",
+ "captured_at": "2026-10-05T14:31:56Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "112",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": "2906761081",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/book.py",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<ACCOUNT>",
+   "__ACCOUNT__"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T14:31:56Z",
+   "date_basis": "response capture file mtime",
+   "request_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/B2-112-023-home-free.request.json",
+    "sha256": "6440eb08bd89bb48f630ec7f017edbe044881c713b478f3c0ca02df6d9c720af"
+   },
+   "response_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/B2-112-023-home-free.response.json",
+    "sha256": "430ceaa9c39a74cde510e2e702e6a70f17afdde7bca0db965424e45ff85a394c"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "023"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "REF-TEST-1",
+      "numberOfPieces": 1,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "112",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0,
+    "additionalInformation": [
+     {
+      "code": "SENT_FREE",
+      "stringValue": "true"
+     }
+    ]
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761081",
+     "productCode": "112",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.006,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "023"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Jan Kowalski",
+       "contactName": "Jan Kowalski",
+       "address": {
+        "street": "ul. Królewska 10",
+        "cityName": "Kraków",
+        "postalCode": "30-079",
+        "countryCode": "PL"
+       },
+       "phone": "+48 600 000 000",
+       "email": "jan.kowalski@example.pl"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525024950"
+       ],
+       "marksAndNumbers": "REF-TEST-1",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.006,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LPL30079+74000000",
+     "additionalInformation": [
+      {
+       "code": "SENT_FREE",
+       "stringValue": "true",
+       "numericValue": 0.0
+      }
+     ]
+    }
+   }
+  }
+ ]
+}

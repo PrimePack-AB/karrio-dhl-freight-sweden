@@ -1,0 +1,356 @@
+{
+ "kind": "booking",
+ "summary": "109 SE to HU with payer code 022 to ParcelStation 8013-118530, a locker listing only parcel:pick-up-unregistered, without EKAER entries, then printed.",
+ "captured_at": "2026-10-05T16:30:05Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> HU 1052",
+ "booking_id": "2906761289",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<redacted>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:05Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/003-service-points-109-hu.request.json",
+    "sha256": "0fa6f7f096f0ebddc3731b612f35e52bb33ed439e051f3101c1a9af743a970b1"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/003-service-points-109-hu.response.json",
+    "sha256": "a0265528b22ac9c33468fa3e14b761af87972526e2773d1127c1197745a68fd8"
+   },
+   "request": {
+    "address": {
+     "cityName": "Budapest",
+     "countryCode": "HU",
+     "postalCode": "1052",
+     "street": "Váci utca 10"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 10.0,
+     "length": 30.0,
+     "weight": 1.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "servicePoints": [
+     {
+      "id": "373CSA-BP",
+      "servicePointId": "8013-118530",
+      "street": "József nádor tér",
+      "name": "MPL LOCK",
+      "shopName": "373 sz. automata - József nádor tér",
+      "cityName": "Budapest",
+      "postalCode": "1826",
+      "countryCode": "HU",
+      "distance": 0.41,
+      "routeDistance": 0.41,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 47.498681,
+      "longitude": 19.050445,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "BP-5 POSTA",
+      "servicePointId": "8013-197003",
+      "street": "Bajcsy-Zsilinszky út 16",
+      "name": "MPL POST",
+      "shopName": "Budapest 5 posta",
+      "cityName": "Budapest",
+      "postalCode": "1365",
+      "countryCode": "HU",
+      "distance": 0.6,
+      "routeDistance": 0.6,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 47.500255,
+      "longitude": 19.054626,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "295CSA-BP",
+      "servicePointId": "8013-118395",
+      "street": "Királyi Pál utca 10",
+      "name": "MPL LOCK",
+      "shopName": "295 sz. automata - V. Királyi Pál u",
+      "cityName": "Budapest",
+      "postalCode": "1826",
+      "countryCode": "HU",
+      "distance": 0.81,
+      "routeDistance": 0.81,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 47.489964,
+      "longitude": 19.059575,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "BP-80",
+      "servicePointId": "8013-172109",
+      "street": "Puskin utca 1",
+      "name": "MPL POST",
+      "shopName": "Budapest 80 posta",
+      "cityName": "Budapest",
+      "postalCode": "1429",
+      "countryCode": "HU",
+      "distance": 0.81,
+      "routeDistance": 0.81,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 47.494821,
+      "longitude": 19.062841,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "BP-53",
+      "servicePointId": "8013-173007",
+      "street": "Múzeum körút 31-33",
+      "name": "MPL POST",
+      "shopName": "Budapest 53 posta",
+      "cityName": "Budapest",
+      "postalCode": "1353",
+      "countryCode": "HU",
+      "distance": 0.83,
+      "routeDistance": 0.83,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 47.491242,
+      "longitude": 19.061407,
+      "clickAndCollectId": ""
+     }
+    ],
+    "residentialAddressing": true
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:05Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/005-booking-109.request.json",
+    "sha256": "158358985dd459d1842d6d4c084d66c36a497c347957c7a5cbacf060491ff0d0"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/005-booking-109.response.json",
+    "sha256": "85f7b9472359aa625c55db7217287a5e2de81294c6c699886efa24a4df8bc902"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Budapest",
+       "countryCode": "HU",
+       "postalCode": "1052",
+       "street": "Váci utca 10"
+      },
+      "contactName": "Kovács Anna",
+      "email": "anna.kovacs@example.hu",
+      "name": "Kovács Anna",
+      "phone": "+36 30 000 0000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "Budapest",
+       "countryCode": "HU",
+       "postalCode": "1826",
+       "street": "József nádor tér"
+      },
+      "id": "8013-118530",
+      "name": "MPL LOCK",
+      "subType": "ParcelStation",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761289",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Kovács Anna",
+       "contactName": "Kovács Anna",
+       "address": {
+        "street": "Váci utca 10",
+        "cityName": "Budapest",
+        "postalCode": "1052",
+        "countryCode": "HU"
+       },
+       "phone": "+36 30 000 0000",
+       "email": "anna.kovacs@example.hu"
+      },
+      {
+       "id": "8013-118530",
+       "type": "AccessPoint",
+       "name": "MPL LOCK",
+       "address": {
+        "street": "József nádor tér",
+        "cityName": "Budapest",
+        "postalCode": "1826",
+        "countryCode": "HU"
+       },
+       "subType": "ParcelStation"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025155"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LHU1826+70540000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T16:30:05Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/006-booking-109.request.json",
+    "sha256": "cdcd091b0f2cc2bc8c4c60e8e5f67b71e2c71c9f453ae19cf456a05e16785356"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-183002/006-booking-109.response.json",
+    "sha256": "4114864d8799b98b387f65b7e7f637e0b284bfae3ec63951b0b9c21d44e8af01"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761289"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761289.pdf",
+      "content": "<base64 omitted: 107772 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

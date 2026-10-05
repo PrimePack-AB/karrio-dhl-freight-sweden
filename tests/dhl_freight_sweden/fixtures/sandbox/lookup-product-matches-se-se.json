@@ -1,0 +1,125 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for a domestic SE lane.",
+ "captured_at": "2026-10-05T16:20:48Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE -> SE",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-05T16:20:48Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/009-product-matches-se-se.request.json",
+    "sha256": "e8bb88b7a8c912dd291a25cbb26bc8321ef4a3d591c3f17247a0965bdf90b42f"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/009-product-matches-se-se.response.json",
+    "sha256": "ce4fea69e6a601e4c1eb83fe19f41f6731f7aa842cb39d83ca22c3df99e47ea4"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "41101"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 40.0,
+      "volume": 0.018,
+      "weight": 2.5,
+      "width": 30.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "502",
+      "name": "DHL Home Delivery Return",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "118",
+      "name": "DHL Hemleverans Paket",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "104",
+      "name": "DHL Service Point Retur",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "102",
+      "name": "DHL Paket",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "402",
+      "name": "DHL Home Delivery Return",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "211",
+      "name": "DHL Stycke",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "401",
+      "name": "DHL Home Delivery",
+      "shortName": null,
+      "isDomestic": true
+     }
+    },
+    {
+     "product": {
+      "code": "103",
+      "name": "DHL Service Point",
+      "shortName": null,
+      "isDomestic": true
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, and isDomestic; the full body is identified by response_source.sha256"
+  }
+ ]
+}

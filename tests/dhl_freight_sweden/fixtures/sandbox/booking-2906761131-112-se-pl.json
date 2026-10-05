@@ -1,0 +1,199 @@
+{
+ "kind": "booking",
+ "summary": "112 SE to PL booked through the connector with payer code 023 and SENT_FREE true, then printed.",
+ "captured_at": "2026-10-05T14:48:39Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "112",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": "2906761131",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "agent-logs/karrio-dhl-freight-sweden/connector-verify-20261005-164743/verify.py (V2)",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": {
+  "value": "116768",
+  "placeholders": [
+   "<ACCOUNT>"
+  ],
+  "note": "the source capture masked the customer number in the Consignor party id; the sha256 values refer to the original capture files"
+ },
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T14:48:39Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/connector-verify-20261005-164743/V2.trace.json",
+    "sha256": "3ced20b1655ba1dc2a912f054534d4ac56441580f7623115ac697d05ff563e69"
+   },
+   "response_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/connector-verify-20261005-164743/V2.trace.json",
+    "sha256": "3ced20b1655ba1dc2a912f054534d4ac56441580f7623115ac697d05ff563e69"
+   },
+   "request": {
+    "additionalInformation": [
+     {
+      "code": "SENT_FREE",
+      "stringValue": "true"
+     }
+    ],
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "023"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "REF-TEST-1",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "112",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761131",
+     "productCode": "112",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "023"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Jan Kowalski",
+       "contactName": "Jan Kowalski",
+       "address": {
+        "street": "ul. Królewska 10",
+        "cityName": "Kraków",
+        "postalCode": "30-079",
+        "countryCode": "PL"
+       },
+       "phone": "+48 600 000 000",
+       "email": "jan.kowalski@example.pl"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025001"
+       ],
+       "marksAndNumbers": "REF-TEST-1",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LPL30079+74000000",
+     "additionalInformation": [
+      {
+       "code": "SENT_FREE",
+       "stringValue": "true",
+       "numericValue": 0.0
+      }
+     ]
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T14:48:39Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/connector-verify-20261005-164743/V2.trace.json",
+    "sha256": "3ced20b1655ba1dc2a912f054534d4ac56441580f7623115ac697d05ff563e69"
+   },
+   "response_source": {
+    "path": "agent-logs/karrio-dhl-freight-sweden/connector-verify-20261005-164743/V2.trace.json",
+    "sha256": "3ced20b1655ba1dc2a912f054534d4ac56441580f7623115ac697d05ff563e69"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761131"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761131.pdf",
+      "content": "<base64 omitted: 105168 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}
