@@ -5,6 +5,9 @@ import unittest
 
 import karrio.core.models as models
 import karrio.lib as lib
+import karrio.providers.dhl_freight_sweden.product_matches as product_matches
+import karrio.providers.dhl_freight_sweden.service_points as service_points
+import karrio.providers.dhl_freight_sweden.units as provider_units
 import karrio.sdk as karrio
 from . import harness
 
@@ -28,6 +31,169 @@ PARCEL = {
     "dimension_unit": "CM",
     "reference_number": "SANDBOX-TEST",
 }
+
+
+RECIPIENTS = {
+    "SE": {
+        "person_name": "Anna Andersson",
+        "address_line1": "Drottninggatan 10",
+        "city": "Stockholm",
+        "postal_code": "11151",
+        "country_code": "SE",
+        "phone_number": "+46 70 123 45 67",
+        "email": "anna.andersson@example.se",
+        "residential": True,
+    },
+    "DK": {
+        "person_name": "Mette Hansen",
+        "address_line1": "Vesterbrogade 10",
+        "city": "København V",
+        "postal_code": "1620",
+        "country_code": "DK",
+        "phone_number": "+45 20 12 34 56",
+        "email": "mette.hansen@example.dk",
+        "residential": True,
+    },
+    "PL": {
+        "person_name": "Jan Kowalski",
+        "address_line1": "ul. Królewska 10",
+        "city": "Kraków",
+        "postal_code": "30-079",
+        "country_code": "PL",
+        "phone_number": "+48 600 000 000",
+        "email": "jan.kowalski@example.pl",
+        "residential": True,
+    },
+    "RO": {
+        "person_name": "Ion Popescu",
+        "address_line1": "Strada Lipscani 10",
+        "city": "București",
+        "postal_code": "030031",
+        "country_code": "RO",
+        "phone_number": "+40 721 000 000",
+        "email": "ion.popescu@example.ro",
+        "residential": True,
+    },
+    "HU": {
+        "person_name": "Kovács Anna",
+        "address_line1": "Váci utca 10",
+        "city": "Budapest",
+        "postal_code": "1052",
+        "country_code": "HU",
+        "phone_number": "+36 30 000 0000",
+        "email": "anna.kovacs@example.hu",
+        "residential": True,
+    },
+    "NO": {
+        "person_name": "Ola Nordmann",
+        "address_line1": "Karl Johans gate 10",
+        "city": "Oslo",
+        "postal_code": "0154",
+        "country_code": "NO",
+        "phone_number": "+47 400 00 000",
+        "email": "ola.nordmann@example.no",
+        "residential": True,
+    },
+}
+ADDRESS_FIELDS = ("street", "city", "postal_code", "country_code")
+
+
+def offered_products(
+    session: harness.Session, gateway, label: str, recipient: dict
+) -> typing.Tuple[typing.List[str], typing.List[models.Message]]:
+    """Product codes DHL matches for a parcel from ``SHIPPER`` to ``recipient``."""
+    settings = harness.settings_of(gateway)
+    request = product_matches.product_matches_request(
+        dict(
+            shipper=dict(
+                postal_code=SHIPPER["postal_code"],
+                country_code=SHIPPER["country_code"],
+            ),
+            recipient=dict(
+                postal_code=recipient["postal_code"],
+                country_code=recipient["country_code"],
+            ),
+            parcels=[PARCEL],
+        ),
+        settings,
+    )
+    try:
+        products, messages = product_matches.parse_product_matches_response(
+            harness.proxy_of(gateway).find_product_matches(request), settings
+        )
+    finally:
+        session.capture(gateway, label)
+    codes = [str(product.get("code")) for product in products]
+    session.capture_parsed(label, dict(codes=codes, messages=lib.to_dict(messages)))
+    return codes, messages
+
+
+def sub_type(point: dict) -> str:
+    return (
+        provider_units.PartySubType.ParcelStation.value
+        if point.get("type") == "locker"
+        else provider_units.PartySubType.ParcelShop.value
+    )
+
+
+def nearest_service_point(
+    session: harness.Session, gateway, label: str, product: str, recipient: dict
+) -> typing.Tuple[typing.Optional[dict], typing.List[models.Message]]:
+    """The nearest point to ``recipient`` that can book ``product``.
+
+    A candidate needs a service point id, a complete address, and a sub type
+    the connector accepts for the product and destination country.
+    """
+    settings = harness.settings_of(gateway)
+    country = recipient["country_code"]
+    request = service_points.service_points_request(
+        dict(
+            address=dict(
+                street=recipient["address_line1"],
+                city=recipient["city"],
+                postal_code=recipient["postal_code"],
+                country_code=country,
+            ),
+            max_items=5,
+            parcel=PARCEL,
+        ),
+        settings,
+    )
+    try:
+        points, messages = service_points.parse_service_points_response(
+            harness.proxy_of(gateway).find_service_points(request), settings
+        )
+    finally:
+        session.capture(gateway, label)
+    session.capture_parsed(label, dict(points=points, messages=lib.to_dict(messages)))
+
+    accepted = provider_units.ACCESS_POINT_SUB_TYPES.get(product, {}).get(
+        country, frozenset()
+    )
+    candidate = next(
+        (
+            point
+            for point in points
+            if point.get("service_point_id")
+            and all((point.get("address") or {}).get(f) for f in ADDRESS_FIELDS)
+            and sub_type(point) in accepted
+        ),
+        None,
+    )
+    return candidate, messages
+
+
+def service_point_options(point: dict) -> dict:
+    address = point["address"]
+    return {
+        "dhl_freight_sweden_service_point": point["service_point_id"],
+        "dhl_freight_sweden_service_point_type": sub_type(point),
+        "dhl_freight_sweden_service_point_name": point.get("name"),
+        "dhl_freight_sweden_service_point_street": address["street"],
+        "dhl_freight_sweden_service_point_city": address["city"],
+        "dhl_freight_sweden_service_point_postal_code": address["postal_code"],
+        "dhl_freight_sweden_service_point_country_code": address["country_code"],
+    }
 
 
 def require_booking(
