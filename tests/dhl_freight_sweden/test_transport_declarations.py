@@ -6,15 +6,15 @@ UIT_FREE with UIT_NUMBER (AN..19) for RO; the UIT number is optional even
 when the shipment is not UIT free (release note p7).
 """
 
+import typing
 import unittest
 
-import karrio.lib as lib
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import (
     TransportDeclarationError,
 )
 
-from .fixture import gateway
+from .fixture import detail_keys, gateway, serialize_request
 from .test_shipment import _payload, _recipient_de, _recipient_se
 
 
@@ -26,7 +26,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**payload)
         )
-        return lib.to_dict(request.serialize())
+        return serialize_request(request)
 
     def _error(self, payload: dict) -> TransportDeclarationError:
         with self.assertRaises(TransportDeclarationError) as context:
@@ -42,7 +42,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
                 with self.subTest(service=service, country=recipient["country_code"]):
                     error = self._error(_declaration_payload(service, recipient))
 
-                    self.assertEqual(set(error.details), {option})
+                    self.assertEqual(detail_keys(error), {option})
                     self.assertIn(option, str(error))
 
     def test_ekaer_free_is_sent(self):
@@ -78,7 +78,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
             _road_freight(_recipient_hu, {"dhl_freight_sweden_ekaer_free": False})
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_ekaer_number"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_ekaer_number"})
 
     def test_ekaer_free_with_number_fails(self):
         error = self._error(
@@ -92,7 +92,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
         )
 
         self.assertEqual(
-            set(error.details),
+            detail_keys(error),
             {"dhl_freight_sweden_ekaer_free", "dhl_freight_sweden_ekaer_number"},
         )
 
@@ -101,7 +101,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
             _road_freight(_recipient_hu, {"dhl_freight_sweden_ekaer_number": "E" * 21})
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_ekaer_number"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_ekaer_number"})
 
     def test_uit_free_is_sent(self):
         serialized = self._serialize(
@@ -153,7 +153,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
         )
 
         self.assertEqual(
-            set(error.details),
+            detail_keys(error),
             {"dhl_freight_sweden_uit_free", "dhl_freight_sweden_uit_number"},
         )
 
@@ -164,7 +164,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
             )
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_uit_number"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_uit_number"})
 
     def test_other_products_to_hu_and_ro_send_nothing_by_default(self):
         for recipient in [_recipient_hu, _recipient_ro]:
@@ -210,7 +210,7 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
                 with self.subTest(service=service, country=shipper["country_code"]):
                     error = self._error(_import_payload(service, shipper))
 
-                    self.assertEqual(set(error.details), {option})
+                    self.assertEqual(detail_keys(error), {option})
                     self.assertIn("to or from", str(error))
 
     def test_lanes_from_hu_and_ro_send_explicit_declarations(self):
@@ -248,13 +248,13 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
         self.assertNotIn("additionalInformation", serialized)
 
 
-def _declaration_payload(service: str, recipient: dict, options: dict = None) -> dict:
+def _declaration_payload(service: str, recipient: dict, options: typing.Optional[dict] = None) -> dict:
     return _payload(
         service, recipient, {"dhl_freight_sweden_payer_code": "DAP", **(options or {})}
     )
 
 
-def _import_payload(service: str, shipper: dict, options: dict = None) -> dict:
+def _import_payload(service: str, shipper: dict, options: typing.Optional[dict] = None) -> dict:
     return {
         **_payload(
             service,
@@ -265,13 +265,13 @@ def _import_payload(service: str, shipper: dict, options: dict = None) -> dict:
     }
 
 
-def _road_freight(recipient: dict, options: dict = None) -> dict:
+def _road_freight(recipient: dict, options: typing.Optional[dict] = None) -> dict:
     return _declaration_payload(
         "dhl_freight_sweden_road_freight_standard", recipient, options
     )
 
 
-def _parcel_connect(recipient: dict, options: dict = None) -> dict:
+def _parcel_connect(recipient: dict, options: typing.Optional[dict] = None) -> dict:
     return _payload("dhl_freight_sweden_parcel_connect_b2c", recipient, options)
 
 

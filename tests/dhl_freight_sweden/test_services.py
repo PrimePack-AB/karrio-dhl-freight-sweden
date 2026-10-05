@@ -12,13 +12,15 @@ from karrio.providers.dhl_freight_sweden import units
 from karrio.mappers.dhl_freight_sweden.proxy import Proxy
 from karrio.references import detect_proxy_methods, get_carrier_capabilities
 
+from .fixture import members
+
 
 class TestDHLFreightServiceLevels(unittest.TestCase):
     def setUp(self):
         self.levels = {s.service_code: s for s in units.DEFAULT_SERVICES}
 
     def test_service_codes_prefixed_with_carrier_id(self):
-        for member in units.ShippingService:
+        for member in members(units.ShippingService):
             self.assertTrue(
                 member.name.startswith("dhl_freight_sweden_"),
                 f"{member.name} breaks the carrier-id naming convention",
@@ -36,11 +38,11 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
     def test_service_levels_cover_product_enum(self):
         self.assertEqual(
             set(self.levels.keys()),
-            {member.name for member in units.ShippingService},
+            {member.name for member in members(units.ShippingService)},
         )
 
     def test_carrier_service_codes_match_enum_values(self):
-        for member in units.ShippingService:
+        for member in members(units.ShippingService):
             self.assertEqual(
                 self.levels[member.name].carrier_service_code,
                 member.value,

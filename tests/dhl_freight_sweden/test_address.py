@@ -10,11 +10,10 @@ vendored spec declares camelCase.
 
 import unittest
 from unittest.mock import patch
-from .fixture import gateway
+from .fixture import address_validation_request, as_list, gateway, settings_of
 
 import karrio.lib as lib
 import karrio.sdk as karrio
-import karrio.core.models as models
 
 
 class TestDHLFreightSwedenAddressValidation(unittest.TestCase):
@@ -23,7 +22,7 @@ class TestDHLFreightSwedenAddressValidation(unittest.TestCase):
 
     def test_create_address_validation_request(self):
         unscoped = gateway.mapper.create_address_validation_request(
-            models.AddressValidationRequest(**AddressValidationParams)
+            address_validation_request(**AddressValidationParams)
         )
         self.assertEqual(
             lib.to_dict(unscoped.serialize()),
@@ -32,7 +31,7 @@ class TestDHLFreightSwedenAddressValidation(unittest.TestCase):
         self.assertEqual(unscoped.ctx, dict(service=None))
 
         scoped = gateway.mapper.create_address_validation_request(
-            models.AddressValidationRequest(**ScopedAddressValidationParams)
+            address_validation_request(**ScopedAddressValidationParams)
         )
         self.assertEqual(
             lib.to_dict(scoped.serialize()),
@@ -44,12 +43,12 @@ class TestDHLFreightSwedenAddressValidation(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = RouteResponseStockholm
             karrio.Address.validate(
-                models.AddressValidationRequest(**ScopedStockholmParams)
+                address_validation_request(**ScopedStockholmParams)
             ).from_(gateway)
 
         self.assertEqual(
             mock.call_args.kwargs["url"],
-            f"{gateway.settings.postal_code_api_url}/postalcodes/SE/11120/route",
+            f"{settings_of(gateway).postal_code_api_url}/postalcodes/SE/11120/route",
         )
         self.assertEqual(mock.call_args.kwargs["method"], "GET")
         self.assertEqual(
@@ -62,26 +61,26 @@ class TestDHLFreightSwedenAddressValidation(unittest.TestCase):
             mock.return_value = RouteResponseStockholm
             scoped = (
                 karrio.Address.validate(
-                    models.AddressValidationRequest(**ScopedStockholmParams)
+                    address_validation_request(**ScopedStockholmParams)
                 )
                 .from_(gateway)
                 .parse()
             )
 
-        self.assertListEqual(lib.to_dict(scoped), ParsedStockholmScoped)
+        self.assertListEqual(as_list(lib.to_dict(scoped)), ParsedStockholmScoped)
 
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = RouteResponseKiruna
             unscoped = (
                 karrio.Address.validate(
-                    models.AddressValidationRequest(**KirunaParams)
+                    address_validation_request(**KirunaParams)
                 )
                 .from_(gateway)
                 .parse()
             )
             scoped_not_servable = (
                 karrio.Address.validate(
-                    models.AddressValidationRequest(**ScopedKirunaParams)
+                    address_validation_request(**ScopedKirunaParams)
                 )
                 .from_(gateway)
                 .parse()
@@ -90,21 +89,21 @@ class TestDHLFreightSwedenAddressValidation(unittest.TestCase):
         # Unscoped reads the general bookable flag; the product-118 scope
         # reads homeDeliveryParcel, so the same Kiruna route is servable
         # unscoped and unservable scoped.
-        self.assertListEqual(lib.to_dict(unscoped), ParsedKirunaUnscoped)
-        self.assertListEqual(lib.to_dict(scoped_not_servable), ParsedKirunaScoped)
+        self.assertListEqual(as_list(lib.to_dict(unscoped)), ParsedKirunaUnscoped)
+        self.assertListEqual(as_list(lib.to_dict(scoped_not_servable)), ParsedKirunaScoped)
 
     def test_parse_error_response(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = RouteLookupErrorResponse
             parsed = (
                 karrio.Address.validate(
-                    models.AddressValidationRequest(**NotFoundParams)
+                    address_validation_request(**NotFoundParams)
                 )
                 .from_(gateway)
                 .parse()
             )
 
-        self.assertListEqual(lib.to_dict(parsed), ParsedErrorResponse)
+        self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedErrorResponse)
 
 
 if __name__ == "__main__":
