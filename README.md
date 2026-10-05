@@ -132,7 +132,7 @@ Both identifiers send `SENT_REF` and `SENT_CARKEY`; one without the other fails,
 `dhl_freight_sweden_sent_free` `true` without identifiers sends `SENT_FREE` `"true"`, and `false` without identifiers fails.
 A shipment with neither the free flag nor the identifiers fails and asks for an explicit SENT declaration.
 The connector does not declare a shipment SENT free by itself: like EKAER and UIT, SENT free is a legal declaration made on the shipper's or the consignee's behalf, and the connector cannot verify the facts it rests on, such as the risk class of the goods or the aggregation of goods per vehicle.
-The opt-in sandbox suite on branch `sandbox-test-suite` books 109 and 112 to PL without a SENT option, and those bookings need `dhl_freight_sweden_sent_free` or the SENT identifiers once this rule lands.
+The opt-in sandbox suite declares its 109 and 112 bookings to PL SENT free with `dhl_freight_sweden_sent_free`.
 The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", live sandbox 2026-10-05).
 The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
 
@@ -514,8 +514,8 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 
 The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
 The `booking-approved` segment books 102 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.
-The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022.
-The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO.
+The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022 and SENT free.
+The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO, declaring the PL lanes SENT free.
 Before each booking it checks for free that product matches offer the product for the lane and, for 109, that a nearby service point accepts the product, and it skips the lane otherwise.
 NO bookings leave the EU VAT area, so they carry one commodity, an invoice number, and the `dhl_freight_sweden_customs_handling_full_service` option, the customs service that needs no registration identifier; the Incoterm DAP gives payer code 022 on 109, avoiding the joint declaration that 023 requires, and DDP gives 023 on 112.
 The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05), so the capacity check runs against PL.
