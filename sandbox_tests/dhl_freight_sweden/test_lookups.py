@@ -171,18 +171,27 @@ class TestSandboxLookups(unittest.TestCase):
             self.assertEqual(point["address"]["country_code"], "PL")
 
     def test_service_points_parcel_capacity(self):
+        """An oversized parcel empties the PL result with an in-band 400.
+
+        The SE sandbox returned the same points for both parcels on
+        2026-10-05, so the capacity filter is exercised against PL.
+        """
         fitting, fitting_messages = self.nearest(
-            "service-points-se-parcel",
-            dict(address=SE_ADDRESS, max_items=10, parcel=PARCEL),
+            "service-points-pl-parcel",
+            dict(address=PL_ADDRESS, max_items=10, parcel=PARCEL),
         )
-        oversized, _ = self.nearest(
-            "service-points-se-oversized",
-            dict(address=SE_ADDRESS, max_items=10, parcel=OVERSIZED_PARCEL),
+        oversized, oversized_messages = self.nearest(
+            "service-points-pl-oversized",
+            dict(address=PL_ADDRESS, max_items=10, parcel=OVERSIZED_PARCEL),
         )
 
         self.assertEqual(lib.to_dict(fitting_messages), [])
         self.assertTrue(fitting)
-        self.assertLess(len(oversized), len(fitting))
+        self.assertEqual(oversized, [])
+        self.assertIn(
+            "dimensions are too large",
+            " ".join(str(message.message) for message in oversized_messages),
+        )
 
     def test_service_points_location_types(self):
         points, messages = self.nearest(
