@@ -26,7 +26,7 @@ class PostalCodeNotServableError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
-def evaluate_route(route: dict, product: str = None) -> bool:
+def evaluate_route(route: dict, product: typing.Optional[str] = None) -> bool:
     """Return the servability of a product on a postal-code route response."""
     flag = PRODUCT_SERVICABILITY_FLAGS.get(product or "")
     return bool(route.get(flag or "bookable"))
@@ -157,12 +157,14 @@ def parse_address_validation_response(
             carrier_id=settings.carrier_id,
             carrier_name=settings.carrier_name,
             success=evaluate_route(route, _response.ctx.get("service")),
+            # The SDK declares Address fields as `str = None`, an implicit
+            # Optional that pyright does not accept for None arguments.
             complete_address=models.Address(
-                city=route.get("city"),
-                postal_code=(
+                city=route.get("city"),  # pyright: ignore[reportArgumentType]
+                postal_code=(  # pyright: ignore[reportArgumentType]
                     str(route["postalCode"]) if route.get("postalCode") else None
                 ),
-                country_code=route.get("countryCode"),
+                country_code=route.get("countryCode"),  # pyright: ignore[reportArgumentType]
             ),
         )
         if route
