@@ -51,6 +51,19 @@ def with_payer_code(code: str) -> typing.Callable[[dict], dict]:
     return lambda instruction: {**instruction, "payerCode": {"code": code}}
 
 
+def access_point_id_only(instruction: dict) -> dict:
+    """``instruction`` with its AccessPoint parties reduced to id, type, and sub type."""
+    return {
+        **instruction,
+        "parties": [
+            {key: party[key] for key in ("id", "type", "subType") if key in party}
+            if party.get("type") == provider_units.PartyType.AccessPoint.value
+            else party
+            for party in instruction.get("parties") or []
+        ],
+    }
+
+
 def access_point_party(point: dict) -> dict:
     """The AccessPoint party the connector builds for a service point lookup result."""
     address = point["address"]
