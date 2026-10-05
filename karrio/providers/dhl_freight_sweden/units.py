@@ -457,7 +457,7 @@ class ShippingOption(lib.Enum):
 
 def shipping_options_initializer(
     options: dict,
-    package_options: units.ShippingOptions = None,
+    package_options: typing.Optional[units.ShippingOptions] = None,
 ) -> units.ShippingOptions:
     """Apply default values to the given options."""
 
