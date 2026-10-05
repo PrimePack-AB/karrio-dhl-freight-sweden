@@ -1,0 +1,272 @@
+{
+ "kind": "rejection",
+ "summary": "103 within SE with the AccessPoint party of service point SE-982000 reduced to id, type, and sub type was rejected with 22001 for the missing address and the missing name, 22026 for the AccessPoint country code, and 22006 for the AccessPoint postal code.",
+ "captured_at": "2026-10-05T17:31:58Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "103",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": null,
+ "error_code": "22001",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_rejections.test_103_se_access_point_id_only_is_rejected_with_22001_and_22006",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-05T17:31:56Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-193156/001-service-points-rejection-103-se.request.json",
+    "sha256": "7167cb2e66f2f5e4f38b0456319e8a362ee9b1cbb77b3cfe49fff95c22dd20be"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-193156/001-service-points-rejection-103-se.response.json",
+    "sha256": "0a8abbb2da347d407817a2b7b60d59b575c2d4fa0838e3f84ce65ab41d8fcce9"
+   },
+   "request": {
+    "address": {
+     "cityName": "Stockholm",
+     "countryCode": "SE",
+     "postalCode": "11151",
+     "street": "Drottninggatan 10"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 10.0,
+     "length": 30.0,
+     "weight": 1.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "doorStepDeliveryAvailable": false,
+    "servicePoints": [
+     {
+      "id": "SE-982000",
+      "servicePointId": "SE-982000",
+      "street": "SVEAVÄGEN 20",
+      "name": "H.T. ROSIS GODIS & TOBAK T-BANEPLAN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11157",
+      "countryCode": "SE",
+      "distance": 0.47,
+      "routeDistance": 0.49,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33477,
+      "longitude": 18.0647,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-241500",
+      "servicePointId": "SE-241500",
+      "street": "SVEAVÄGEN 74",
+      "name": "SVEA GODIS",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11359",
+      "countryCode": "SE",
+      "distance": 1.09,
+      "routeDistance": 1.12,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33988,
+      "longitude": 18.05976,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-268900",
+      "servicePointId": "SE-268900",
+      "street": "BIRGER JARLSGATAN 57",
+      "name": "PAKETSKÅP (IBOXEN) 57 BIRGER JARLSG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11356",
+      "countryCode": "SE",
+      "distance": 1.18,
+      "routeDistance": 1.64,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 59.34114,
+      "longitude": 18.06478,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-232700",
+      "servicePointId": "SE-232700",
+      "street": "KUNGSHOLMSGATAN 2 A",
+      "name": "TC KIOSKEN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11227",
+      "countryCode": "SE",
+      "distance": 0.83,
+      "routeDistance": 1.91,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.32967,
+      "longitude": 18.05114,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-347100",
+      "servicePointId": "SE-347100",
+      "street": "TRIEWALDSGRÄND 3",
+      "name": "TASTY AMERICA",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11129",
+      "countryCode": "SE",
+      "distance": 0.98,
+      "routeDistance": 2.45,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.32252,
+      "longitude": 18.07258,
+      "clickAndCollectId": ""
+     }
+    ],
+    "homedeliveryParcel": false,
+    "lofi": true
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-05T17:31:58Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-193156/003-rejection-103-se-access-point-id-only.request.json",
+    "sha256": "d734630f5d6aadfd9cb1291c8cce8511c894e61bea2f2fa992842700f0a909b8"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-193156/003-rejection-103-se-access-point-id-only.response.json",
+    "sha256": "1aa81f501b0505d30ffdf1931370c2f5b317c1b8bfa4d5b89b7a008ddcec82ac"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     },
+     {
+      "id": "SE-982000",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "103",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22001,
+      "field": "Parties[2].Address.Address",
+      "message": "Address is mandatory for party AccessPoint"
+     },
+     {
+      "errorCode": 22001,
+      "field": "Parties[2].Name",
+      "message": "Name is mandatory for party AccessPoint"
+     },
+     {
+      "errorCode": 22026,
+      "field": "Parties[2]",
+      "message": "AccessPoint CountryCode is not valid for this product"
+     },
+     {
+      "errorCode": 22006,
+      "field": "Parties[2].PostalCode",
+      "message": "Error retrieving gateway linehaul for shipment"
+     }
+    ]
+   }
+  }
+ ]
+}

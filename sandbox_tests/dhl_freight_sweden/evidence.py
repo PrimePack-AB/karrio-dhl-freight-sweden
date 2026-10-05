@@ -449,6 +449,23 @@ for _name, _summary, _product, _stem, _code, _test in REJECTIONS:
         )
     )
 
+
+
+@evidence("rejection-22001-103-se-access-point-id-only.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "103 within SE with the AccessPoint party of service point SE-982000 reduced to id, type, and sub type "
+        "was rejected with 22001 for the missing address and the missing name, 22026 for the AccessPoint country "
+        "code, and 22006 for the AccessPoint postal code.",
+        "103", "SE 11143 -> SE 11151", None, "22001",
+        f"{SUITE_RUN}: test_rejections.test_103_se_access_point_id_only_is_rejected_with_22001_and_22006",
+        [b.suite_exchange("20261005-193156", "001-service-points-rejection-103-se"),
+         b.suite_exchange("20261005-193156", "003-rejection-103-se-access-point-id-only")],
+        primary=1,
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 
