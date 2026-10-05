@@ -1221,8 +1221,18 @@ ShipmentPayload103MissingDetails = _payload(
 )
 
 # International
-ShipmentPayload232 = _payload("dhl_freight_sweden_euroconnect_plus", _recipient_de)
-ShipmentPayload202 = _payload("dhl_freight_sweden_road_freight_standard", _recipient_de)
+# International freight products list several Incoterms and no default, so
+# payloads without customs name the payer code explicitly.
+ShipmentPayload232 = _payload(
+    "dhl_freight_sweden_euroconnect_plus",
+    _recipient_de,
+    {"dhl_freight_sweden_payer_code": "DAP"},
+)
+ShipmentPayload202 = _payload(
+    "dhl_freight_sweden_road_freight_standard",
+    _recipient_de,
+    {"dhl_freight_sweden_payer_code": "DAP"},
+)
 # 109 access points: DK allows both sub types per the product catalog
 # (GET /productapi/v1/products/109); DE allows ParcelShop only.
 ShipmentPayload109 = _payload(
@@ -1639,7 +1649,7 @@ ShipmentRequest232 = {
             "type": "Consignee",
         },
     ],
-    "payerCode": {"code": "1"},
+    "payerCode": {"code": "DAP"},
     "pieces": [
         {
             "height": 15.0,

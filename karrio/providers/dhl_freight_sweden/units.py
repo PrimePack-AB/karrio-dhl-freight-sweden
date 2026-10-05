@@ -211,6 +211,112 @@ class ShippingService(lib.StrEnum):
     dhl_freight_sweden_standard_pallet_international = "SPI"
 
 
+class PayerCodes(typing.NamedTuple):
+    """Terms-of-delivery codes a product accepts.
+
+    ``import_codes`` applies to lanes into Sweden when the product manual
+    lists a separate import column; ``default`` overrides the derived
+    default (the single listed code, else "1" when listed, else none).
+    ``joint_declaration_codes`` are only valid with the customs joint
+    declaration service.
+    """
+
+    codes: typing.Tuple[str, ...]
+    import_codes: typing.Optional[typing.Tuple[str, ...]] = None
+    default: typing.Optional[str] = None
+    joint_declaration_codes: typing.Tuple[str, ...] = ()
+
+
+FREIGHT_PAYER_CODES = ("1", "3", "4")
+EXPORT_INCOTERMS = ("EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP")
+IMPORT_INCOTERMS = ("EXW", "FCA")
+
+# Payer codes per product from the "Payer codes" tables of DHL Freight
+# Sweden product manual v5.23 (valid from 2025-04-14), section 5.
+PAYER_CODES: typing.Dict[str, PayerCodes] = {
+    ShippingService.dhl_freight_sweden_paket.value: PayerCodes(
+        FREIGHT_PAYER_CODES  # §5.2 p11
+    ),
+    ShippingService.dhl_freight_sweden_parcel_connect_plus.value: PayerCodes(
+        ("023",)  # §5.3 p15
+    ),
+    ShippingService.dhl_freight_sweden_road_freight_standard.value: PayerCodes(
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.4 p20
+    ),
+    ShippingService.dhl_freight_sweden_special.value: PayerCodes(
+        FREIGHT_PAYER_CODES  # §5.5 p23
+    ),
+    ShippingService.dhl_freight_sweden_pall.value: PayerCodes(
+        FREIGHT_PAYER_CODES  # §5.6 p26
+    ),
+    ShippingService.dhl_freight_sweden_stycke.value: PayerCodes(
+        FREIGHT_PAYER_CODES  # §5.7 p31
+    ),
+    ShippingService.dhl_freight_sweden_parti.value: PayerCodes(
+        FREIGHT_PAYER_CODES  # §5.8 p35
+    ),
+    ShippingService.dhl_freight_sweden_road_freight_direct.value: PayerCodes(
+        ("CPT", "CIP", "DAP", "DPU", "DDP"), IMPORT_INCOTERMS  # §5.9 p39
+    ),
+    ShippingService.dhl_freight_sweden_euroconnect_plus.value: PayerCodes(
+        ("DAP", "DDP")  # §5.10 p42
+    ),
+    ShippingService.dhl_freight_sweden_road_freight_priority.value: PayerCodes(
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.11 p47
+    ),
+    ShippingService.dhl_freight_sweden_standard_pallet_international.value: PayerCodes(
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.12 p52
+    ),
+    ShippingService.dhl_freight_sweden_service_point_b2c.value: PayerCodes(
+        ("1", "4")  # §5.14 p61
+    ),
+    ShippingService.dhl_freight_sweden_service_point_c2b.value: PayerCodes(
+        ("3",)  # §5.15 p64
+    ),
+    ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: PayerCodes(
+        ("022", "023"),  # §5.16 p67
+        default="022",
+        joint_declaration_codes=("023",),
+    ),
+    ShippingService.dhl_freight_sweden_parcel_return_connect_c2b.value: PayerCodes(
+        ("001",)  # §5.17 p70
+    ),
+    ShippingService.dhl_freight_sweden_hemleverans_paket_b2c.value: PayerCodes(
+        ("1", "4")  # §5.18 p73
+    ),
+    ShippingService.dhl_freight_sweden_home_delivery_b2c.value: PayerCodes(
+        ("1", "4")  # §5.19 p77
+    ),
+    ShippingService.dhl_freight_sweden_home_delivery_c2b.value: PayerCodes(
+        ("3", "4")  # §5.20 p82
+    ),
+    ShippingService.dhl_freight_sweden_home_delivery_c2b_502.value: PayerCodes(
+        ("3", "4")  # §5.20 p82
+    ),
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: PayerCodes(
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.21 p88
+    ),
+}
+
+# Combiterm equivalents of Incoterms (product manual v5.23 §7.6 p169), used
+# to translate customs.incoterm for products that only accept Combiterms.
+COMBITERM_BY_INCOTERM: typing.Dict[str, str] = {
+    "CPT": "022",
+    "CIP": "022",
+    "DAP": "022",
+    "DPU": "022",
+    "DDP": "023",
+}
+
+
+def default_payer_code(payer_codes: typing.Tuple[str, ...]) -> typing.Optional[str]:
+    """The derived default for a product's valid payer codes."""
+    if len(payer_codes) == 1:
+        return payer_codes[0]
+
+    return "1" if "1" in payer_codes else None
+
+
 class ShippingOption(lib.Enum):
     """DHL Freight shipping options."""
 
@@ -276,10 +382,8 @@ class ShippingOption(lib.Enum):
     # Print page layout override (PageTypeEnum).
     dhl_freight_sweden_label_page_type = lib.OptionEnum("labelPageType", str)
 
-    # Terms-of-delivery code: domestic products use the freight-payer codes
-    # (1 consignor, 3 consignee, 4 third party); international products use
-    # Incoterms/Combiterm codes (DAP, DDP, 022, 023, ...). Falls back to
-    # customs.incoterm, then to the consignor-pays code "1".
+    # Terms-of-delivery code, validated against the product's PAYER_CODES
+    # entry. Falls back to customs.incoterm, then to the product default.
     dhl_freight_sweden_payer_code = lib.OptionEnum("payerCode", str)
 
     # Customs procedure code per commodity (maxLength 4). "1042" is the
