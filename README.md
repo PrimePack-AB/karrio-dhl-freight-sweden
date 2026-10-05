@@ -515,6 +515,9 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
 The `booking-approved` segment books 102 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.
 The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022.
+The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO.
+Before each booking it checks for free that product matches offer the product for the lane and, for 109, that a nearby service point accepts the product, and it skips the lane otherwise.
+NO bookings leave the EU VAT area, so they carry one commodity, an invoice number, and the `dhl_freight_sweden_customs_handling_full_service` option, the customs service that needs no registration identifier; the Incoterm DAP gives payer code 022 on 109, avoiding the joint declaration that 023 requires, and DDP gives 023 on 112.
 The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05), so the capacity check runs against PL.
 
 Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
@@ -522,4 +525,4 @@ To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT
 Every live call writes its request and response as JSON to the capture directory, with the `client-key` header, the client key, and the account number redacted.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
-Planned segments, not yet implemented: a customs matrix for lanes leaving the EU VAT area, the freight products, and expected rejections for the DHL validation errors the connector does not catch locally.
+Planned segments, not yet implemented: a wider customs matrix covering the other customs services and non-EU destinations, the freight products, and expected rejections for the DHL validation errors the connector does not catch locally.
