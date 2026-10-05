@@ -414,6 +414,10 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "601 SE to RO with payer code DAP and UIT_FREE false without UIT_NUMBER, then printed.",
      "601", "SE 11143 -> RO 030031", "20261005-185350", ("003-booking-601", "004-booking-601"),
      "test_booking_declarations", 0),
+    ("booking-2906761354-109-se-dk.json",
+     "109 SE to DK with payer code 022 to ParcelShop 8009-115191, then printed.",
+     "109", "SE 11143 -> DK 1620", "20261005-191426",
+     ("003-service-points-109-dk", "005-booking-109", "006-booking-109"), "test_booking_export", 1),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
