@@ -129,8 +129,8 @@ class TestSandboxLookups(unittest.TestCase):
     def test_postal_code_route_invalid(self):
         details, messages = self.validate("postal-code-se-99999", "99999")
 
-        self.assertFalse(details and details.success)
-        self.assertTrue(messages)
+        self.assertIsNone(details)
+        self.assertIn("16010", [message.code for message in messages])
 
     def test_product_matches_se_to_se(self):
         products, messages = self.match(
