@@ -283,8 +283,9 @@ PAYER_CODES: typing.Dict[str, PayerCodes] = {
     ShippingService.dhl_freight_sweden_paket.value: PayerCodes(
         FREIGHT_PAYER_CODES  # §5.2 p11
     ),
-    # §5.3 p15 lists only 023, so it stays the default; the live sandbox
-    # also accepts 022 (booking 2906761149, 2026-10-05).
+    # §5.3 p15 lists only 023, so it stays the default; the sandbox also
+    # accepted 022 (tests/dhl_freight_sweden/fixtures/sandbox/
+    # booking-2906761149-112-se-pl-payer-022.json).
     ShippingService.dhl_freight_sweden_parcel_connect_plus.value: PayerCodes(
         ("022", "023"), default="023"
     ),
@@ -493,8 +494,9 @@ class ShippingOption(lib.Enum):
     # sent under the shipment's additionalInformation. The manual lists
     # SENT_REF and SENT_CARKEY (AN..20, product manual v5.23 §5.4 p19); the
     # live API additionally requires SENT_FREE "true" when neither is sent
-    # (validation error 22001, live sandbox 2026-10-05). The connector
-    # requires an explicit choice and never declares SENT free by itself.
+    # (validation error 22001, tests/dhl_freight_sweden/fixtures/sandbox/
+    # rejection-22001-109-se-pl-without-sent.json). The connector requires
+    # an explicit choice and never declares SENT free by itself.
     dhl_freight_sweden_sent_free = lib.OptionEnum("SENT_FREE", bool)
     dhl_freight_sweden_sent_ref = lib.OptionEnum("SENT_REF", str)
     dhl_freight_sweden_sent_carkey = lib.OptionEnum("SENT_CARKEY", str)
@@ -551,8 +553,8 @@ def shipping_options_initializer(
 #   a country list.
 #
 # Outbound destination footprints from the DHL Product API catalog
-# (test host, fetched 2026-09-10: GET /productapi/v1/products/{code}
-# toCountries, all from SE; every product below is isDomestic=false).
+# (GET /productapi/v1/products/{code} toCountries, all from SE; every
+# product below is isDomestic=false).
 PARCEL_CONNECT_B2C_COUNTRIES = [
     "AT",
     "BE",

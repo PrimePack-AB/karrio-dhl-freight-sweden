@@ -1,9 +1,8 @@
 """DHL Freight product matches tests (connector-local capability).
 
-``ProductMatchesResponse`` was captured live from the sandbox on 2026-09-10
-(POST /productmatches, Consignor SE 11120 -> Consignee PL 00001, one 2.5 kg
-piece) and is trimmed to the fields the normalizer consumes; all values are
-verbatim from the capture. ``ProductMatchRequest`` is the body of that call
+``ProductMatchesResponse`` is a POST /productmatches response for Consignor
+SE 11120 -> Consignee PL 00001 and one 2.5 kg piece, trimmed to the fields
+the normalizer consumes. ``ProductMatchRequest`` is the body of that call
 with the piece's ``packageType`` dropped and its m³ ``volume`` added, as the
 builder now derives pieces from karrio parcels.
 """
