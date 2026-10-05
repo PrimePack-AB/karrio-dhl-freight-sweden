@@ -32,9 +32,10 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
             _parcel_connect(
                 _recipient_pl,
                 {
+                    "dhl_freight_sweden_sent_free": True,
                     "dhl_freight_sweden_additional_information": [
                         {"code": "CUSTOM_CODE", "stringValue": "value"}
-                    ]
+                    ],
                 },
             )
         )
@@ -75,9 +76,10 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
             _parcel_connect(
                 _recipient_pl,
                 {
+                    "dhl_freight_sweden_sent_free": True,
                     "dhl_freight_sweden_additional_information": [
                         {"code": "SENT_FREE", "stringValue": "false"}
-                    ]
+                    ],
                 },
             )
         )

@@ -2,8 +2,9 @@
 
 Lanes to or from PL carry SENT entries under the shipment's
 additionalInformation: SENT_REF with SENT_CARKEY (product manual v5.23
-§5.4 p19), otherwise SENT_FREE "true", which the live API requires when
-neither identifier is sent (validation error 22001, sandbox 2026-10-05).
+§5.4 p19), or SENT_FREE "true", which the live API requires when neither
+identifier is sent (validation error 22001, sandbox 2026-10-05). The
+connector requires one of them explicitly.
 """
 
 import unittest
@@ -31,14 +32,26 @@ class TestDHLFreightSent(unittest.TestCase):
             gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
         return context.exception
 
-    def test_pl_lane_defaults_to_sent_free(self):
-        serialized = self._serialize(_parcel_connect(_recipient_pl))
+    def test_lanes_to_and_from_pl_without_sent_declaration_fail(self):
+        cases = [
+            ("to PL", _parcel_connect(_recipient_pl)),
+            ("from PL", {**_parcel_connect(_recipient_se), "shipper": _shipper_pl}),
+            ("dangerous goods", _parcel_connect(_recipient_pl, {"dangerous_good": True})),
+        ]
 
-        self.assertEqual(serialized["additionalInformation"], [SentFree])
+        for lane, payload in cases:
+            with self.subTest(lane=lane):
+                error = self._error(payload)
 
-    def test_lane_from_pl_defaults_to_sent_free(self):
+                self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_free"})
+                self.assertIn("dhl_freight_sweden_sent_free", str(error))
+
+    def test_lane_from_pl_with_explicit_sent_free_is_sent(self):
         serialized = self._serialize(
-            {**_parcel_connect(_recipient_se), "shipper": _shipper_pl}
+            {
+                **_parcel_connect(_recipient_se, {"dhl_freight_sweden_sent_free": True}),
+                "shipper": _shipper_pl,
+            }
         )
 
         self.assertEqual(serialized["additionalInformation"], [SentFree])
@@ -123,21 +136,6 @@ class TestDHLFreightSent(unittest.TestCase):
         )
 
         self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_ref"})
-
-    def test_dangerous_good_without_sent_choice_fails(self):
-        error = self._error(_parcel_connect(_recipient_pl, {"dangerous_good": True}))
-
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_free"})
-
-    def test_dangerous_good_with_explicit_sent_free_is_sent(self):
-        serialized = self._serialize(
-            _parcel_connect(
-                _recipient_pl,
-                {"dangerous_good": True, "dhl_freight_sweden_sent_free": True},
-            )
-        )
-
-        self.assertEqual(serialized["additionalInformation"], [SentFree])
 
     def test_non_pl_lane_sends_no_sent_entries(self):
         serialized = self._serialize(

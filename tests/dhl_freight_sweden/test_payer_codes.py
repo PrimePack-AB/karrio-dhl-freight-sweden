@@ -234,7 +234,7 @@ def _pl_payload(service: str, options: dict = None) -> dict:
         "shipper": _shipper,
         "recipient": _recipient_krakow,
         "parcels": [_parcel_pl],
-        "options": options or {},
+        "options": {"dhl_freight_sweden_sent_free": True, **(options or {})},
     }
 
 

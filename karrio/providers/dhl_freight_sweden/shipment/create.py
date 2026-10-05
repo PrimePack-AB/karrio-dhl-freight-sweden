@@ -749,14 +749,14 @@ def _sent_information(
             },
         )
 
-    if sent_free is None and options.dangerous_good.state:
+    if sent_free is not True:
         raise SentInformationError(
-            "A dangerous goods shipment to or from PL requires an explicit SENT "
-            "choice: dhl_freight_sweden_sent_free, or "
+            "A shipment to or from PL requires an explicit SENT declaration: "
+            "dhl_freight_sweden_sent_free, or "
             "dhl_freight_sweden_sent_ref with dhl_freight_sweden_sent_carkey",
             details={
                 "dhl_freight_sweden_sent_free": dict(
-                    code="required", message="explicit SENT choice is required"
+                    code="required", message="explicit SENT declaration is required"
                 )
             },
         )

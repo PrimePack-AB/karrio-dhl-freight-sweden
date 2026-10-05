@@ -141,6 +141,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                         "country_code": country_code,
                         "postal_code": postal_code,
                     },
+                    "options": {"dhl_freight_sweden_sent_free": country_code == "PL"},
                 }
                 request = gateway.mapper.create_shipment_request(
                     models.ShipmentRequest(**payload)
@@ -179,6 +180,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                             **ShipmentPayload202CustomsPL,
                             "customs": {**Customs, "options": {"voec_number": "VOEC2012345"}},
                             "options": {
+                                **ShipmentPayload202CustomsPL["options"],
                                 "dhl_freight_sweden_customs_handling_standard": True,
                                 "dhl_freight_sweden_customs_own_declaration": True,
                             },
@@ -1302,7 +1304,11 @@ ShipmentPayload202Customs = {
 }
 
 ShipmentPayload202CustomsPL = {
-    **_payload("dhl_freight_sweden_road_freight_standard", _recipient_pl),
+    **_payload(
+        "dhl_freight_sweden_road_freight_standard",
+        _recipient_pl,
+        {"dhl_freight_sweden_sent_free": True},
+    ),
     "customs": Customs,
 }
 

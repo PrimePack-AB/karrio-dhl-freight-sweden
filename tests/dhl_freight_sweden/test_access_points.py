@@ -79,7 +79,10 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_pl,
-                _service_point("8005-PL-4507446", "ParcelStation", "PL"),
+                {
+                    **_service_point("8005-PL-4507446", "ParcelStation", "PL"),
+                    "dhl_freight_sweden_sent_free": True,
+                },
             )
         )
 
