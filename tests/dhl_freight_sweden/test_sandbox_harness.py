@@ -62,22 +62,25 @@ class TestSandboxHarnessConfig(unittest.TestCase):
             ("DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS", "lookups,customs"),
             ("DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS", "three"),
             ("DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS", "-1"),
-            ("DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL", "https://API.freight-logistics.dhl.com"),
         ):
             with self.subTest(key=key, value=value):
                 with self.assertRaises(harness.SandboxConfigError):
                     harness.load_config({**LIVE, key: value}, NOW)
 
+
+    def test_only_the_sandbox_host_is_allowed(self):
         self.assertEqual(
-            harness.load_config(
-                {
-                    **LIVE,
-                    "DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL": "https://test-api.freight-logistics.dhl.com",
-                },
-                NOW,
-            ).server_url,
-            "https://test-api.freight-logistics.dhl.com",
+            harness.check_host("https://TEST-API.freight-logistics.dhl.com/x"),
+            "test-api.freight-logistics.dhl.com",
         )
+        for url in (
+            "https://api.freight-logistics.dhl.com/x",
+            "https://example.com/x",
+            "",
+        ):
+            with self.subTest(url=url):
+                with self.assertRaises(harness.SandboxConfigError):
+                    harness.check_host(url)
 
     def test_skip_reasons(self):
         booking = {**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS": "booking-approved"}
