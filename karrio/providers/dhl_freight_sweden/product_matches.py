@@ -13,6 +13,7 @@ import karrio.lib as lib
 import karrio.core.models as models
 import karrio.core.errors as errors
 import karrio.providers.dhl_freight_sweden.error as error
+import karrio.providers.dhl_freight_sweden.lookup as lookup
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
 
@@ -20,6 +21,21 @@ class ProductMatchPartiesError(errors.ShippingSDKDetailedError):
     """Raised when a product match query lacks the required address pair."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
+
+
+ACCEPTED_PAYLOAD_KEYS = frozenset(
+    {
+        "shipper",
+        "recipient",
+        "parcels",
+        "total_volume",
+        "total_number_of_pieces",
+        "total_loading_meters",
+        "total_pallet_places",
+        "total_weight",
+        "import_export",
+    }
+)
 
 
 def product_matches_request(
@@ -31,8 +47,10 @@ def product_matches_request(
     The endpoint's 200 description requires at least one Consignor and one
     Consignee party (a prose-only rule the API does not validate client-side),
     so incomplete parties fail here with the missing payload keys instead of
-    as a carrier error.
+    as a carrier error. Top-level keys outside ``ACCEPTED_PAYLOAD_KEYS`` fail
+    the same way rather than being silently dropped.
     """
+    lookup.guard_payload_keys(payload, ACCEPTED_PAYLOAD_KEYS, "product matches")
     shipper = payload.get("shipper") or {}
     recipient = payload.get("recipient") or {}
     missing = [
