@@ -353,8 +353,8 @@ ACCESS_POINT_SUB_TYPES: typing.Dict[str, typing.Dict[str, typing.FrozenSet[str]]
 ACCESS_POINT_TYPE_NAMES: typing.FrozenSet[str] = frozenset(
     name.lower()
     for name in [
-        *(sub_type.value for sub_type in PartySubType),
-        *(location_type.value for location_type in LocationType),
+        *(sub_type.value for sub_type in PartySubType.__members__.values()),
+        *(location.value for location in LocationType.__members__.values()),
     ]
 )
 

@@ -764,7 +764,7 @@ def _sent_information(
 
 def _additional_information(
     entries: typing.List[typing.Any],
-    sent_codes: typing.Set[str],
+    sent_codes: typing.AbstractSet[typing.Optional[str]],
 ) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
     def invalid(message: str) -> AdditionalInformationError:
         return AdditionalInformationError(
@@ -826,7 +826,7 @@ def _service_point_party(
     ).value_or_key
     allowed_sub_types = provider_units.ACCESS_POINT_SUB_TYPES.get(
         product_code, {}
-    ).get(country_code, frozenset())
+    ).get(country_code or "", frozenset())
 
     if sub_type not in allowed_sub_types:
         raise ServicePointEligibilityError(
