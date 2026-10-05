@@ -21,6 +21,7 @@ The committed copies drop the `client-key` header and the response headers, and 
 The original captures masked the customer number in the Consignor party id; the evidence files restore it and record the restored placeholder under `account_number_restored`.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
 `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
+`sandbox_tests/dhl_freight_sweden/evidence.py` builds the files from the captures, and rebuilding over the same captures reproduces them byte for byte.
 
 ## Bookings
 

@@ -541,3 +541,11 @@ Planned segments, not yet implemented: a wider customs matrix covering the other
 The sandbox findings so far, with every booking, rejection, and deviation from the product manual, are in [docs/notes/sandbox/sandbox-findings.md](docs/notes/sandbox/sandbox-findings.md).
 Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256, and `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks those files offline.
 A new sandbox finding gets its own evidence file there before the README or the findings note cites it.
+`sandbox_tests/dhl_freight_sweden/evidence.py` builds those files from the captures: its `CATALOG` names each evidence file and the capture files behind it, relative to the state directory.
+Rebuilding over the same captures reproduces the committed files byte for byte, so `git diff` after a rebuild shows only new or changed findings:
+
+```bash
+.venv/bin/python -m sandbox_tests.dhl_freight_sweden.evidence [--state-root DIR] [--out DIR] [NAME ...]
+```
+
+`--state-root` defaults to `$XDG_STATE_HOME` (`~/.local/state` when unset), `--out` to `tests/dhl_freight_sweden/fixtures/sandbox/`, and without names it builds every catalog entry.
