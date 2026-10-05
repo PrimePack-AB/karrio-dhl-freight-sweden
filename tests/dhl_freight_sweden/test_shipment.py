@@ -757,8 +757,8 @@ class TestDHLFreightShipment(unittest.TestCase):
 
     def test_parse_label_type_pdf_magic_over_zpl_config(self):
         # The account emits PDF regardless of the connection's label type
-        # (live sandbox 2026-09-10); the decoded document magic prefix
-        # outranks the connection config tag.
+        # (fixtures/sandbox/label-*.json are all PDF); the decoded document
+        # magic prefix outranks the connection config tag.
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.side_effect = [BookingResponse102, PdfMagicPrintResponse]
             details, messages = (
@@ -1230,8 +1230,8 @@ ShipmentPayload103 = _payload(
 )
 
 # An id-only service point: DHL rejects the AccessPoint party without name
-# and address (validation errors 22001/22006, live sandbox 2026-09-10), so
-# the request surfaces a field error instead of a carrier 400.
+# and address (validation errors 22001/22006), so the request surfaces a
+# field error instead of a carrier 400.
 ShipmentPayload103MissingDetails = _payload(
     "dhl_freight_sweden_service_point_b2c",
     _recipient_se,
@@ -1555,8 +1555,8 @@ PrintByIdRequest = {
     "options": PrintOptions,
 }
 
-# Full AccessPoint parties as booked against the live sandbox 2026-09-10:
-# DHL requires name and address (street, cityName, postalCode, countryCode)
+# Full AccessPoint parties: DHL requires name and address (street, cityName,
+# postalCode, countryCode)
 # alongside the id (validation errors 22001/22006 without them).
 AccessPointShop = {
     "id": "SE-230500",
