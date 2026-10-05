@@ -154,7 +154,9 @@ def _extract_details(
 
 # The Print API has no raster-format parameter, so the emitted document
 # format is governed by the DHL account and is identified from the decoded
-# report bytes' magic prefix (live-verified PDF A4, 2026-09-10).
+# report bytes' magic prefix. The sandbox account returned a 105 x 210 mm
+# PDF for page type Label (tests/dhl_freight_sweden/fixtures/sandbox/
+# label-2906761354-109-se-dk-parcelshop.json).
 LABEL_MAGICS: typing.Tuple[typing.Tuple[bytes, str], ...] = (
     (b"%PDF-", "PDF"),
     (b"^XA", "ZPL"),
@@ -977,8 +979,8 @@ def _service_point_party(
     missing = [key for key, value in details.items() if not value]
 
     # DHL rejects an AccessPoint party without name and address (validation
-    # errors 22001 and 22006, live sandbox 2026-09-10), so incomplete details
-    # fail here with the missing option names instead of as a carrier 400.
+    # errors 22001 and 22006), so incomplete details fail here with the
+    # missing option names instead of as a carrier 400.
     if any(missing):
         raise ServicePointDetailsError(
             "The service point option requires the full service point details; "
