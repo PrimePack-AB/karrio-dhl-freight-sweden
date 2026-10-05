@@ -129,7 +129,10 @@ Lanes with the shipper or the recipient in PL carry SENT entries under the shipm
 | `dhl_freight_sweden_sent_free` | boolean | `SENT_FREE` |
 
 Both identifiers send `SENT_REF` and `SENT_CARKEY`; one without the other fails, and `dhl_freight_sweden_sent_free` `true` together with either identifier fails as contradictory.
-Without identifiers the connector sends `SENT_FREE` `"true"`, unless `dhl_freight_sweden_sent_free` is `false`, which fails, or the generic `dangerous_good` option is set without any SENT option, which fails and asks for an explicit SENT choice.
+`dhl_freight_sweden_sent_free` `true` without identifiers sends `SENT_FREE` `"true"`, and `false` without identifiers fails.
+A shipment with neither the free flag nor the identifiers fails and asks for an explicit SENT declaration.
+The connector does not declare a shipment SENT free by itself: like EKAER and UIT, SENT free is a legal declaration made on the shipper's or the consignee's behalf, and the connector cannot verify the facts it rests on, such as the risk class of the goods or the aggregation of goods per vehicle.
+The opt-in sandbox suite on branch `sandbox-test-suite` books 109 and 112 to PL without a SENT option, and those bookings need `dhl_freight_sweden_sent_free` or the SENT identifiers once this rule lands.
 The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", live sandbox 2026-10-05).
 The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
 
