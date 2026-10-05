@@ -229,7 +229,14 @@ request = service_points.service_points_request(
         "max_items": 5,
         "location_types": ["servicepoint", "locker"],   # optional
         "distance": {"value": 2, "unit": "km"},         # optional
-        "piece": {"weight": 2.5, "length": 40, "width": 30, "height": 15},  # optional
+        "parcel": {                                     # optional
+            "weight": 2.5,
+            "weight_unit": "KG",
+            "length": 40,
+            "width": 30,
+            "height": 15,
+            "dimension_unit": "CM",
+        },
     },
     gateway.settings,
 )
@@ -237,6 +244,12 @@ points, messages = service_points.parse_service_points_response(
     gateway.proxy.find_service_points(request), gateway.settings
 )
 ```
+
+`parcel` is one karrio parcel dict, the parcel the point must fit; the caller chooses which parcel of the shipment to pass, and the connector sends it as the request's `piece` capacity filter.
+Parcel fields the lookup does not use (`description`, `items`, `options`, `reference_number`, ...) are ignored.
+A parcel without `weight_unit` or `dimension_unit` is read as KG or CM, and an LB/IN parcel is converted, so the capacity filter always goes out in KG and CM.
+The accepted top-level keys are `address`, `max_items`, `location_types`, `distance`, and `parcel`.
+Any other key, including `parcels` and `piece`, raises a field error naming it before any carrier call.
 
 | Key | Content | Booking use |
 |-----|---------|-------------|
@@ -252,7 +265,7 @@ points, messages = service_points.parse_service_points_response(
 Filter and rank candidates in this order so the fallback loop has a deterministic list:
 
 1. `service_point_id` is present and the address has all four fields. DHL requires a complete AccessPoint party and does not registry-validate ids or names at booking, so incomplete or invented values misroute rather than fail.
-2. Capacity: pass the parcel as the `piece` filter, and keep a local margin check for lockers.
+2. Capacity: pass the parcel the point must fit as `parcel`, and keep a local margin check for lockers.
 3. Distance: apply a business threshold using `distance` and `distance_unit`.
 4. Location type: the connector rejects sub types the destination does not accept (for 109 to DE, `ParcelShop` only), so filter candidates by the [Access points](#access-points) table before booking.
 5. Opening hours are not available (Servicepoint API 2.10.0), so do not promise them to recipients.
@@ -335,7 +348,7 @@ Piece weights are in kg, dimensions in cm, and `volume` in m³:
 }
 ```
 
-The service points body is the `NearestServicePointRequest` shape; the 200 body carries `servicePoints` plus in-band `status`/`errorMessage`:
+The service points body is the `NearestServicePointRequest` shape, with the piece weight in kg and its dimensions in cm; the 200 body carries `servicePoints` plus in-band `status`/`errorMessage`:
 
 ```json
 {
