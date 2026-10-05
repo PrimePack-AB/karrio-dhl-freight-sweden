@@ -1,0 +1,556 @@
+"""Build the committed sandbox evidence files from the out-of-repo captures.
+
+The captures stay under the XDG state directory, outside the repository.
+This module reads them, drops the client key and the response headers,
+replaces label base64 with a length marker, and writes one evidence file
+per finding into ``tests/dhl_freight_sweden/fixtures/sandbox/``.
+Every exchange records its capture path relative to the state directory
+and the capture's sha256, so the same captures always rebuild the same
+bytes, and the committed files can be checked against the originals.
+
+Run it from the repository root::
+
+    .venv/bin/python -m sandbox_tests.dhl_freight_sweden.evidence
+    .venv/bin/python -m sandbox_tests.dhl_freight_sweden.evidence \\
+        --state-root ~/.local/state --out /tmp/evidence booking-2906761222-102-se-se.json
+
+``CATALOG`` names each evidence file and the captures behind it; a new
+finding gets a catalog entry pointing at its capture directory.
+"""
+
+import argparse
+import dataclasses
+import datetime
+import email.utils
+import hashlib
+import json
+import os
+import pathlib
+import re
+import sys
+import typing
+
+Json = typing.Any
+Exchange = typing.Dict[str, Json]
+
+HOST = "test-api.freight-logistics.dhl.com"
+ACCOUNT_NUMBER = "116768"
+ACCOUNT_PLACEHOLDERS = frozenset({"<redacted>", "<ACCOUNT>", "__ACCOUNT__"})
+BASE64 = re.compile(r"^[A-Za-z0-9+/=\s]{200,}$")
+TI = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
+SUITE_RUN = "sandbox_tests suite"
+REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
+DEFAULT_OUT = REPO_ROOT / "tests" / "dhl_freight_sweden" / "fixtures" / "sandbox"
+
+
+def default_state_root(environ: typing.Mapping[str, str]) -> pathlib.Path:
+    """``$XDG_STATE_HOME``, or ``~/.local/state`` when it is unset."""
+    state_home = environ.get("XDG_STATE_HOME")
+    if state_home:
+        return pathlib.Path(state_home)
+    return pathlib.Path(environ.get("HOME") or pathlib.Path.home()) / ".local" / "state"
+
+
+def utc(moment: datetime.datetime) -> str:
+    return moment.astimezone(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def header_date(value: str) -> str:
+    return utc(email.utils.parsedate_to_datetime(value))
+
+
+def mtime(path: pathlib.Path) -> str:
+    return utc(datetime.datetime.fromtimestamp(path.stat().st_mtime, datetime.timezone.utc))
+
+
+def endpoint_of(method: str, url: str) -> str:
+    return f"{method} {url.split(HOST, 1)[1]}"
+
+
+class Builder:
+    """Reads captures below ``state_root`` and assembles evidence documents.
+
+    The suite's captures live in ``karrio-dhl-freight-sweden/sandbox/<run>``
+    (the harness default) and the earlier scripts' captures in
+    ``agent-logs/<project>/<run>``, both relative to ``state_root``.
+    """
+
+    def __init__(self, state_root: pathlib.Path) -> None:
+        self.state_root = state_root
+        self.suite = state_root / "karrio-dhl-freight-sweden" / "sandbox"
+        self.logs = state_root / "agent-logs" / "karrio-dhl-freight-sweden"
+        self.restored: typing.List[str] = []
+
+    def source(self, path: pathlib.Path) -> Json:
+        return dict(
+            path=str(path.relative_to(self.state_root)),
+            sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+        )
+
+    def clean(self, value: Json) -> Json:
+        """Drop secrets and status echoes, omit base64, restore the account number."""
+        if isinstance(value, dict):
+            party = typing.cast(typing.Dict[str, Json], value)
+            out: typing.Dict[str, Json] = {}
+            if party.get("type") == "Consignor" and party.get("id") in ACCOUNT_PLACEHOLDERS:
+                self.restored.append(party["id"])
+                party = {**party, "id": ACCOUNT_NUMBER}
+            for key, entry in party.items():
+                if key.lower() in ("client-key", "http_status", "http_message"):
+                    continue
+                if key == "content" and isinstance(entry, str) and len(entry) > 64:
+                    out[key] = f"<base64 omitted: {len(entry)} characters>"
+                    continue
+                out[key] = self.clean(entry)
+            return out
+        if isinstance(value, list):
+            return [self.clean(entry) for entry in typing.cast(typing.List[Json], value)]
+        if isinstance(value, str):
+            if value in ACCOUNT_PLACEHOLDERS or value == "<KEY>":
+                raise ValueError(f"placeholder {value!r} outside a Consignor party id")
+            if BASE64.match(value):
+                return f"<base64 omitted: {len(value)} characters>"
+        return value
+
+    def suite_exchange(self, run: str, stem: str) -> Exchange:
+        """One call captured by the sandbox suite as ``<stem>.request/response.json``."""
+        req_path = self.suite / run / f"{stem}.request.json"
+        res_path = self.suite / run / f"{stem}.response.json"
+        request = json.loads(req_path.read_text())
+        response = json.loads(res_path.read_text())
+        assert HOST in request["url"], request["url"]
+        body = response.get("response") if response["key"] == "response" else response["error"]
+        status = body.get("http_status", 200) if isinstance(body, dict) else 200
+        method = "POST" if request.get("data") is not None else "GET"
+        return dict(
+            endpoint=endpoint_of(method, request["url"]),
+            http_status=status,
+            date=header_date(response["response_headers"]["Date"]),
+            date_basis="response Date header",
+            request_source=self.source(req_path),
+            response_source=self.source(res_path),
+            request=self.clean(request.get("data")),
+            response=self.clean(body),
+        )
+
+    def file_exchange(
+        self,
+        req_path: typing.Optional[pathlib.Path],
+        res_path: pathlib.Path,
+        method: str,
+        path: str,
+        status: int,
+    ) -> Exchange:
+        """One call saved by a script as bare body files without headers."""
+        return dict(
+            endpoint=f"{method} {path}",
+            http_status=status,
+            date=mtime(res_path),
+            date_basis="response capture file mtime",
+            request_source=self.source(req_path) if req_path else None,
+            response_source=self.source(res_path),
+            request=self.clean(json.loads(req_path.read_text())) if req_path else None,
+            response=self.clean(json.loads(res_path.read_text())),
+        )
+
+    def trace_exchanges(self, trace_path: pathlib.Path) -> typing.List[Exchange]:
+        """Every call in a connector tracer dump, paired by request id."""
+        calls: typing.Dict[str, typing.Dict[str, Json]] = {}
+        for record in json.loads(trace_path.read_text()):
+            data = record["data"]
+            calls.setdefault(data["request_id"], {})[record["key"]] = data
+        out: typing.List[Exchange] = []
+        for call in calls.values():
+            request, response = call["request"], call["response"]
+            assert HOST in request["url"]
+            out.append(
+                dict(
+                    endpoint=endpoint_of("POST", request["url"]),
+                    http_status=200,
+                    date=header_date(response["response_headers"]["Date"]),
+                    date_basis="response Date header",
+                    request_source=self.source(trace_path),
+                    response_source=self.source(trace_path),
+                    request=self.clean(request["data"]),
+                    response=self.clean(response["response"]),
+                )
+            )
+        return out
+
+    def document(
+        self,
+        kind: str,
+        summary: str,
+        product: typing.Optional[str],
+        route: typing.Optional[str],
+        booking_id: typing.Optional[str],
+        error_code: typing.Optional[str],
+        captured_by: str,
+        exchanges: typing.List[Exchange],
+        primary: int = 0,
+    ) -> Json:
+        """The evidence document, claiming the account restorations made so far."""
+        main = exchanges[primary]
+        restored = sorted(set(self.restored))
+        self.restored.clear()
+        return dict(
+            kind=kind,
+            summary=summary,
+            captured_at=main["date"],
+            environment=HOST,
+            endpoint=main["endpoint"],
+            product=product,
+            route=route,
+            booking_id=booking_id,
+            error_code=error_code,
+            http_status=main["http_status"],
+            captured_by=captured_by,
+            redaction=(
+                "client-key request headers and response headers dropped; "
+                "label and document base64 replaced by a length marker"
+            ),
+            account_number_restored=(
+                dict(
+                    value=ACCOUNT_NUMBER,
+                    placeholders=restored,
+                    note="the source capture masked the customer number in the Consignor party id; "
+                    "the sha256 values refer to the original capture files",
+                )
+                if restored
+                else None
+            ),
+            exchanges=exchanges,
+        )
+
+    def suite_booking(
+        self,
+        summary: str,
+        product: str,
+        route: str,
+        run: str,
+        stems: typing.Sequence[str],
+        test: str,
+        primary: int,
+    ) -> Json:
+        exchanges = [self.suite_exchange(run, stem) for stem in stems]
+        booking_id = exchanges[primary]["response"]["transportInstruction"]["id"]
+        return self.document(
+            "booking", summary, product, route, booking_id, None,
+            f"{SUITE_RUN}: {test}", exchanges, primary,
+        )
+
+
+def reduce_product_matches(exchange: Exchange) -> Exchange:
+    exchange["response"] = [
+        dict(product={key: match["product"].get(key) for key in ("code", "name", "shortName", "isDomestic")})
+        for match in exchange["response"]
+    ]
+    exchange["response_reduced"] = (
+        "each match keeps product code, name, shortName, and isDomestic; "
+        "the full body is identified by response_source.sha256"
+    )
+    return exchange
+
+
+def reduce_product(exchange: Exchange) -> Exchange:
+    exchange["response"] = {key: exchange["response"].get(key) for key in ("code", "name", "payerCodes")}
+    exchange["response_reduced"] = (
+        "keeps code, name, and payerCodes; the full body is identified by response_source.sha256"
+    )
+    return exchange
+
+
+Entry = typing.Callable[[Builder], Json]
+CATALOG: typing.Dict[str, Entry] = {}
+
+
+def evidence(name: str) -> typing.Callable[[Entry], Entry]:
+    def register(entry: Entry) -> Entry:
+        CATALOG[name] = entry
+        return entry
+
+    return register
+
+
+BOOK_SCRIPT = "agent-logs/karrio-dhl-freight-sweden/booking-20261005-163104/book.py"
+VERIFY_SCRIPT = "agent-logs/karrio-dhl-freight-sweden/connector-verify-20261005-164743/verify.py"
+PROBE_SCRIPT = "agent-logs/karrio-dhl-freight-sweden/probe-20261005-161414/run.sh"
+
+
+def direct_bookings(b: Builder) -> pathlib.Path:
+    return b.logs / "booking-20261005-163104"
+
+
+def connector_verify(b: Builder) -> pathlib.Path:
+    return b.logs / "connector-verify-20261005-164743"
+
+
+def probe(b: Builder) -> pathlib.Path:
+    return b.logs / "probe-20261005-161414"
+
+
+@evidence("booking-2906761073-109-se-pl.json")
+def _(b: Builder) -> Json:
+    d = direct_bookings(b)
+    return b.document(
+        "booking",
+        "109 SE to PL with payer code 022, ParcelShop 8005-PL-4507446, and SENT_FREE true, sent directly to TransportInstruction.",
+        "109", "SE 11143 -> PL 30-079", "2906761073", None, BOOK_SCRIPT,
+        [b.file_exchange(d / "B1-109-022-shop-free.request.json", d / "B1-109-022-shop-free.response.json", "POST", TI, 200)],
+    )
+
+
+@evidence("booking-2906761081-112-se-pl.json")
+def _(b: Builder) -> Json:
+    d = direct_bookings(b)
+    return b.document(
+        "booking",
+        "112 SE to PL with payer code 023, home delivery, and SENT_FREE true, sent directly to TransportInstruction.",
+        "112", "SE 11143 -> PL 30-079", "2906761081", None, BOOK_SCRIPT,
+        [b.file_exchange(d / "B2-112-023-home-free.request.json", d / "B2-112-023-home-free.response.json", "POST", TI, 200)],
+    )
+
+
+@evidence("booking-2906761123-109-se-pl.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "booking",
+        "109 SE to PL booked through the connector with payer code 022, ParcelShop 8005-PL-4507446, and SENT_FREE true, then printed.",
+        "109", "SE 11143 -> PL 30-079", "2906761123", None, f"{VERIFY_SCRIPT} (V1)",
+        b.trace_exchanges(connector_verify(b) / "V1.trace.json"),
+    )
+
+
+@evidence("booking-2906761131-112-se-pl.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "booking",
+        "112 SE to PL booked through the connector with payer code 023 and SENT_FREE true, then printed.",
+        "112", "SE 11143 -> PL 30-079", "2906761131", None, f"{VERIFY_SCRIPT} (V2)",
+        b.trace_exchanges(connector_verify(b) / "V2.trace.json"),
+    )
+
+
+@evidence("booking-2906761149-112-se-pl-payer-022.json")
+def _(b: Builder) -> Json:
+    d = connector_verify(b)
+    return b.document(
+        "booking",
+        "112 SE to PL with payer code 022, sent directly past the connector's payer code check, was accepted.",
+        "112", "SE 11143 -> PL 30-079", "2906761149", None, f"{VERIFY_SCRIPT} (V3-raw)",
+        [b.file_exchange(d / "V3-raw.request.json", d / "V3-raw.response.json", "POST", TI, 200)],
+    )
+
+
+SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[str, ...], str, int], ...] = (
+    ("booking-2906761222-102-se-se.json", "102 within SE with payer code 1, then printed.",
+     "102", "SE 11143 -> SE 11151", "20261005-182136", ("001-booking-102", "002-booking-102"),
+     "test_booking_approved", 0),
+    ("booking-2906761230-103-se-se.json",
+     "103 within SE to service point SE-982000 sent as the full id, after a five-point service point lookup, then printed.",
+     "103", "SE 11143 -> SE 11151", "20261005-182145",
+     ("001-service-points-103-se", "003-booking-103", "004-booking-103"), "test_booking_pudo", 1),
+    ("booking-2906761248-601-se-dk.json", "601 SE to DK with payer code DAP, then printed.",
+     "601", "SE 11143 -> DK 1620", "20261005-182932", ("001-booking-601", "002-booking-601"),
+     "test_booking_approved", 0),
+    ("booking-2906761255-118-se-se.json",
+     "118 within SE after a PostalCode route check with homeDeliveryParcel true (address_validation enforce), then printed.",
+     "118", "SE 11143 -> SE 11151", "20261005-182938",
+     ("001-booking-118", "002-booking-118", "003-booking-118"), "test_booking_approved", 1),
+    ("booking-2906761263-109-se-ro.json",
+     "109 SE to RO with payer code 022 to ParcelShop 8023-231652 without UIT entries, then printed.",
+     "109", "SE 11143 -> RO 030031", "20261005-182947",
+     ("003-service-points-109-ro", "005-booking-109", "006-booking-109"), "test_booking_export", 1),
+    ("booking-2906761271-112-se-ro.json",
+     "112 SE to RO with payer code 023 without UIT entries, then printed.",
+     "112", "SE 11143 -> RO 030031", "20261005-182947", ("010-booking-112", "011-booking-112"),
+     "test_booking_export", 0),
+    ("booking-2906761289-109-se-hu.json",
+     "109 SE to HU with payer code 022 to ParcelStation 8013-118530, a locker listing only parcel:pick-up-unregistered, without EKAER entries, then printed.",
+     "109", "SE 11143 -> HU 1052", "20261005-183002",
+     ("003-service-points-109-hu", "005-booking-109", "006-booking-109"), "test_booking_export", 1),
+    ("booking-2906761297-112-se-hu.json",
+     "112 SE to HU with payer code 023 without EKAER entries, then printed.",
+     "112", "SE 11143 -> HU 1052", "20261005-183002", ("010-booking-112", "011-booking-112"),
+     "test_booking_export", 0),
+    ("booking-2906761305-109-se-no.json",
+     "109 SE to NO with payer code 022, customsHandlingFullService, and a ProformaInvoice, to ParcelShop 8009-129635, then printed.",
+     "109", "SE 11143 -> NO 0154", "20261005-183015",
+     ("003-service-points-109-no", "005-booking-109", "006-booking-109"), "test_booking_export", 1),
+    ("booking-2906761313-112-se-no.json",
+     "112 SE to NO with payer code 023, customsHandlingFullService, and a ProformaInvoice, then printed.",
+     "112", "SE 11143 -> NO 0154", "20261005-183015", ("010-booking-112", "011-booking-112"),
+     "test_booking_export", 0),
+    ("booking-2906761339-601-se-hu.json",
+     "601 SE to HU with payer code DAP, EKAER_FREE false, and a placeholder EKAER_NUMBER, then printed.",
+     "601", "SE 11143 -> HU 1052", "20261005-185338", ("003-booking-601", "004-booking-601"),
+     "test_booking_declarations", 0),
+    ("booking-2906761347-601-se-ro.json",
+     "601 SE to RO with payer code DAP and UIT_FREE false without UIT_NUMBER, then printed.",
+     "601", "SE 11143 -> RO 030031", "20261005-185350", ("003-booking-601", "004-booking-601"),
+     "test_booking_declarations", 0),
+)
+
+for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
+    evidence(_name)(
+        lambda b, s=_summary, p=_product, r=_route, run=_run, st=_stems, t=_test, i=_primary: (
+            b.suite_booking(s, p, r, run, st, t, i)
+        )
+    )
+
+REJECTIONS_RUN = "20261005-185322"
+REJECTIONS: typing.Tuple[typing.Tuple[str, str, str, str, str, str], ...] = (
+    ("rejection-22001-109-se-pl-without-sent.json",
+     "109 SE to PL with payer code 022 and ParcelShop 8005-PL-4504339 but no SENT entries was rejected with 22001.",
+     "109", "003-rejection-109-pl-without-sent", "22001", "test_109_pl_without_sent_is_rejected_with_22001"),
+    ("rejection-22015-112-se-pl-access-point.json",
+     "112 SE to PL with payer code 023, SENT_FREE true, and an added AccessPoint party was rejected with 22015.",
+     "112", "007-rejection-112-pl-access-point", "22015", "test_112_pl_with_access_point_is_rejected_with_22015"),
+    ("rejection-22020-112-se-pl-payer-code-1.json",
+     "112 SE to PL with payer code 1 and SENT_FREE true was rejected with 22020.",
+     "112", "009-rejection-112-pl-payer-code-1", "22020", "test_112_pl_with_payer_code_1_is_rejected_with_22020"),
+)
+
+for _name, _summary, _product, _stem, _code, _test in REJECTIONS:
+    evidence(_name)(
+        lambda b, s=_summary, p=_product, st=_stem, c=_code, t=_test: b.document(
+            "rejection", s, p, "SE 11143 -> PL 30-079", None, c,
+            f"{SUITE_RUN}: test_rejections.{t}", [b.suite_exchange(REJECTIONS_RUN, st)],
+        )
+    )
+
+LOOKUPS_RUN = "20261005-182045"
+CAPACITY_RUN = "20261005-182045-capacity-probe"
+
+
+@evidence("lookup-postal-code-se-99999-16010.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "PostalCode route for SE 99999 answered 400 with the PascalCase ErrorResult 16010.",
+        None, "SE 99999", None, "16010", f"{SUITE_RUN}: test_lookups",
+        [b.suite_exchange(LOOKUPS_RUN, "003-postal-code-se-99999")],
+    )
+
+
+@evidence("lookup-postal-code-se-11151-route.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "PostalCode route for SE 11151 answered bookable true and homeDeliveryParcel true.",
+        None, "SE 11151", None, None, f"{SUITE_RUN}: test_lookups",
+        [b.suite_exchange(LOOKUPS_RUN, "001-postal-code-se-11151-118")],
+    )
+
+
+@evidence("lookup-postal-code-pl-route-16009.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "PostalCode route for PL 30-079 answered 400 with 16009 'Country code 'PL' not supported.'.",
+        None, "PL 30-079", None, "16009", PROBE_SCRIPT,
+        [b.file_exchange(None, probe(b) / "pc-route-PL-30-079.json", "GET", "/postalcodeapi/v1/postalcodes/PL/30-079/route", 400)],
+    )
+
+
+@evidence("lookup-service-points-se-capacity-not-applied.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Nearest service points for Stockholm returned the same ten points in the same order for a 2.5 kg 40x30x15 cm piece and a 500 kg 300x200x200 cm piece.",
+        None, "SE 11143", None, None, f"{SUITE_RUN}: test_lookups",
+        [b.suite_exchange(LOOKUPS_RUN, "013-service-points-se-parcel"),
+         b.suite_exchange(LOOKUPS_RUN, "015-service-points-se-oversized")],
+    )
+
+
+@evidence("lookup-service-points-pl-capacity-too-large.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Nearest service points for Warszawa returned points for a 2.5 kg piece and answered 400 'The dimensions are too large' for a 500 kg 300x200x200 cm piece, with and without locationTypes locker.",
+        None, "PL 00-251", None, None, f"manual capacity probe with the connector ({CAPACITY_RUN})",
+        [b.suite_exchange(CAPACITY_RUN, "001-pl-fit"),
+         b.suite_exchange(CAPACITY_RUN, "003-pl-oversized"),
+         b.suite_exchange(CAPACITY_RUN, "005-pl-locker-oversized")],
+        primary=1,
+    )
+
+
+@evidence("lookup-product-matches-se-pl.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "Product matches for SE 11143 to PL 00-251 returned HDI, 109, 202, 112, 601, and 233.",
+        None, "SE 11143 -> PL 00-251", None, None, f"{SUITE_RUN}: test_lookups",
+        [reduce_product_matches(b.suite_exchange(LOOKUPS_RUN, "007-product-matches-se-pl"))],
+    )
+
+
+@evidence("lookup-product-matches-se-se.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "Product matches for a domestic SE lane.",
+        None, "SE -> SE", None, None, f"{SUITE_RUN}: test_lookups",
+        [reduce_product_matches(b.suite_exchange(LOOKUPS_RUN, "009-product-matches-se-se"))],
+    )
+
+
+@evidence("lookup-products-109-112-payer-codes.json")
+def _(b: Builder) -> Json:
+    p = probe(b)
+    return b.document(
+        "lookup",
+        "The Product API catalog lists payer codes CPT, 022, DPU, DAP, 023, CIP, and DDP for 109 and 112, with customs true only for DDP.",
+        "109, 112", None, None, None, PROBE_SCRIPT,
+        [reduce_product(b.file_exchange(None, p / "product-109.json", "GET", "/productapi/v1/products/109", 200)),
+         reduce_product(b.file_exchange(None, p / "product-112.json", "GET", "/productapi/v1/products/112", 200))],
+    )
+
+
+def render(document: Json) -> str:
+    return json.dumps(document, ensure_ascii=False, indent=1) + "\n"
+
+
+def build(state_root: pathlib.Path, out: pathlib.Path, names: typing.Iterable[str]) -> typing.List[pathlib.Path]:
+    """Write the named evidence files (all of ``CATALOG`` when empty) into ``out``."""
+    selected = list(names) or list(CATALOG)
+    unknown = [name for name in selected if name not in CATALOG]
+    if unknown:
+        raise SystemExit(f"unknown evidence files: {', '.join(unknown)}")
+    out.mkdir(parents=True, exist_ok=True)
+    builder = Builder(state_root)
+    written: typing.List[pathlib.Path] = []
+    for name in selected:
+        path = out / name
+        path.write_text(render(CATALOG[name](builder)))
+        written.append(path)
+    return written
+
+
+@dataclasses.dataclass(frozen=True)
+class Arguments:
+    state_root: pathlib.Path
+    out: pathlib.Path
+    names: typing.List[str]
+
+
+def parse_arguments(argv: typing.Sequence[str], environ: typing.Mapping[str, str]) -> Arguments:
+    parser = argparse.ArgumentParser(description="Build the committed sandbox evidence files from the captures.")
+    parser.add_argument(
+        "--state-root", type=pathlib.Path, default=default_state_root(environ),
+        help="directory the capture paths are relative to (default: $XDG_STATE_HOME or ~/.local/state)",
+    )
+    parser.add_argument(
+        "--out", type=pathlib.Path, default=DEFAULT_OUT,
+        help=f"evidence directory (default: {DEFAULT_OUT.relative_to(REPO_ROOT)})",
+    )
+    parser.add_argument("names", nargs="*", help="evidence file names to build (default: all)")
+    parsed = parser.parse_args(argv)
+    return Arguments(parsed.state_root.expanduser(), parsed.out, parsed.names)
+
+
+def main(argv: typing.Sequence[str]) -> None:
+    arguments = parse_arguments(argv, os.environ)
+    for path in build(arguments.state_root, arguments.out, arguments.names):
+        print(path)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
