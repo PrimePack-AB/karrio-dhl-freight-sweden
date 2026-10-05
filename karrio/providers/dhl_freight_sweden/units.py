@@ -317,6 +317,57 @@ def default_payer_code(payer_codes: typing.Tuple[str, ...]) -> typing.Optional[s
     return "1" if "1" in payer_codes else None
 
 
+PARCEL_SHOP = frozenset([PartySubType.ParcelShop.value])
+PARCEL_SHOP_AND_STATION = frozenset(
+    [PartySubType.ParcelShop.value, PartySubType.ParcelStation.value]
+)
+
+# Access-point sub types per product and destination country from DHL
+# Freight Sweden product manual v5.23. Products and countries absent here
+# accept no AccessPoint party (e.g. 112, §5.3 p14; 109 to IE and LU).
+ACCESS_POINT_SUB_TYPES: typing.Dict[str, typing.Dict[str, typing.FrozenSet[str]]] = {
+    # §5.14 p59-60
+    ShippingService.dhl_freight_sweden_service_point_b2c.value: {
+        "SE": PARCEL_SHOP_AND_STATION
+    },
+    # Appendix B.3 §10.3.2 p196-197
+    ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: {
+        "AT": PARCEL_SHOP_AND_STATION,
+        "BE": PARCEL_SHOP_AND_STATION,
+        "BG": PARCEL_SHOP_AND_STATION,
+        "CZ": PARCEL_SHOP_AND_STATION,
+        "DE": PARCEL_SHOP,
+        "DK": PARCEL_SHOP_AND_STATION,
+        "EE": PARCEL_SHOP_AND_STATION,
+        "ES": PARCEL_SHOP,
+        "FI": PARCEL_SHOP_AND_STATION,
+        "FR": PARCEL_SHOP,
+        "GB": PARCEL_SHOP,
+        "HR": PARCEL_SHOP,
+        "HU": PARCEL_SHOP_AND_STATION,
+        "IT": PARCEL_SHOP,
+        "LT": PARCEL_SHOP_AND_STATION,
+        "LV": PARCEL_SHOP_AND_STATION,
+        "NL": PARCEL_SHOP_AND_STATION,
+        "NO": PARCEL_SHOP,
+        "PL": PARCEL_SHOP_AND_STATION,
+        "PT": PARCEL_SHOP,
+        "RO": PARCEL_SHOP,
+        "SI": PARCEL_SHOP,
+        "SK": PARCEL_SHOP_AND_STATION,
+    },
+}
+
+# Sub type and location type names, which are never access-point ids.
+ACCESS_POINT_TYPE_NAMES: typing.FrozenSet[str] = frozenset(
+    name.lower()
+    for name in [
+        *(sub_type.value for sub_type in PartySubType),
+        *(location_type.value for location_type in LocationType),
+    ]
+)
+
+
 class ShippingOption(lib.Enum):
     """DHL Freight shipping options."""
 
