@@ -84,8 +84,11 @@ def parse_shipment_response(
     ]
 
     instruction = (booking or {}).get("transportInstruction") or {}
+    tracking_number = instruction.get("id")
     details = lib.identity(
-        _extract_details(booking, printed, settings) if instruction.get("id") else None
+        _extract_details(instruction, printed, tracking_number, settings)
+        if tracking_number
+        else None
     )
 
     return details, messages
@@ -117,18 +120,17 @@ def _customs_omitted_message(
 
 
 def _extract_details(
-    booking: dict,
-    printed: dict,
+    instruction_data: dict,
+    printed: typing.Optional[dict],
+    tracking_number: str,
     settings: provider_utils.Settings,
 ) -> models.ShipmentDetails:
     instruction = lib.to_object(
-        dhl_freight_sweden_res.TransportInstructionType,
-        booking.get("transportInstruction") or {},
+        dhl_freight_sweden_res.TransportInstructionType, instruction_data
     )
+    product_code = instruction.productCode if instruction else None
     result = lib.to_object(dhl_freight_sweden_report.PrintResponseType, printed)
-    report = next(iter(result.reports or []), None)
-
-    tracking_number = instruction.id
+    report = next(iter(result.reports or []), None) if result else None
 
     return models.ShipmentDetails(
         carrier_id=settings.carrier_id,
@@ -139,11 +141,7 @@ def _extract_details(
         docs=models.Documents(label=getattr(report, "content", None) or ""),
         meta=dict(
             carrier_tracking_link=settings.tracking_url.format(tracking_number),
-            product_code=(
-                str(instruction.productCode)
-                if instruction.productCode is not None
-                else None
-            ),
+            product_code=str(product_code) if product_code is not None else None,
         ),
     )
 
