@@ -12,7 +12,7 @@ The manual uses the deprecated names DHL EUROCONNECT, DHL EUROLINE, and DHL EURA
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31 and its rejection and declaration segments at 16:53, and a manual capacity probe with the connector ran at 16:21.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31 its rejection and declaration segments at 16:53, and its 109 DK ParcelShop case at 17:14, and a manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
 An evidence file holds the request and response bodies of the calls behind the finding, with metadata naming the endpoint, product, route, booking id or error code, and the capturing script or suite test.
@@ -27,7 +27,7 @@ The two `label` files come from an earlier probe on 2026-09-10 that sent 1234567
 
 ## Bookings
 
-All 17 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 18 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg, and only those marked in the table carried customs data.
 None was cancelled, because the API Farm has no cancellation operation.
 
@@ -50,6 +50,7 @@ None was cancelled, because the API Farm has no cancellation operation.
 | 2906761313 | 16:30:20 | 112 | SE → NO 0154 | 023 | full service, ProformaInvoice | none | 2LNO0154+000000 | [booking-2906761313][b-313] |
 | 2906761339 | 16:53:40 | 601 | SE → HU 1052 | DAP | none | none | 2LHU1052+00000000 | [booking-2906761339][b-339] |
 | 2906761347 | 16:53:52 | 601 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906761347][b-347] |
+| 2906761354 | 17:14:34 | 109 | SE → DK 1620 | 022 | none | 8009-115191 ParcelShop | 2LDK1620+70530000 | [booking-2906761354][b-354] |
 
 The time is the response `Date` header, except for the three direct bookings whose captures carry no header, where it is the capture file's modification time.
 The 109 and 112 bookings to PL declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, and 2906761347 sent `UIT_FREE` `"false"` without a number, and DHL echoed these entries in the responses.
@@ -57,7 +58,7 @@ No other booking sent additional information entries.
 Every booking except 2906761073, 2906761081, and 2906761149 was followed by a Print API call that returned a PDF label (`label_<id>.pdf`).
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (p243).
-The 103 and 109 bookings to RO, HU, and NO were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
+The 103 and 109 bookings to RO, HU, NO, and DK were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
 
 ## Rejections
 
@@ -107,7 +108,7 @@ For Warszawa the 2.5 kg piece returned points, while the 500 kg piece was answer
 For 103 the manual says only the four-digit part nnnn of an id like SE-nnnn00 is to be used (p239), but the sandbox accepted the full id SE-982000 ([booking-2906761230][b-230]).
 For SE the lookup's `id` and `servicePointId` are equal (SE-982000), while elsewhere they differ, for example `id` 101 and `servicePointId` 8005-PL-4516440 in Warszawa ([lookup-service-points-pl-capacity-too-large.json][l-sp-pl]) and `id` 231652 and `servicePointId` 8023-231652 in București ([booking-2906761263][b-263]).
 Appendix M states that the AccessPoint sub type carries the location type `servicepoint`, `locker`, or `postoffice` (p237, p240), while the vendored spec enumerates `ParcelShop` and `ParcelStation`.
-The sandbox accepted `ParcelShop` for PL, RO, and NO ([booking-2906761123][b-123], [booking-2906761263][b-263], [booking-2906761305][b-305]) and `ParcelStation` for a HU locker ([booking-2906761289][b-289]).
+The sandbox accepted `ParcelShop` for PL, RO, NO, and DK ([booking-2906761123][b-123], [booking-2906761263][b-263], [booking-2906761305][b-305], [booking-2906761354][b-354]) and `ParcelStation` for a HU locker ([booking-2906761289][b-289]).
 Their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p240.
 
 ### Service types and lookup size for service point products
@@ -156,6 +157,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [b-313]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761313-112-se-no.json
 [b-339]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761339-601-se-hu.json
 [b-347]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761347-601-se-ro.json
+[b-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22015]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json
 [r-22020]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json
