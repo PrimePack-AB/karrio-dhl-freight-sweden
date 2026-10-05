@@ -21,7 +21,7 @@ The committed copies drop the `client-key` header and the response headers, and 
 The original captures masked the customer number in the Consignor party id; the evidence files restore it and record the restored placeholder under `account_number_restored`.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
 A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
-The `label` files come from the suite's print calls of bookings 2906761248, 2906761305, and 2906761354.
+The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, and 2906761354.
 `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
 `sandbox_tests/dhl_freight_sweden/evidence.py` builds the files from the captures, and rebuilding over the same captures reproduces them byte for byte.
 
@@ -59,7 +59,7 @@ Every booking except 2906761073, 2906761081, and 2906761149 was followed by a Pr
 The label of 2906761354, printed with page type `Label`, is one PDF page of 297.638 × 595.276 pt (105 × 210 mm) ([label-2906761354][lb-354]).
 Its text shows the Consignee name below the sender block and the Consignee name and address at the bottom, and its only `Phn.` line carries the sender's +46 8 123 456, although the booking sent the consignee phone +45 20 12 34 56.
 The 109 NO label of 2906761305 shows the Consignee name and address, Karl Johans gate 10, 0154 Oslo, at the bottom, apart from the shop's CHRISTIAN KROHGS GATE 1, 0186 OSLO, and likewise prints only the sender's phone ([label-2906761305][lb-305]).
-The 601 DK home-delivery label of 2906761248 prints a `Phn.` line with no number, although the booking sent the consignee phone +45 20 12 34 56 ([label-2906761248][lb-248]).
+The home-delivery labels of 102, 112, 118, and 601 and the 103 service-point label print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761297][lb-297], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]); the section [Phone numbers on labels](#phone-numbers-on-labels) compares these labels with the manual.
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (p243).
 The 103 and 109 bookings to RO, HU, NO, and DK were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
@@ -134,6 +134,16 @@ The API bookings sent no routing code, and every booking response returned `rout
 Product matches for SE to PL returned both 601 and HDI ([lookup-product-matches-se-pl.json][l-pm-pl]), and the manual names HDI as the invoice-file code for 601 (p86).
 Product matches for SE 11143 to SE 41101 returned 502, 118, 104, 102, 402, 211, 401, and 103 ([lookup-product-matches-se-se.json][l-pm-se]).
 
+### Phone numbers on labels
+
+The manual's label field description (§9.4.2) marks the sender phone, field 6 "Consignor or pickup party phone number", mandatory (p174).
+For field 9 it lists the consignee or delivery party phone number as conditional, the receiving service point's phone number for 103, and for 109 and 112 makes printing the receiver phone mandatory to BG, CZ, DK, EE, FI, HR, HU, IE, IT, LT, LV, NO, PL, RO, SI, and SK "if it is existing in shipment" and not allowed to AT, BE, DE, ES, FR, GB, LU, NL, and PT (p176).
+It makes the receiver's mobile phone number mandatory for 118 (p72) and the consignee phone number and e-mail address mandatory for 601 (p86).
+Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone, and the 103 booking sent no AccessPoint phone.
+The 109 labels to DK and NO print the sender phone and no consignee phone, although the bookings sent +45 20 12 34 56 and +47 400 00 000 ([label-2906761354][lb-354], [label-2906761305][lb-305]).
+The 112 label to HU prints a `Phn.` line with neither the sender phone nor the consignee phone +36 30 000 0000 ([label-2906761297][lb-297]).
+The 102, 118, and 601 labels and the 103 service-point label likewise print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]).
+
 ## Pending verification
 
 The README lists PostalCode error 16012 as "not supported", and no capture shows 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]).
@@ -177,6 +187,10 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [l-pm-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-pl.json
 [l-pm-se]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se.json
 [l-products]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json
+[lb-222]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761222-102-se-se.json
+[lb-230]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761230-103-se-se-service-point.json
 [lb-248]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761248-601-se-dk.json
+[lb-255]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761255-118-se-se.json
+[lb-297]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761297-112-se-hu.json
 [lb-305]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761305-109-se-no-parcelshop.json
 [lb-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json
