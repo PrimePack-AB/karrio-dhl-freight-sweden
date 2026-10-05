@@ -25,8 +25,8 @@ import karrio.mappers.dhl_freight_sweden.settings as connector_settings
 import karrio.sdk as karrio
 
 SANDBOX_HOST = "test-api.freight-logistics.dhl.com"
-SEGMENTS = frozenset({"lookups", "booking-approved", "booking-pudo"})
-BOOKING_SEGMENTS = frozenset({"booking-approved", "booking-pudo"})
+SEGMENTS = frozenset({"lookups", "booking-approved", "booking-pudo", "booking-export"})
+BOOKING_SEGMENTS = frozenset({"booking-approved", "booking-pudo", "booking-export"})
 DEFAULT_SEGMENTS = frozenset({"lookups"})
 DEFAULT_MAX_BOOKINGS = 10
 BOOKING_PATH = "/transportinstruction/sendtransportinstruction"
