@@ -14,12 +14,14 @@ A read-only probe script called the Product, AdditionalService, ServicePointLoca
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
 The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31 and its rejection and declaration segments at 16:53, and a manual capacity probe with the connector ran at 16:21.
 
-Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, or `lookup-...`.
+Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
 An evidence file holds the request and response bodies of the calls behind the finding, with metadata naming the endpoint, product, route, booking id or error code, and the capturing script or suite test.
 Each call records the path of its original capture relative to `$XDG_STATE_HOME` (`~/.local/state`) and the sha256 of that capture file, so the original can be checked against the committed copy.
 The committed copies drop the `client-key` header and the response headers, and replace label base64 with a length marker.
 The original captures masked the customer number in the Consignor party id; the evidence files restore it and record the restored placeholder under `account_number_restored`.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
+A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
+The two `label` files come from an earlier probe on 2026-09-10 that sent 1234567 as the Consignor party id; they back the README's consignee phone statement and are not part of the findings below.
 `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
 `sandbox_tests/dhl_freight_sweden/evidence.py` builds the files from the captures, and rebuilding over the same captures reproduces them byte for byte.
 

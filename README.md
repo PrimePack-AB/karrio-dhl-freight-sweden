@@ -50,7 +50,7 @@ Connection settings are passed through the gateway's `config` dict (e.g. `config
 
 ## Label printing behavior
 
-The connector always transmits the consignee `phone_number` on the booking; DHL's label renderer decides per destination country whether it prints (live-verified 2026-09-10: suppressed for SE→DE, absent on a DK PUDO label — in both cases only the sender phone printed, as `Phn.`).
+The connector always transmits the consignee `phone_number` on the booking; DHL's label renderer decides per destination country whether it prints (live-verified 2026-09-10: suppressed for SE→DE, absent on a DK PUDO label — in both cases only the sender phone printed, as `Phn.`; [label-2906724865-109-se-de.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906724865-109-se-de.json), [label-2906723800-109-se-dk-parcelshop.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906723800-109-se-dk-parcelshop.json)).
 For parcelshop/parcelstation-addressed 109 shipments the mandatory "Customer information" label section is auto-composed from the Consignee party, so no connector input is needed.
 `parties[].references` exists as the optional shipper-controlled free-text channel for custom label print text.
 Phone format per product manual v5.23 Appendix D (§10.5 p200): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only — dots, letters, and slash are forbidden.
