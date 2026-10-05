@@ -75,6 +75,18 @@ SUB_TYPE_BY_LOCATION_TYPE: typing.Dict[LocationType, PartySubType] = {
 }
 
 
+class AdditionalInformationCode(lib.StrEnum):
+    """Shipment additionalInformation codes produced by typed options."""
+
+    SENT_FREE = "SENT_FREE"
+    SENT_REF = "SENT_REF"
+    SENT_CARKEY = "SENT_CARKEY"
+
+
+SENT_COUNTRY = "PL"
+SENT_VALUE_MAX_LENGTH = 20
+
+
 class PageType(lib.StrEnum):
     """DHL Freight Print API page layouts (PageTypeEnum)."""
 
@@ -273,6 +285,15 @@ class ShippingOption(lib.Enum):
     # Customs procedure code per commodity (maxLength 4). "1042" is the
     # standard definitive-export procedure in the Swedish export declaration.
     dhl_freight_sweden_customs_procedure_code = lib.OptionEnum("procedureCode", str)
+
+    # SENT (Polish road transport monitoring) entries for lanes to or from PL,
+    # sent under the shipment's additionalInformation. The manual lists
+    # SENT_REF and SENT_CARKEY (AN..20, product manual v5.23 §5.4 p19); the
+    # live API additionally requires SENT_FREE "true" when neither is sent
+    # (validation error 22001, live sandbox 2026-10-05).
+    dhl_freight_sweden_sent_free = lib.OptionEnum("SENT_FREE", bool)
+    dhl_freight_sweden_sent_ref = lib.OptionEnum("SENT_REF", str)
+    dhl_freight_sweden_sent_carkey = lib.OptionEnum("SENT_CARKEY", str)
 
     """ Unified Option type mapping """
     email_notification = dhl_freight_sweden_notification

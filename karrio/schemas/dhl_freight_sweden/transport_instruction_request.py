@@ -4,6 +4,14 @@ import typing
 
 
 @attr.s(auto_attribs=True)
+class AdditionalInformationType:
+    code: typing.Optional[str] = None
+    stringValue: typing.Optional[str] = None
+    dateValue: typing.Optional[str] = None
+    numericValue: typing.Optional[float] = None
+
+
+@attr.s(auto_attribs=True)
 class CustomsCustomersOwnDeclarationType:
     customsId: typing.Optional[str] = None
     customsClearanceInstruction: typing.Optional[str] = None
@@ -157,3 +165,4 @@ class TransportInstructionRequestType:
     pieces: typing.Optional[typing.List[PieceType]] = jstruct.JList[PieceType]
     additionalServices: typing.Optional[AdditionalServicesType] = jstruct.JStruct[AdditionalServicesType]
     customsInformation: typing.Optional[CustomsInformationType] = jstruct.JStruct[CustomsInformationType]
+    additionalInformation: typing.Optional[typing.List[AdditionalInformationType]] = jstruct.JList[AdditionalInformationType]
