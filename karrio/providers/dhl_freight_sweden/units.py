@@ -237,8 +237,10 @@ PAYER_CODES: typing.Dict[str, PayerCodes] = {
     ShippingService.dhl_freight_sweden_paket.value: PayerCodes(
         FREIGHT_PAYER_CODES  # §5.2 p11
     ),
+    # §5.3 p15 lists only 023, so it stays the default; the live sandbox
+    # also accepts 022 (booking 2906761149, 2026-10-05).
     ShippingService.dhl_freight_sweden_parcel_connect_plus.value: PayerCodes(
-        ("023",)  # §5.3 p15
+        ("022", "023"), default="023"
     ),
     ShippingService.dhl_freight_sweden_road_freight_standard.value: PayerCodes(
         EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.4 p20

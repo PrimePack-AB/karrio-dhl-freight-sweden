@@ -87,7 +87,7 @@ Section and page references below are to that version.
 | 402, 502 | 3, 4 | none | §5.20 p82 |
 | 107 | 001 | 001 | §5.17 p70 |
 | 109 | 022, 023 (023 only with customs joint declaration) | 022 | §5.16 p67 |
-| 112 | 023 | 023 | §5.3 p15 |
+| 112 | 022, 023 | 023 | §5.3 p15 (023 only); 022 per sandbox booking 2906761149 |
 | 232 | DAP, DDP | none | §5.10 p42 |
 | 202, 233, SPI, 601 | export EXW, FCA, CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.4 p20, §5.11 p47, §5.12 p52, §5.21 p88 |
 | 205 | export CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.9 p39 |
@@ -138,8 +138,9 @@ Entries follow the SENT entries; an entry without a code, or with a code the SEN
 
 ### Discrepancies
 
-For 112 the DHL Product API catalog (`GET /productapi/v1/products/112`, test host, 2026-10-05) lists CPT, CIP, DAP, DPU, DDP, 022, and 023, while the manual lists only 023; the connector follows the manual.
-The live sandbox rejected payer code 1 for 112 (22020 "Payercode 1 is not valid for product") and accepted 023; the other catalog codes are untested.
+For 112 the DHL Product API catalog (`GET /productapi/v1/products/112`, test host, 2026-10-05) lists CPT, CIP, DAP, DPU, DDP, 022, and 023, while the manual (§5.3 p15) lists only 023.
+The live sandbox rejected payer code 1 for 112 (22020 "Payercode 1 is not valid for product") and accepted both 023 and 022 (booking 2906761149, 2026-10-05).
+The connector therefore accepts 022 and 023 for 112 and keeps the manual's 023 as the default; the catalog's Incoterm codes are untested and reach 112 only through the Combiterm translation.
 
 ## Capabilities
 
