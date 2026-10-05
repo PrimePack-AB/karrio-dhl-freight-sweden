@@ -128,7 +128,7 @@ Lanes with the shipper or the recipient in PL carry SENT entries under the shipm
 | `dhl_freight_sweden_sent_carkey` | string, at most 20 characters | `SENT_CARKEY` |
 | `dhl_freight_sweden_sent_free` | boolean | `SENT_FREE` |
 
-Both identifiers send `SENT_REF` and `SENT_CARKEY`; one without the other fails.
+Both identifiers send `SENT_REF` and `SENT_CARKEY`; one without the other fails, and `dhl_freight_sweden_sent_free` `true` together with either identifier fails as contradictory.
 Without identifiers the connector sends `SENT_FREE` `"true"`, unless `dhl_freight_sweden_sent_free` is `false`, which fails, or the generic `dangerous_good` option is set without any SENT option, which fails and asks for an explicit SENT choice.
 The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", live sandbox 2026-10-05).
 The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
