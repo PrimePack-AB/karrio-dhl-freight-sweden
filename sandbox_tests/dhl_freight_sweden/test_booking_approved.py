@@ -10,27 +10,6 @@ import unittest
 
 from . import booking, harness
 
-SE_RECIPIENT = {
-    "person_name": "Anna Andersson",
-    "address_line1": "Drottninggatan 10",
-    "city": "Stockholm",
-    "postal_code": "11151",
-    "country_code": "SE",
-    "phone_number": "+46 70 123 45 67",
-    "email": "anna.andersson@example.se",
-    "residential": True,
-}
-DK_RECIPIENT = {
-    "person_name": "Mette Hansen",
-    "address_line1": "Vesterbrogade 10",
-    "city": "København V",
-    "postal_code": "1620",
-    "country_code": "DK",
-    "phone_number": "+45 20 12 34 56",
-    "email": "mette.hansen@example.dk",
-    "residential": True,
-}
-
 
 class TestSandboxBookingApproved(unittest.TestCase):
     session: harness.Session
@@ -52,7 +31,7 @@ class TestSandboxBookingApproved(unittest.TestCase):
             dict(
                 service="102",
                 shipper=booking.SHIPPER,
-                recipient=SE_RECIPIENT,
+                recipient=booking.RECIPIENTS["SE"],
                 parcels=[booking.PARCEL],
             ),
         )
@@ -66,7 +45,7 @@ class TestSandboxBookingApproved(unittest.TestCase):
             dict(
                 service="601",
                 shipper=booking.SHIPPER,
-                recipient=DK_RECIPIENT,
+                recipient=booking.RECIPIENTS["DK"],
                 parcels=[booking.PARCEL],
                 options=dict(dhl_freight_sweden_payer_code="DAP"),
             ),
@@ -84,7 +63,7 @@ class TestSandboxBookingApproved(unittest.TestCase):
             dict(
                 service="118",
                 shipper=booking.SHIPPER,
-                recipient=SE_RECIPIENT,
+                recipient=booking.RECIPIENTS["SE"],
                 parcels=[booking.PARCEL],
             ),
         )
