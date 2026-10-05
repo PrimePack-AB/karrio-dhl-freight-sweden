@@ -1,0 +1,579 @@
+{
+ "kind": "lookup",
+ "summary": "Nearest service points for Stockholm returned the same ten points in the same order for a 2.5 kg 40x30x15 cm piece and a 500 kg 300x200x200 cm piece.",
+ "captured_at": "2026-10-05T16:20:51Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+ "product": null,
+ "route": "SE 11143",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-05T16:20:51Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/013-service-points-se-parcel.request.json",
+    "sha256": "0a2ab7cbb71c07f172173694179d1fc51a7185e931c65ed575165336fddd8499"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/013-service-points-se-parcel.response.json",
+    "sha256": "964ca054013e959a26ecb4f23be489ccb8737705f647ee2bbf2dd0f3a611024d"
+   },
+   "request": {
+    "address": {
+     "cityName": "Stockholm",
+     "countryCode": "SE",
+     "postalCode": "11143",
+     "street": "Kungsgatan 1"
+    },
+    "maxNumberOfItems": 10,
+    "piece": {
+     "height": 15.0,
+     "length": 40.0,
+     "weight": 2.5,
+     "width": 30.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "doorStepDeliveryAvailable": false,
+    "servicePoints": [
+     {
+      "id": "SE-982000",
+      "servicePointId": "SE-982000",
+      "street": "SVEAVÄGEN 20",
+      "name": "H.T. ROSIS GODIS & TOBAK T-BANEPLAN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11157",
+      "countryCode": "SE",
+      "distance": 0.0,
+      "routeDistance": 0.0,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33477,
+      "longitude": 18.0647,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-241500",
+      "servicePointId": "SE-241500",
+      "street": "SVEAVÄGEN 74",
+      "name": "SVEA GODIS",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11359",
+      "countryCode": "SE",
+      "distance": 0.64,
+      "routeDistance": 0.63,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33988,
+      "longitude": 18.05976,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-268900",
+      "servicePointId": "SE-268900",
+      "street": "BIRGER JARLSGATAN 57",
+      "name": "PAKETSKÅP (IBOXEN) 57 BIRGER JARLSG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11356",
+      "countryCode": "SE",
+      "distance": 0.71,
+      "routeDistance": 1.15,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 59.34114,
+      "longitude": 18.06478,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-268700",
+      "servicePointId": "SE-268700",
+      "street": "CRAFOORDS VÄG 6",
+      "name": "PAKETSKÅP (IBOXEN) CRAFOORDS VÄG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11324",
+      "countryCode": "SE",
+      "distance": 1.01,
+      "routeDistance": 1.35,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 59.33763,
+      "longitude": 18.04782,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-930500",
+      "servicePointId": "SE-930500",
+      "street": "NYBROGATAN 65",
+      "name": "RONI TOBAK",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11440",
+      "countryCode": "SE",
+      "distance": 1.01,
+      "routeDistance": 1.36,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33884,
+      "longitude": 18.08052,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-252400",
+      "servicePointId": "SE-252400",
+      "street": "BIRGER JARLSGATAN 82",
+      "name": "BIRGER SPEL & TOBAK",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11427",
+      "countryCode": "SE",
+      "distance": 1.1,
+      "routeDistance": 1.38,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.34458,
+      "longitude": 18.06329,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-230500",
+      "servicePointId": "SE-230500",
+      "street": "KUNGSKLIPPAN 17",
+      "name": "ONTHEWAY (T-BANA RÅDHUSET)",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11225",
+      "countryCode": "SE",
+      "distance": 1.19,
+      "routeDistance": 1.58,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.3304,
+      "longitude": 18.04559,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-855400",
+      "servicePointId": "SE-855400",
+      "street": "ODENGATAN 52",
+      "name": "ODEN SPEL & TOBAK",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11322",
+      "countryCode": "SE",
+      "distance": 1.17,
+      "routeDistance": 1.67,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.34391,
+      "longitude": 18.0545,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-835500",
+      "servicePointId": "SE-835500",
+      "street": "DALAGATAN 9N",
+      "name": "ICA SUPERMARKET SABBATSBERG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11361",
+      "countryCode": "SE",
+      "distance": 1.2,
+      "routeDistance": 1.69,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33901,
+      "longitude": 18.04534,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-232700",
+      "servicePointId": "SE-232700",
+      "street": "KUNGSHOLMSGATAN 2 A",
+      "name": "TC KIOSKEN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11227",
+      "countryCode": "SE",
+      "distance": 0.96,
+      "routeDistance": 1.73,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.32967,
+      "longitude": 18.05114,
+      "clickAndCollectId": ""
+     }
+    ],
+    "homedeliveryParcel": false,
+    "lofi": true
+   }
+  },
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-05T16:20:52Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/015-service-points-se-oversized.request.json",
+    "sha256": "4f07f51aca33d2b286c07be112cad30f2cc31e9b7927c796f0437ec15c551ee7"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-182045/015-service-points-se-oversized.response.json",
+    "sha256": "d94d8cbe8e8cd94275db8a02e3b751ed1e37dabf0bfebab9bd8ce3ffc8fd91c2"
+   },
+   "request": {
+    "address": {
+     "cityName": "Stockholm",
+     "countryCode": "SE",
+     "postalCode": "11143",
+     "street": "Kungsgatan 1"
+    },
+    "maxNumberOfItems": 10,
+    "piece": {
+     "height": 200.0,
+     "length": 300.0,
+     "weight": 500.0,
+     "width": 200.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "doorStepDeliveryAvailable": false,
+    "servicePoints": [
+     {
+      "id": "SE-982000",
+      "servicePointId": "SE-982000",
+      "street": "SVEAVÄGEN 20",
+      "name": "H.T. ROSIS GODIS & TOBAK T-BANEPLAN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11157",
+      "countryCode": "SE",
+      "distance": 0.0,
+      "routeDistance": 0.0,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33477,
+      "longitude": 18.0647,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-241500",
+      "servicePointId": "SE-241500",
+      "street": "SVEAVÄGEN 74",
+      "name": "SVEA GODIS",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11359",
+      "countryCode": "SE",
+      "distance": 0.64,
+      "routeDistance": 0.63,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33988,
+      "longitude": 18.05976,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-268900",
+      "servicePointId": "SE-268900",
+      "street": "BIRGER JARLSGATAN 57",
+      "name": "PAKETSKÅP (IBOXEN) 57 BIRGER JARLSG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11356",
+      "countryCode": "SE",
+      "distance": 0.71,
+      "routeDistance": 1.15,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 59.34114,
+      "longitude": 18.06478,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-268700",
+      "servicePointId": "SE-268700",
+      "street": "CRAFOORDS VÄG 6",
+      "name": "PAKETSKÅP (IBOXEN) CRAFOORDS VÄG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11324",
+      "countryCode": "SE",
+      "distance": 1.01,
+      "routeDistance": 1.35,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 59.33763,
+      "longitude": 18.04782,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-930500",
+      "servicePointId": "SE-930500",
+      "street": "NYBROGATAN 65",
+      "name": "RONI TOBAK",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11440",
+      "countryCode": "SE",
+      "distance": 1.01,
+      "routeDistance": 1.36,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33884,
+      "longitude": 18.08052,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-252400",
+      "servicePointId": "SE-252400",
+      "street": "BIRGER JARLSGATAN 82",
+      "name": "BIRGER SPEL & TOBAK",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11427",
+      "countryCode": "SE",
+      "distance": 1.1,
+      "routeDistance": 1.38,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.34458,
+      "longitude": 18.06329,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-230500",
+      "servicePointId": "SE-230500",
+      "street": "KUNGSKLIPPAN 17",
+      "name": "ONTHEWAY (T-BANA RÅDHUSET)",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11225",
+      "countryCode": "SE",
+      "distance": 1.19,
+      "routeDistance": 1.58,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.3304,
+      "longitude": 18.04559,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-855400",
+      "servicePointId": "SE-855400",
+      "street": "ODENGATAN 52",
+      "name": "ODEN SPEL & TOBAK",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11322",
+      "countryCode": "SE",
+      "distance": 1.17,
+      "routeDistance": 1.67,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.34391,
+      "longitude": 18.0545,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-835500",
+      "servicePointId": "SE-835500",
+      "street": "DALAGATAN 9N",
+      "name": "ICA SUPERMARKET SABBATSBERG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11361",
+      "countryCode": "SE",
+      "distance": 1.2,
+      "routeDistance": 1.69,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33901,
+      "longitude": 18.04534,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-232700",
+      "servicePointId": "SE-232700",
+      "street": "KUNGSHOLMSGATAN 2 A",
+      "name": "TC KIOSKEN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11227",
+      "countryCode": "SE",
+      "distance": 0.96,
+      "routeDistance": 1.73,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.32967,
+      "longitude": 18.05114,
+      "clickAndCollectId": ""
+     }
+    ],
+    "homedeliveryParcel": false,
+    "lofi": true
+   }
+  }
+ ]
+}
