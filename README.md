@@ -490,3 +490,36 @@ pyright
 At runtime `karrio` is a `pkgutil.extend_path` namespace shared by the SDK and this repository, which pyright cannot follow: the SDK's regular `karrio`, `karrio.providers`, `karrio.mappers`, `karrio.schemas`, and `karrio.plugins` packages would shadow this repository's directories.
 The empty `__init__.pyi` files in those five directories make them regular packages for pyright, so imports of both the SDK and the connector resolve.
 They have no runtime effect and are excluded from the wheel by `[tool.setuptools.exclude-package-data]`, so an installed connector never shadows the SDK's `karrio/__init__.py`.
+
+## Sandbox tests
+
+`sandbox_tests/` holds an opt-in suite that calls the DHL Freight SE sandbox; it sits outside `tests/`, so the default offline run never discovers it, and the wheel does not ship it.
+Credentials come from the environment only, so export them from a git-ignored `.env` before running:
+
+```bash
+set -a; . ./.env; set +a
+DHL_FREIGHT_SWEDEN_SANDBOX=1 .venv/bin/python -m unittest discover -v -s sandbox_tests
+```
+
+Every test skips unless `DHL_FREIGHT_SWEDEN_SANDBOX=1` and `KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY` are set, and the booking segments also skip without `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`.
+The gateway always runs in test mode, and the run fails if `DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL` names the production host or if a carrier call targets any host other than the gateway's sandbox host.
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` | `lookups` | comma-separated segments to run |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS` | all | comma-separated product codes the booking segments may book |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `3` | booking attempts allowed in one process |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR` | `$XDG_STATE_HOME/karrio-dhl-freight-sweden/sandbox/<YYYYmmdd-HHMMSS>` | capture directory (`~/.local/state` when `XDG_STATE_HOME` is unset) |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_SERVER_URL` | sandbox host | `server_url` connection config override |
+
+The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
+The `booking-approved` segment books 102 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.
+The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022.
+The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05), so the capacity check runs against PL.
+
+Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
+To book a single product, narrow both selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
+Every live call writes its request and response as JSON to the capture directory, with the `client-key` header, the client key, and the account number redacted.
+Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
+
+Planned segments, not yet implemented: a customs matrix for lanes leaving the EU VAT area, the freight products, and expected rejections for the DHL validation errors the connector does not catch locally.
