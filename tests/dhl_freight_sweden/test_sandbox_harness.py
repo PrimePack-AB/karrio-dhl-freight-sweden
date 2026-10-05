@@ -1,10 +1,14 @@
-"""Offline tests for the live sandbox harness's configuration, budget, and redaction."""
+"""Offline tests for the live sandbox harness and the payloads its segments send."""
 
 import datetime
 import pathlib
 import unittest
 
-from sandbox_tests.dhl_freight_sweden import harness
+import karrio.core.models as models
+import karrio.lib as lib
+from sandbox_tests.dhl_freight_sweden import booking, harness, rejection
+
+from .fixture import gateway
 
 NOW = datetime.datetime(2026, 10, 5, 12, 0, 0)
 LIVE = {
@@ -157,3 +161,97 @@ class TestSandboxHarnessRedaction(unittest.TestCase):
                 },
             },
         )
+
+
+SERVICE_POINT = {
+    "service_point_id": "PL-1234",
+    "name": "Sklep Testowy",
+    "type": "servicepoint",
+    "address": {
+        "street": "ul. Floriańska 1",
+        "city": "Kraków",
+        "postal_code": "31-019",
+        "country_code": "PL",
+    },
+}
+
+
+def _serialize(request: lib.Serializable) -> dict:
+    return lib.to_dict(request.serialize())
+
+
+def _pl_request(product: str, options: dict) -> lib.Serializable:
+    return gateway.mapper.create_shipment_request(
+        models.ShipmentRequest(
+            service=product,
+            shipper=booking.SHIPPER,
+            recipient=booking.RECIPIENTS["PL"],
+            parcels=[booking.PARCEL],
+            options={**booking.SENT_FREE, **options},
+        )
+    )
+
+
+class TestSandboxRejectionPayloads(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+    def test_mutated_request_leaves_the_original_request_intact(self):
+        request = _pl_request("112", {})
+        original = _serialize(request)
+
+        mutated = _serialize(
+            harness.mutated_request(request, rejection.with_payer_code("1"))
+        )
+
+        self.assertEqual(mutated["payerCode"], {"code": "1"})
+        self.assertEqual(_serialize(request), original)
+        self.assertEqual(
+            {**mutated, "payerCode": original["payerCode"]}, original
+        )
+
+    def test_without_sent_removes_only_the_sent_entries(self):
+        request = _pl_request(
+            "109",
+            {
+                **booking.service_point_options(SERVICE_POINT),
+                "dhl_freight_sweden_payer_code": "022",
+            },
+        )
+        original = _serialize(request)
+
+        mutated = _serialize(harness.mutated_request(request, rejection.without_sent))
+
+        self.assertEqual(
+            original["additionalInformation"],
+            [{"code": "SENT_FREE", "stringValue": "true"}],
+        )
+        self.assertNotIn("additionalInformation", mutated)
+        self.assertEqual(
+            {key: value for key, value in original.items() if key != "additionalInformation"},
+            mutated,
+        )
+
+    def test_with_party_appends_the_connector_access_point_shape(self):
+        request = _pl_request(
+            "109",
+            {
+                **booking.service_point_options(SERVICE_POINT),
+                "dhl_freight_sweden_payer_code": "022",
+            },
+        )
+        connector_access_point = _serialize(request)["parties"][-1]
+        plain = _serialize(_pl_request("112", {}))
+
+        mutated = _serialize(
+            harness.mutated_request(
+                _pl_request("112", {}),
+                rejection.with_party(rejection.access_point_party(SERVICE_POINT)),
+            )
+        )
+
+        self.assertEqual(
+            rejection.access_point_party(SERVICE_POINT), connector_access_point
+        )
+        self.assertEqual(mutated["parties"], [*plain["parties"], connector_access_point])
+
