@@ -156,9 +156,9 @@ A free flag `true` together with a number fails as contradictory, and a number o
 `dhl_freight_sweden_ekaer_free` `false` without a number fails, because the manual marks the EKAER number mandatory for a shipment that is not EKAER free.
 `dhl_freight_sweden_uit_free` `false` without a number sends `UIT_FREE` `"false"` alone, because the v5.23 release notes (p7) make the UIT number optional even when the shipment is not UIT free, while asking for it whenever the customer has one.
 
-On products 202, 205, 233, SPI, and 601 to a recipient in HU or RO, a shipment without the free flag or the number fails and asks for an explicit declaration.
+On products 202, 205, 233, SPI, and 601, a shipment with the shipper or the recipient in HU or RO without the free flag or the number fails and asks for an explicit declaration, following the manual's "to/from" wording in the same tables.
 The connector does not declare a shipment EKAER or UIT free by itself: these are legal declarations made on the shipper's or the consignee's behalf, and the connector cannot verify the facts they rest on, such as the risk class of the goods or the aggregation of goods per vehicle.
-On other products, and on lanes from HU or RO, the options are optional and sent when given.
+On other products the options are optional and sent when given.
 The sandbox accepted 109 and 112 bookings to HU and RO without these entries (2026-10-05).
 
 ### Additional information pass-through
