@@ -889,7 +889,7 @@ def _service_point_party(
 
 
 def _party(
-    role: str, address, id: str = None
+    role: str, address, id: typing.Optional[str] = None
 ) -> dhl_freight_sweden_req.PartyType:
     return dhl_freight_sweden_req.PartyType(
         type=role,
