@@ -198,6 +198,18 @@ SERVICE_POINT = {
     },
 }
 
+SE_SERVICE_POINT = {
+    "service_point_id": "SE-982000",
+    "name": "Testbutik",
+    "type": "servicepoint",
+    "address": {
+        "street": "Drottninggatan 12",
+        "city": "Stockholm",
+        "postal_code": "11151",
+        "country_code": "SE",
+    },
+}
+
 
 def _serialize(request: lib.Serializable) -> dict:
     return serialize_request(request)
@@ -277,6 +289,32 @@ class TestSandboxRejectionPayloads(unittest.TestCase):
             rejection.access_point_party(SERVICE_POINT), connector_access_point
         )
         self.assertEqual(mutated["parties"], [*plain["parties"], connector_access_point])
+
+
+    def test_access_point_id_only_drops_name_and_address(self):
+        request = gateway.mapper.create_shipment_request(
+            shipment_request(
+                service="103",
+                shipper=booking.SHIPPER,
+                recipient=booking.RECIPIENTS["SE"],
+                parcels=[booking.PARCEL],
+                options=booking.service_point_options(SE_SERVICE_POINT),
+            )
+        )
+        original = _serialize(request)
+
+        mutated = _serialize(
+            harness.mutated_request(request, rejection.access_point_id_only)
+        )
+
+        self.assertEqual(
+            mutated["parties"],
+            [
+                *original["parties"][:-1],
+                {"id": "SE-982000", "type": "AccessPoint", "subType": "ParcelShop"},
+            ],
+        )
+        self.assertEqual({**mutated, "parties": original["parties"]}, original)
 
 
 class TestSandboxDeclarationPayloads(unittest.TestCase):
