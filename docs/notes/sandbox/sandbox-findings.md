@@ -21,7 +21,8 @@ The committed copies drop the `client-key` header and the response headers, and 
 The original captures masked the customer number in the Consignor party id; the evidence files restore it and record the restored placeholder under `account_number_restored`.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
 A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
-The two `label` files come from an earlier probe on 2026-09-10 that sent 1234567 as the Consignor party id; they back the README's consignee phone statement and are not part of the findings below.
+The `label` file of booking 2906761354 comes from the suite's print call on 2026-10-05.
+The other two `label` files come from an earlier probe on 2026-09-10 that sent 1234567 as the Consignor party id; they back the README's consignee phone statement and are not part of the findings below.
 `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
 `sandbox_tests/dhl_freight_sweden/evidence.py` builds the files from the captures, and rebuilding over the same captures reproduces them byte for byte.
 
@@ -56,6 +57,8 @@ The time is the response `Date` header, except for the three direct bookings who
 The 109 and 112 bookings to PL declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, and 2906761347 sent `UIT_FREE` `"false"` without a number, and DHL echoed these entries in the responses.
 No other booking sent additional information entries.
 Every booking except 2906761073, 2906761081, and 2906761149 was followed by a Print API call that returned a PDF label (`label_<id>.pdf`).
+The label of 2906761354, printed with page type `Label`, is one PDF page of 297.638 × 595.276 pt (105 × 210 mm) ([label-2906761354][lb-354]).
+Its text shows the Consignee name below the sender block and the Consignee name and address at the bottom, and its only `Phn.` line carries the sender's +46 8 123 456, although the booking sent the consignee phone +45 20 12 34 56.
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (p243).
 The 103 and 109 bookings to RO, HU, NO, and DK were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
@@ -130,6 +133,10 @@ The API bookings sent no routing code, and every booking response returned `rout
 Product matches for SE to PL returned both 601 and HDI ([lookup-product-matches-se-pl.json][l-pm-pl]), and the manual names HDI as the invoice-file code for 601 (p86).
 Product matches for SE 11143 to SE 41101 returned 502, 118, 104, 102, 402, 211, 401, and 103 ([lookup-product-matches-se-se.json][l-pm-se]).
 
+## Pending verification
+
+The README lists PostalCode error 16012 as "not supported", and no capture shows 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]).
+
 ## Untested
 
 No booking used the freight products 202, 205, 209, 210, 211, 212, 232, 233, SPI, or PPI, or the parcel and home delivery products 104, 107, 401, 402, and 502.
@@ -169,3 +176,4 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [l-pm-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-pl.json
 [l-pm-se]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se.json
 [l-products]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json
+[lb-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json
