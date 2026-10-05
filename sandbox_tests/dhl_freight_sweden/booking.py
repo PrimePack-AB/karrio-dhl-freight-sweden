@@ -145,12 +145,18 @@ def sub_type(point: dict) -> str:
 
 
 def nearest_service_point(
-    session: harness.Session, gateway, label: str, product: str, recipient: dict
+    session: harness.Session,
+    gateway,
+    label: str,
+    product: str,
+    recipient: dict,
+    sub_types: typing.Optional[typing.AbstractSet[str]] = None,
 ) -> typing.Tuple[typing.Optional[dict], typing.List[models.Message]]:
     """The nearest point to ``recipient`` that can book ``product``.
 
     A candidate needs a service point id, a complete address, and a sub type
-    the connector accepts for the product and destination country.
+    the connector accepts for the product and destination country, narrowed
+    to ``sub_types`` when given.
     """
     settings = harness.settings_of(gateway)
     country = recipient["country_code"]
@@ -178,6 +184,8 @@ def nearest_service_point(
     accepted = provider_units.ACCESS_POINT_SUB_TYPES.get(product, {}).get(
         country, frozenset()
     )
+    if sub_types is not None:
+        accepted = accepted & sub_types
     candidate = next(
         (
             point

@@ -1,10 +1,11 @@
 """Sandbox segment ``booking-export``: Parcel Connect from SE to a destination matrix.
 
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
-Connect Plus, home delivery) from SE to PL, RO, HU, or NO. Before spending a
-booking it checks for free that product matches offer the product for the
-lane and, for 109, that a service point near the recipient accepts it, and
-skips otherwise. Lanes to PL declare SENT free explicitly.
+Connect Plus, home delivery) from SE to PL, RO, HU, or NO, and 109 to a DK
+ParcelShop. Before spending a booking it checks for free that product
+matches offer the product for the lane and, for 109, that a service point
+near the recipient accepts it, and skips otherwise. Lanes to PL declare SENT
+free explicitly.
 
 NO is outside the EU VAT area, so its bookings carry one commodity, a
 proforma invoice number, and DHL customs handling full service, the customs
@@ -63,7 +64,12 @@ class TestSandboxBookingExport(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
 
-    def export(self, product: str, country: str):
+    def export(
+        self,
+        product: str,
+        country: str,
+        sub_types: typing.Optional[typing.AbstractSet[str]] = None,
+    ):
         booking.require_booking(self, self.session, product, country)
         recipient = booking.RECIPIENTS[country]
         lane = f"{product}-{country.lower()}"
@@ -82,11 +88,12 @@ class TestSandboxBookingExport(unittest.TestCase):
         options: dict = {}
         if product == "109":
             point, messages = booking.nearest_service_point(
-                self.session, self.gateway, f"service-points-{lane}", product, recipient
+                self.session, self.gateway, f"service-points-{lane}", product, recipient, sub_types
             )
             if point is None:
                 self.skipTest(
-                    f"no service point near {recipient['city']} accepts {product}: "
+                    f"no {'/'.join(sorted(sub_types)) if sub_types else 'service point'} "
+                    f"near {recipient['city']} accepts {product}: "
                     f"{[message.message for message in messages]}"
                 )
             options.update(booking.service_point_options(point))
@@ -134,4 +141,7 @@ class TestSandboxBookingExport(unittest.TestCase):
 
     def test_book_112_no(self):
         self.export("112", "NO")
+
+    def test_book_109_dk_parcel_shop(self):
+        self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))
 
