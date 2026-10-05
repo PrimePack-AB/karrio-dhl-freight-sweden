@@ -4,7 +4,7 @@ Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
 Connect Plus, home delivery) from SE to PL, RO, HU, or NO. Before spending a
 booking it checks for free that product matches offer the product for the
 lane and, for 109, that a service point near the recipient accepts it, and
-skips otherwise.
+skips otherwise. Lanes to PL declare SENT free explicitly.
 
 NO is outside the EU VAT area, so its bookings carry one commodity, a
 proforma invoice number, and DHL customs handling full service, the customs
@@ -102,7 +102,11 @@ class TestSandboxBookingExport(unittest.TestCase):
                 shipper=booking.SHIPPER,
                 recipient=recipient,
                 parcels=[booking.PARCEL],
-                options={**options, **customs_options},
+                options={
+                    **options,
+                    **customs_options,
+                    **booking.declaration_options(recipient),
+                },
                 **customs,
             ),
         )

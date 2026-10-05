@@ -67,6 +67,7 @@ class TestSandboxBookingPudo(unittest.TestCase):
                 parcels=[booking.PARCEL],
                 options=dict(
                     **booking.service_point_options(point),
+                    **booking.SENT_FREE,
                     dhl_freight_sweden_payer_code="022",
                 ),
             ),
