@@ -201,7 +201,8 @@ def shipment_request(
         shipper.country_code,
         recipient.country_code,
     )
-    shipping_date = lib.fdate(payload.options.get("shipment_date"))
+    # lib.fdate declares `date_str: str = None` and returns None for None.
+    shipping_date = lib.fdate(payload.options.get("shipment_date"))  # pyright: ignore[reportArgumentType]
     procedure_code = (
         options.dhl_freight_sweden_customs_procedure_code.state or "1042"
     )
@@ -283,7 +284,7 @@ def shipment_request(
     request = dhl_freight_sweden_req.TransportInstructionRequestType(
         # productCode is generated as Optional[int]; the SPI product and codes
         # such as 402/502 must serialize as strings on the wire.
-        productCode=str(service),
+        productCode=str(service),  # pyright: ignore[reportArgumentType]
         shippingDate=shipping_date,
         pickupInstruction=options.dhl_freight_sweden_pickup_instruction.state,
         deliveryInstruction=options.dhl_freight_sweden_delivery_instruction.state,
@@ -484,9 +485,9 @@ def _customs_commodity(
         ),
         # hsItemId and procedureCode are strings on the wire even though the
         # generated type annotates them as int.
-        hsItemId=commodity.hs_code,
+        hsItemId=commodity.hs_code,  # pyright: ignore[reportArgumentType]
         commodityDescription=commodity.description or commodity.title,
-        procedureCode=procedure_code,
+        procedureCode=procedure_code,  # pyright: ignore[reportArgumentType]
         # A commodity without a weight unit keeps the kilogram reading it had
         # before unit conversion, unlike the SDK Product default of pounds.
         netWeight=lib.identity(
@@ -882,7 +883,7 @@ def _service_point_party(
             cityName=details["city"],
             # postalCode is generated as Optional[int]; keep it a string so
             # alphanumeric/space-bearing postal codes survive serialization.
-            postalCode=str(details["postal_code"]) if details["postal_code"] else None,
+            postalCode=str(details["postal_code"]) if details["postal_code"] else None,  # pyright: ignore[reportArgumentType]
             countryCode=details["country_code"],
         ),
     )
@@ -905,7 +906,7 @@ def _party(
             cityName=address.city,
             # postalCode is generated as Optional[int]; keep it a string so
             # alphanumeric/space-bearing postal codes survive serialization.
-            postalCode=str(address.postal_code) if address.postal_code else None,
+            postalCode=str(address.postal_code) if address.postal_code else None,  # pyright: ignore[reportArgumentType]
             countryCode=address.country_code,
         ),
     )
