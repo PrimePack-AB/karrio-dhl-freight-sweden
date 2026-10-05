@@ -1,0 +1,69 @@
+{
+ "kind": "label",
+ "summary": "Reprint with page type Label of 109 SE to DK ParcelShop 8009-591479 booking 2906723800; the label text shows one Phn. line, the sender's +46 8 123 456, and no consignee phone. The booking call itself was not captured, so the phone it sent is not part of this evidence.",
+ "captured_at": "2026-09-10T13:12:41Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "109",
+ "route": "SE 11143 -> DK 1620",
+ "booking_id": "2906723800",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "agent-logs/karrio/phone-print-probe (curl call 3 in live-probe-results.md)",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-09-10T13:12:41Z",
+   "date_basis": "response capture file mtime",
+   "request_source": {
+    "path": "agent-logs/karrio/phone-print-probe/dk-reprint-request.json",
+    "sha256": "746784ca7d5f5aef861fb843e1556f362605d08b2214e497560b579b395415d5"
+   },
+   "response_source": {
+    "path": "agent-logs/karrio/phone-print-probe/dk-reprint-response.json",
+    "sha256": "966898bd3438eb952565c197231e01e5e31ba21b0b5183b9f556167f66d15b8e"
+   },
+   "request": {
+    "shipmentIds": [
+     "2906723800"
+    ],
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    }
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906723800.pdf",
+      "content": "<base64 omitted: 107640 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio/phone-print-probe/label_2906723800.pdf",
+     "sha256": "5793f7db8f2ace187cabe48cbba7e853ee3052f56613e174aa3c03c20680df63"
+    },
+    "page_size_pt": [
+     297.638,
+     595.276
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio/phone-print-probe/label_2906723800.txt",
+     "sha256": "54f0e0b0c2b759c585526b1f459adf737d8b30d829eb6dbcc0e64708117b1307"
+    },
+    "text": "              DHL PARCEL CONNECT\n\n\n\n\n                                ST\n     Test Shipper AB                                Cust. No.\n     Kungsgatan 1                                   1234567\n     11143 Stockholm                                Phn.\n     SWEDEN                                         +46 8 123 456\n\n                                                    Cust. No.\n     Mette Hansen\n\n\n\n\n                                   T\n     SHOP GLOBALEYES 8009-591479\n     Vesterbrogade 74\n     1620 KØBENHAVN V\n     DENMARK\n\n\n\n Domestic routing\n\n                    200-DK-E\n\n  Shipment Id:\n\n\n\n                    TE\n                  2906723800\n  Date created: 2026-09-10\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 1234567\n  Weight:         5.0 / 5.0\n  Shipping mark: REF-PROBE-1\n  Delivery instr:\n                                                                  1/1\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\nTE\n Mette Hansen Vesterbrogade 1\n DK 1620 København V\n\n\n\n\n  ST                      (2L)DK1620+70530000\n\n\n\n\n                        (00)373221512524974386\n                                                  Print By DHL API FARM\n\f"
+   }
+  }
+ ]
+}

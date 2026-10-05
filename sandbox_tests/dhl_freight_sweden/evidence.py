@@ -19,6 +19,7 @@ finding gets a catalog entry pointing at its capture directory.
 """
 
 import argparse
+import base64
 import dataclasses
 import datetime
 import email.utils
@@ -38,6 +39,8 @@ ACCOUNT_NUMBER = "116768"
 ACCOUNT_PLACEHOLDERS = frozenset({"<redacted>", "<ACCOUNT>", "__ACCOUNT__"})
 BASE64 = re.compile(r"^[A-Za-z0-9+/=\s]{200,}$")
 TI = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
+PRINT = "/printapi/v1/print/printdocumentsbyid"
+MEDIA_BOX = re.compile(rb"/MediaBox\s*\[\s*0\s+0\s+([0-9.]+)\s+([0-9.]+)\s*\]")
 SUITE_RUN = "sandbox_tests suite"
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 DEFAULT_OUT = REPO_ROOT / "tests" / "dhl_freight_sweden" / "fixtures" / "sandbox"
@@ -176,6 +179,28 @@ class Builder:
                 )
             )
         return out
+
+    def with_label(
+        self, exchange: Exchange, response_path: pathlib.Path, pdf_path: pathlib.Path, text_path: pathlib.Path
+    ) -> Exchange:
+        """Attach the printed label's page size and extracted text to a Print API exchange.
+
+        ``pdf_path`` must hold the bytes of the response's only report, and
+        ``text_path`` the ``pdftotext -layout`` output of that PDF.
+        """
+        (report,) = json.loads(response_path.read_text())["reports"]
+        pdf = pdf_path.read_bytes()
+        assert base64.b64decode(report["content"]) == pdf, f"{pdf_path} is not the printed label"
+        media_box = MEDIA_BOX.search(pdf)
+        assert media_box, f"{pdf_path} has no MediaBox"
+        exchange["label"] = dict(
+            pdf_source=self.source(pdf_path),
+            page_size_pt=[float(media_box.group(1)), float(media_box.group(2))],
+            text_extraction="pdftotext -layout",
+            text_source=self.source(text_path),
+            text=text_path.read_text(),
+        )
+        return exchange
 
     def document(
         self,
@@ -501,6 +526,44 @@ def _(b: Builder) -> Json:
         "109, 112", None, None, None, PROBE_SCRIPT,
         [reduce_product(b.file_exchange(None, p / "product-109.json", "GET", "/productapi/v1/products/109", 200)),
          reduce_product(b.file_exchange(None, p / "product-112.json", "GET", "/productapi/v1/products/112", 200))],
+    )
+
+
+PHONE_PROBE = "agent-logs/karrio/phone-print-probe"
+
+
+@evidence("label-2906724865-109-se-de.json")
+def _(b: Builder) -> Json:
+    d = b.state_root / PHONE_PROBE
+    return b.document(
+        "label",
+        "109 SE to DE booked directly with consignee phone +49 170 7000 777 and printed with page type Label; "
+        "the label text shows one Phn. line, the sender's +46 8 123 456, and no consignee phone.",
+        "109", "SE 11143 -> DE 10115", "2906724865", None,
+        f"{PHONE_PROBE} (curl calls 1 and 2 in live-probe-results.md)",
+        [b.file_exchange(d / "de-booking-request.json", d / "de-booking-response.json", "POST", TI, 200),
+         b.with_label(
+             b.file_exchange(d / "de-print-request.json", d / "de-print-response.json", "POST", PRINT, 200),
+             d / "de-print-response.json", d / "label_2906724865.pdf", d / "label_2906724865.txt",
+         )],
+        primary=1,
+    )
+
+
+@evidence("label-2906723800-109-se-dk-parcelshop.json")
+def _(b: Builder) -> Json:
+    d = b.state_root / PHONE_PROBE
+    return b.document(
+        "label",
+        "Reprint with page type Label of 109 SE to DK ParcelShop 8009-591479 booking 2906723800; "
+        "the label text shows one Phn. line, the sender's +46 8 123 456, and no consignee phone. "
+        "The booking call itself was not captured, so the phone it sent is not part of this evidence.",
+        "109", "SE 11143 -> DK 1620", "2906723800", None,
+        f"{PHONE_PROBE} (curl call 3 in live-probe-results.md)",
+        [b.with_label(
+            b.file_exchange(d / "dk-reprint-request.json", d / "dk-reprint-response.json", "POST", PRINT, 200),
+            d / "dk-reprint-response.json", d / "label_2906723800.pdf", d / "label_2906723800.txt",
+        )],
     )
 
 

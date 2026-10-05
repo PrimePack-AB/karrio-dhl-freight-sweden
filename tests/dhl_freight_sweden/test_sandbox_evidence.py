@@ -29,7 +29,7 @@ EVIDENCE_DIR = pathlib.Path(__file__).parent / "fixtures" / "sandbox"
 EVIDENCE_FILES = sorted(EVIDENCE_DIR.glob("*.json"))
 HOST = "test-api.freight-logistics.dhl.com"
 ACCOUNT_NUMBER = "116768"
-KINDS = ("booking", "rejection", "lookup")
+KINDS = ("booking", "rejection", "lookup", "label")
 METADATA_KEYS = (
     "kind",
     "summary",
@@ -56,6 +56,12 @@ EXCHANGE_KEYS = (
     "request",
     "response",
 )
+OPTIONAL_EXCHANGE_KEYS = {"response_reduced", "label"}
+LABEL_KEYS = ("pdf_source", "page_size_pt", "text_extraction", "text_source", "text")
+OTHER_CONSIGNOR_IDS = {
+    # These captures sent 1234567 as the Consignor party id instead of the customer number.
+    "label-2906724865-109-se-de.json": "1234567",
+}
 TI_PATH = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
 PRINT_PATH = "/printapi/v1/print/printdocumentsbyid"
 CAPTURED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
@@ -100,7 +106,7 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
                 self.assertIn(
                     evidence["endpoint"], [item["endpoint"] for item in evidence["exchanges"]]
                 )
-                if evidence["kind"] == "booking":
+                if evidence["kind"] in ("booking", "label"):
                     self.assertIsNotNone(evidence["booking_id"])
                     self.assertIn(evidence["booking_id"], path.name)
                 if evidence["kind"] == "rejection":
@@ -113,7 +119,7 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
             for item in evidence["exchanges"]:
                 with self.subTest(path.name, endpoint=item["endpoint"]):
                     self.assertEqual(tuple(item)[: len(EXCHANGE_KEYS)], EXCHANGE_KEYS)
-                    self.assertLessEqual(set(item) - set(EXCHANGE_KEYS), {"response_reduced"})
+                    self.assertLessEqual(set(item) - set(EXCHANGE_KEYS), OPTIONAL_EXCHANGE_KEYS)
                     self.assertRegex(item["date"], CAPTURED_AT)
                     for source in (item["request_source"], item["response_source"]):
                         if source is None:
@@ -147,7 +153,28 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
                     for party in (body or {}).get("parties", []):
                         if party["type"] == "Consignor":
                             with self.subTest(path.name):
-                                self.assertEqual(party["id"], ACCOUNT_NUMBER)
+                                self.assertEqual(
+                                    party["id"], OTHER_CONSIGNOR_IDS.get(path.name, ACCOUNT_NUMBER)
+                                )
+
+    def test_labels_cite_their_pdf_and_text(self):
+        labels = 0
+        for path in EVIDENCE_FILES:
+            evidence = load(path)
+            for item in evidence["exchanges"]:
+                if "label" not in item:
+                    continue
+                labels += 1
+                with self.subTest(path.name):
+                    label = item["label"]
+                    self.assertEqual(tuple(label), LABEL_KEYS)
+                    self.assertTrue(item["endpoint"].endswith(PRINT_PATH))
+                    for source in (label["pdf_source"], label["text_source"]):
+                        self.assertFalse(pathlib.PurePath(source["path"]).is_absolute())
+                        self.assertRegex(source["sha256"], SHA256)
+                    self.assertEqual(len(label["page_size_pt"]), 2)
+                    self.assertIn(evidence["booking_id"], label["text"])
+        self.assertGreater(labels, 0)
 
 
 class TestSandboxEvidenceParses(unittest.TestCase):
@@ -180,6 +207,27 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                 self.assertEqual(messages, [])
                 self.assertIsNotNone(details)
                 self.assertEqual(details.tracking_number, evidence["booking_id"])
+
+    def test_label_responses_parse(self):
+        for path in EVIDENCE_FILES:
+            evidence = load(path)
+            if evidence["kind"] != "label":
+                continue
+            with self.subTest(path.name):
+                (printed,) = exchanges_to(evidence, PRINT_PATH)
+                self.assertEqual(
+                    [report["contentType"] for report in printed["response"]["reports"]],
+                    ["application/pdf"],
+                )
+                for booking in exchanges_to(evidence, TI_PATH):
+                    details, messages = create.parse_shipment_response(
+                        lib.Deserializable([booking["response"], printed["response"]]),
+                        gateway.settings,
+                    )
+
+                    self.assertEqual(messages, [])
+                    self.assertIsNotNone(details)
+                    self.assertEqual(details.tracking_number, evidence["booking_id"])
 
     def test_rejection_responses_parse(self):
         for path in EVIDENCE_FILES:
