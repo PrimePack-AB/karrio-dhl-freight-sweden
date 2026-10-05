@@ -7,6 +7,7 @@ The configuration parsing, budget, and redaction are pure; the effects
 ``Session``, built once per process by ``session()``.
 """
 
+import copy
 import dataclasses
 import datetime
 import functools
@@ -25,8 +26,16 @@ import karrio.mappers.dhl_freight_sweden.settings as connector_settings
 import karrio.sdk as karrio
 
 SANDBOX_HOST = "test-api.freight-logistics.dhl.com"
-SEGMENTS = frozenset({"lookups", "booking-approved", "booking-pudo", "booking-export"})
-BOOKING_SEGMENTS = frozenset({"booking-approved", "booking-pudo", "booking-export"})
+BOOKING_SEGMENTS = frozenset(
+    {
+        "booking-approved",
+        "booking-pudo",
+        "booking-export",
+        "booking-declarations",
+        "rejections",
+    }
+)
+SEGMENTS = frozenset({"lookups"}) | BOOKING_SEGMENTS
 DEFAULT_SEGMENTS = frozenset({"lookups"})
 DEFAULT_MAX_BOOKINGS = 10
 BOOKING_PATH = "/transportinstruction/sendtransportinstruction"
@@ -142,6 +151,22 @@ def booking_skip_reason(
     if config.countries is not None and country not in config.countries:
         return f"country {country} is not in DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES"
     return None
+
+
+def mutated_request(
+    request: lib.Serializable, mutate: typing.Callable[[dict], dict]
+) -> lib.Serializable:
+    """The connector's ``request`` with ``mutate`` applied to its serialized payload.
+
+    The connector validates the booking while building ``request``, so a
+    payload DHL is expected to reject is derived from a valid request just
+    before it is sent; ``mutate`` receives a deep copy.
+    """
+    return lib.Serializable(
+        request.value,
+        lambda _: mutate(copy.deepcopy(request.serialize())),
+        request.ctx,
+    )
 
 
 class BookingBudget:
