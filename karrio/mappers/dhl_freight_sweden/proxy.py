@@ -8,6 +8,7 @@ import karrio.api.proxy as proxy
 import karrio.core.models as models
 import karrio.mappers.dhl_freight_sweden.settings as provider_settings
 import karrio.providers.dhl_freight_sweden.address as provider_address
+import karrio.providers.dhl_freight_sweden.utils as provider_utils
 import karrio.schemas.dhl_freight_sweden.print_request_by_id as dhl_freight_sweden_print
 from karrio.universal.mappers.rating_proxy import RatingMixinProxy
 
@@ -33,7 +34,7 @@ class Proxy(proxy.Proxy):
             on_error=lib.error_decoder,
         )
 
-        return lib.Deserializable(response, lib.to_dict, request.ctx)
+        return lib.Deserializable(response, provider_utils.to_dict, request.ctx)
 
     def get_rates(self, request: lib.Serializable) -> lib.Deserializable:
         """Resolve static prices from the server-side rate sheet.
@@ -44,7 +45,9 @@ class Proxy(proxy.Proxy):
         """
         return RatingMixinProxy.get_rates(self, request)
 
-    def create_shipment(self, request: lib.Serializable) -> lib.Deserializable[str]:
+    def create_shipment(
+        self, request: lib.Serializable
+    ) -> lib.Deserializable[typing.List[dict]]:
         """Book a transport instruction, then print its documents by id.
 
         The shipment id only exists once the booking response returns, so the
@@ -69,7 +72,7 @@ class Proxy(proxy.Proxy):
             on_error=lib.error_decoder,
         )
 
-        instruction = (lib.to_dict(booking) or {}).get("transportInstruction") or {}
+        instruction = (provider_utils.to_dict(booking) or {}).get("transportInstruction") or {}
         shipment_id = instruction.get("id")
 
         printed = lib.identity(
@@ -97,7 +100,9 @@ class Proxy(proxy.Proxy):
 
         return lib.Deserializable(
             [booking, printed, *warnings],
-            lambda responses: [lib.to_dict(response) for response in responses],
+            lambda responses: [
+                provider_utils.to_dict(response) for response in responses
+            ],
             ctx,
         )
 
@@ -119,7 +124,7 @@ class Proxy(proxy.Proxy):
         ).lower()
         if mode not in ("warn", "enforce"):
             mode = "off"
-        destination = _booking_destination(lib.to_dict(request.serialize()))
+        destination = _booking_destination(provider_utils.to_dict(request.serialize()))
 
         if mode == "off" or destination is None:
             return []
@@ -129,7 +134,7 @@ class Proxy(proxy.Proxy):
                 country_code=destination["country_code"],
                 postal_code=destination["postal_code"],
             ),
-            lib.to_dict,
+            provider_utils.to_dict,
             dict(service=destination["product"]),
         )
         # A route-lookup failure (network error, timeout, unparseable error
@@ -140,7 +145,7 @@ class Proxy(proxy.Proxy):
 
     def find_product_matches(
         self, request: lib.Serializable
-    ) -> lib.Deserializable[dict]:
+    ) -> lib.Deserializable[typing.Union[dict, list]]:
         """Look up matching products for an address pair (connector-local).
 
         POSTs the serialized ``MatchCriteria`` body to the Product API's
@@ -160,11 +165,11 @@ class Proxy(proxy.Proxy):
             on_error=lib.error_decoder,
         )
 
-        return lib.Deserializable(response, lib.to_dict)
+        return lib.Deserializable(response, provider_utils.to_json_body)
 
     def find_service_points(
         self, request: lib.Serializable
-    ) -> lib.Deserializable[dict]:
+    ) -> lib.Deserializable[typing.Union[dict, list]]:
         """Look up the nearest service points for an address (connector-local).
 
         POSTs the serialized ``NearestServicePointRequest`` body to the
@@ -184,7 +189,7 @@ class Proxy(proxy.Proxy):
             on_error=lib.error_decoder,
         )
 
-        return lib.Deserializable(response, lib.to_dict)
+        return lib.Deserializable(response, provider_utils.to_json_body)
 
 
 def _booking_destination(data: dict) -> typing.Optional[dict]:

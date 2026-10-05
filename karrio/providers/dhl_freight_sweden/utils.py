@@ -60,3 +60,19 @@ class Settings(core.Settings):
             self.config or {},
             option_type=ConnectionConfig,
         )
+
+
+def to_dict(value: typing.Any) -> dict:
+    """``lib.to_dict`` for a value that encodes a JSON object.
+
+    ``lib.to_dict`` is annotated as returning ``dict | list | Any`` and takes
+    an implicitly optional ``clear_empty``, so it neither narrows to a dict nor
+    fits the one-argument (de)serializer of ``lib.Serializable`` and
+    ``lib.Deserializable``.
+    """
+    return typing.cast(dict, lib.to_dict(value))
+
+
+def to_json_body(value: typing.Any) -> typing.Union[dict, list]:
+    """``lib.to_dict`` for a response body that is a JSON object or array."""
+    return typing.cast(typing.Union[dict, list], lib.to_dict(value))

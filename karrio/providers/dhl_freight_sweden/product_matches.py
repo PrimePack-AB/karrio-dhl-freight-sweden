@@ -100,11 +100,11 @@ def product_matches_request(
         importExport=payload.get("import_export"),
     )
 
-    return lib.Serializable(request, lib.to_dict)
+    return lib.Serializable(request, provider_utils.to_dict)
 
 
 def parse_product_matches_response(
-    _response: lib.Deserializable[dict],
+    _response: lib.Deserializable[typing.Union[dict, list]],
     settings: provider_utils.Settings,
 ) -> typing.Tuple[typing.List[dict], typing.List[models.Message]]:
     """Parse a product matches response into normalized product dicts + Messages.
@@ -146,7 +146,7 @@ def _normalize_product(product: dict) -> dict:
     """
     transportation_mode = product.get("transportationMode") or {}
 
-    return lib.to_dict(
+    return provider_utils.to_dict(
         {
             "code": product.get("code"),
             "name": product.get("name"),
@@ -174,7 +174,7 @@ def _normalize_product(product: dict) -> dict:
             "payer_codes": [
                 item.get("code") for item in product.get("payerCodes") or []
             ],
-            "transportation_mode": lib.to_dict(
+            "transportation_mode": provider_utils.to_dict(
                 dict(
                     code=transportation_mode.get("code"),
                     name=transportation_mode.get("name"),
@@ -182,7 +182,7 @@ def _normalize_product(product: dict) -> dict:
             )
             or None,
             "sub_categories": [
-                lib.to_dict(
+                provider_utils.to_dict(
                     dict(
                         code=item.get("code"),
                         name=item.get("name"),
@@ -200,7 +200,7 @@ def _normalize_product(product: dict) -> dict:
 
 def _normalize_rule(rule: dict) -> dict:
     """Normalize one ``RulesPerDeliveryType`` into a min/max summary entry."""
-    return lib.to_dict(
+    return provider_utils.to_dict(
         {
             "country_code": (rule.get("country") or {}).get("countryCode"),
             "delivery_type": (rule.get("deliveryType") or {}).get("code"),
