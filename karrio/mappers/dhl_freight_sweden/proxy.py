@@ -14,7 +14,9 @@ from karrio.universal.mappers.rating_proxy import RatingMixinProxy
 
 
 class Proxy(proxy.Proxy):
-    settings: provider_settings.Settings
+    # Narrows the SDK base attribute to the connector settings the gateway
+    # constructs this proxy with; pyright treats mutable attributes as invariant.
+    settings: provider_settings.Settings  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def validate_address(self, request: lib.Serializable) -> lib.Deserializable[dict]:
         """Look up the postal-code route for an address (PostalCodes API).
@@ -43,7 +45,9 @@ class Proxy(proxy.Proxy):
         delegates to the universal rating mixin against the service levels
         seeded in ``units.DEFAULT_SERVICES``; no carrier call is made.
         """
-        return RatingMixinProxy.get_rates(self, request)
+        # RatingMixinProxy.get_rates reads only self.settings, which this
+        # proxy's RatingMixinSettings-derived settings satisfy.
+        return RatingMixinProxy.get_rates(typing.cast(RatingMixinProxy, self), request)
 
     def create_shipment(
         self, request: lib.Serializable
