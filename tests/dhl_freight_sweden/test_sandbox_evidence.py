@@ -235,7 +235,12 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                 )
 
                 self.assertIsNone(details)
-                self.assertEqual([message.code for message in messages], [evidence["error_code"]])
+                codes = [message.code for message in messages]
+                self.assertEqual(
+                    codes,
+                    [str(item["errorCode"]) for item in booking["response"]["validationErrors"]],
+                )
+                self.assertIn(evidence["error_code"], codes)
 
     def test_lookup_responses_parse(self):
         for path in EVIDENCE_FILES:
