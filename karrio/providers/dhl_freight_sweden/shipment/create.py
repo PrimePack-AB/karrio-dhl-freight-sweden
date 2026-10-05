@@ -65,6 +65,12 @@ class SentInformationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class TransportDeclarationError(errors.ShippingSDKDetailedError):
+    """Raised when the EKAER (HU) or UIT (RO) options are missing or inconsistent."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 def parse_shipment_response(
     _response: lib.Deserializable[typing.List[dict]],
     settings: provider_utils.Settings,
@@ -209,14 +215,15 @@ def shipment_request(
     service_point_party = _service_point_party(
         options, service, recipient.country_code
     )
-    sent_information = _sent_information(
-        options, {shipper.country_code, recipient.country_code}
-    )
+    lane_countries = {shipper.country_code, recipient.country_code}
     additional_information = [
-        *sent_information,
+        *_sent_information(options, lane_countries),
+        *_transport_declarations(
+            options, service, lane_countries, recipient.country_code
+        ),
         *_additional_information(
             options.dhl_freight_sweden_additional_information.state or [],
-            {entry.code for entry in sent_information},
+            _typed_information_codes(lane_countries),
         ),
     ]
     customs_options = lib.to_customs_info(
@@ -761,9 +768,126 @@ def _sent_information(
     ]
 
 
+def _transport_declarations(
+    options: units.ShippingOptions,
+    product_code: str,
+    lane_countries: typing.Set[str],
+    recipient_country: typing.Optional[str],
+) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
+    return [
+        entry
+        for declaration in provider_units.TRANSPORT_DECLARATIONS
+        if declaration.country in lane_countries
+        for entry in _transport_declaration(
+            declaration,
+            options,
+            required=(
+                product_code in provider_units.TRANSPORT_DECLARATION_PRODUCTS
+                and recipient_country == declaration.country
+            ),
+        )
+    ]
+
+
+def _transport_declaration(
+    declaration: provider_units.TransportDeclaration,
+    options: units.ShippingOptions,
+    required: bool,
+) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
+    free = options[declaration.free_option].state
+    number = (options[declaration.number_option].state or "").strip()
+
+    def entry(
+        code: provider_units.AdditionalInformationCode, value: str
+    ) -> dhl_freight_sweden_req.AdditionalInformationType:
+        return dhl_freight_sweden_req.AdditionalInformationType(
+            code=code.value, stringValue=value
+        )
+
+    if len(number) > declaration.number_max_length:
+        raise TransportDeclarationError(
+            f"The {declaration.name} number is limited to "
+            f"{declaration.number_max_length} characters",
+            details={
+                declaration.number_option: dict(
+                    code="invalid",
+                    message=f"at most {declaration.number_max_length} characters",
+                )
+            },
+        )
+
+    if free is True and number:
+        raise TransportDeclarationError(
+            f"{declaration.free_option} contradicts {declaration.number_option}; "
+            f"send either {declaration.name} free or the {declaration.name} number",
+            details={
+                name: dict(
+                    code="invalid",
+                    message=f"{declaration.name} free with {declaration.name} number",
+                )
+                for name in [declaration.free_option, declaration.number_option]
+            },
+        )
+
+    if free is True:
+        return [entry(declaration.free_code, "true")]
+
+    if number:
+        return [
+            entry(declaration.free_code, "false"),
+            entry(declaration.number_code, number),
+        ]
+
+    if free is False and declaration.number_required:
+        raise TransportDeclarationError(
+            f"A shipment to or from {declaration.country} that is not "
+            f"{declaration.name} free requires {declaration.number_option}",
+            details={
+                declaration.number_option: dict(
+                    code="required",
+                    message=f"{declaration.name} number is required",
+                )
+            },
+        )
+
+    if free is False:
+        return [entry(declaration.free_code, "false")]
+
+    if required:
+        raise TransportDeclarationError(
+            f"A shipment to {declaration.country} with this product requires an "
+            f"explicit {declaration.name} declaration: {declaration.free_option}, "
+            f"or {declaration.number_option}",
+            details={
+                declaration.free_option: dict(
+                    code="required",
+                    message=f"explicit {declaration.name} declaration is required",
+                )
+            },
+        )
+
+    return []
+
+
+def _typed_information_codes(lane_countries: typing.Set[str]) -> typing.Set[str]:
+    codes = provider_units.AdditionalInformationCode
+    sent_codes = lib.identity(
+        {codes.SENT_FREE.value, codes.SENT_REF.value, codes.SENT_CARKEY.value}
+        if provider_units.SENT_COUNTRY in lane_countries
+        else set()
+    )
+
+    return sent_codes | {
+        code.value
+        for declaration in provider_units.TRANSPORT_DECLARATIONS
+        if declaration.country in lane_countries
+        for code in (declaration.free_code, declaration.number_code)
+    }
+
+
 def _additional_information(
     entries: typing.List[typing.Any],
-    sent_codes: typing.AbstractSet[typing.Optional[str]],
+    typed_codes: typing.AbstractSet[str],
 ) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
     def invalid(message: str) -> AdditionalInformationError:
         return AdditionalInformationError(
@@ -778,11 +902,11 @@ def _additional_information(
     if any(not isinstance(entry, dict) or not entry.get("code") for entry in entries):
         raise invalid("Each additionalInformation entry requires a code")
 
-    duplicates = sorted({entry["code"] for entry in entries} & sent_codes)
+    duplicates = sorted({entry["code"] for entry in entries} & typed_codes)
     if any(duplicates):
         raise invalid(
-            f"additionalInformation codes {', '.join(duplicates)} are already "
-            "produced by the SENT options"
+            f"additionalInformation codes {', '.join(duplicates)} are set "
+            "through the SENT, EKAER, or UIT options on this lane"
         )
 
     return [

@@ -53,7 +53,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
                 _recipient_hu,
                 {
                     "dhl_freight_sweden_additional_information": [
-                        {"code": "EKAER_FREE", "stringValue": "true"},
+                        {"code": "CUSTOM_CODE", "stringValue": "value"},
                         {"code": "DATED", "dateValue": "2026-10-05T00:00:00"},
                         {"code": "COUNTED", "numericValue": 2.5},
                     ]
@@ -64,7 +64,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
         self.assertEqual(
             serialized["additionalInformation"],
             [
-                {"code": "EKAER_FREE", "stringValue": "true"},
+                {"code": "CUSTOM_CODE", "stringValue": "value"},
                 {"code": "DATED", "dateValue": "2026-10-05T00:00:00"},
                 {"code": "COUNTED", "numericValue": 2.5},
             ],
@@ -86,6 +86,51 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
             set(error.details), {"dhl_freight_sweden_additional_information"}
         )
         self.assertIn("SENT_FREE", str(error))
+
+    def test_entry_with_a_declaration_code_on_its_lane_fails(self):
+        cases = [
+            (_recipient_pl, "SENT_FREE"),
+            (_recipient_hu, "EKAER_FREE"),
+            (_recipient_hu, "EKAER_NUMBER"),
+            (_recipient_ro, "UIT_FREE"),
+            (_recipient_ro, "UIT_NUMBER"),
+        ]
+
+        for recipient, code in cases:
+            with self.subTest(code=code):
+                error = self._error(
+                    _parcel_connect(
+                        recipient,
+                        {
+                            "dhl_freight_sweden_sent_free": True,
+                            "dhl_freight_sweden_additional_information": [
+                                {"code": code, "stringValue": "true"}
+                            ],
+                        },
+                    )
+                )
+
+                self.assertEqual(
+                    set(error.details), {"dhl_freight_sweden_additional_information"}
+                )
+                self.assertIn(code, str(error))
+
+    def test_declaration_code_off_its_lane_is_passed_through(self):
+        serialized = self._serialize(
+            _parcel_connect(
+                _recipient_se,
+                {
+                    "dhl_freight_sweden_additional_information": [
+                        {"code": "EKAER_FREE", "stringValue": "true"}
+                    ]
+                },
+            )
+        )
+
+        self.assertEqual(
+            serialized["additionalInformation"],
+            [{"code": "EKAER_FREE", "stringValue": "true"}],
+        )
 
     def test_entry_without_code_fails(self):
         error = self._error(
@@ -109,6 +154,13 @@ _recipient_hu = {
     "city": "Budapest",
     "postal_code": "1051",
     "country_code": "HU",
+}
+
+_recipient_ro = {
+    **_recipient_se,
+    "city": "Bucuresti",
+    "postal_code": "010011",
+    "country_code": "RO",
 }
 
 

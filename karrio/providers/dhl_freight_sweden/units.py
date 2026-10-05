@@ -70,6 +70,10 @@ class AdditionalInformationCode(lib.StrEnum):
     SENT_FREE = "SENT_FREE"
     SENT_REF = "SENT_REF"
     SENT_CARKEY = "SENT_CARKEY"
+    EKAER_FREE = "EKAER_FREE"
+    EKAER_NUMBER = "EKAER_NUMBER"
+    UIT_FREE = "UIT_FREE"
+    UIT_NUMBER = "UIT_NUMBER"
 
 
 SENT_COUNTRY = "PL"
@@ -198,6 +202,59 @@ class ShippingService(lib.StrEnum):
     dhl_freight_sweden_parcel_return_connect_c2b = "107"
     dhl_freight_sweden_parcel_connect_plus = "112"
     dhl_freight_sweden_standard_pallet_international = "SPI"
+
+
+class TransportDeclaration(typing.NamedTuple):
+    """A free flag and number pair declared under additionalInformation.
+
+    ``number_required`` states whether a shipment that is not free must
+    carry the number.
+    """
+
+    name: str
+    country: str
+    free_option: str
+    number_option: str
+    free_code: AdditionalInformationCode
+    number_code: AdditionalInformationCode
+    number_max_length: int
+    number_required: bool
+
+
+# Products whose "Related fields" tables in product manual v5.23 list the
+# EKAER (HU) and UIT (RO) entries: §5.4 p19 (202), §5.9 p38 (205), §5.11 p46
+# (233), §5.12 p51 (SPI), §5.21 p87 (601); PPI (§5.13 p56) is not a
+# connector product. The v5.23 release note (p7) makes the UIT number
+# optional even when the shipment is not UIT free.
+TRANSPORT_DECLARATION_PRODUCTS = (
+    ShippingService.dhl_freight_sweden_road_freight_standard.value,
+    ShippingService.dhl_freight_sweden_road_freight_direct.value,
+    ShippingService.dhl_freight_sweden_road_freight_priority.value,
+    ShippingService.dhl_freight_sweden_standard_pallet_international.value,
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value,
+)
+TRANSPORT_DECLARATIONS = (
+    TransportDeclaration(
+        name="EKAER",
+        country="HU",
+        free_option="dhl_freight_sweden_ekaer_free",
+        number_option="dhl_freight_sweden_ekaer_number",
+        free_code=AdditionalInformationCode.EKAER_FREE,
+        number_code=AdditionalInformationCode.EKAER_NUMBER,
+        number_max_length=20,
+        number_required=True,
+    ),
+    TransportDeclaration(
+        name="UIT",
+        country="RO",
+        free_option="dhl_freight_sweden_uit_free",
+        number_option="dhl_freight_sweden_uit_number",
+        free_code=AdditionalInformationCode.UIT_FREE,
+        number_code=AdditionalInformationCode.UIT_NUMBER,
+        number_max_length=19,
+        number_required=False,
+    ),
+)
 
 
 class PayerCodes(typing.NamedTuple):
@@ -436,14 +493,21 @@ class ShippingOption(lib.Enum):
     # sent under the shipment's additionalInformation. The manual lists
     # SENT_REF and SENT_CARKEY (AN..20, product manual v5.23 §5.4 p19); the
     # live API additionally requires SENT_FREE "true" when neither is sent
-    # (validation error 22001, live sandbox 2026-10-05).
+    # (validation error 22001, live sandbox 2026-10-05). The connector
+    # requires an explicit choice and never declares SENT free by itself.
     dhl_freight_sweden_sent_free = lib.OptionEnum("SENT_FREE", bool)
     dhl_freight_sweden_sent_ref = lib.OptionEnum("SENT_REF", str)
     dhl_freight_sweden_sent_carkey = lib.OptionEnum("SENT_CARKEY", str)
 
+    # EKAER (HU, AN..20) and UIT (RO, AN..19) declarations, see
+    # TRANSPORT_DECLARATIONS.
+    dhl_freight_sweden_ekaer_free = lib.OptionEnum("EKAER_FREE", bool)
+    dhl_freight_sweden_ekaer_number = lib.OptionEnum("EKAER_NUMBER", str)
+    dhl_freight_sweden_uit_free = lib.OptionEnum("UIT_FREE", bool)
+    dhl_freight_sweden_uit_number = lib.OptionEnum("UIT_NUMBER", str)
+
     # Further shipment additionalInformation entries ({code, stringValue,
-    # dateValue, numericValue}, e.g. the HU EKAER or RO UIT codes), sent
-    # after the SENT entries.
+    # dateValue, numericValue}), sent after the SENT, EKAER, and UIT entries.
     dhl_freight_sweden_additional_information = lib.OptionEnum(
         "additionalInformation", list
     )
