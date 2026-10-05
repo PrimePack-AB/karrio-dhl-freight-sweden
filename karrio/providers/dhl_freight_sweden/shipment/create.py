@@ -218,9 +218,7 @@ def shipment_request(
     lane_countries = {shipper.country_code, recipient.country_code}
     additional_information = [
         *_sent_information(options, lane_countries),
-        *_transport_declarations(
-            options, service, lane_countries, recipient.country_code
-        ),
+        *_transport_declarations(options, service, lane_countries),
         *_additional_information(
             options.dhl_freight_sweden_additional_information.state or [],
             _typed_information_codes(lane_countries),
@@ -772,7 +770,6 @@ def _transport_declarations(
     options: units.ShippingOptions,
     product_code: str,
     lane_countries: typing.Set[str],
-    recipient_country: typing.Optional[str],
 ) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
     return [
         entry
@@ -781,10 +778,7 @@ def _transport_declarations(
         for entry in _transport_declaration(
             declaration,
             options,
-            required=(
-                product_code in provider_units.TRANSPORT_DECLARATION_PRODUCTS
-                and recipient_country == declaration.country
-            ),
+            required=product_code in provider_units.TRANSPORT_DECLARATION_PRODUCTS,
         )
     ]
 
@@ -855,8 +849,8 @@ def _transport_declaration(
 
     if required:
         raise TransportDeclarationError(
-            f"A shipment to {declaration.country} with this product requires an "
-            f"explicit {declaration.name} declaration: {declaration.free_option}, "
+            f"A shipment to or from {declaration.country} with this product "
+            f"requires an explicit {declaration.name} declaration: {declaration.free_option}, "
             f"or {declaration.number_option}",
             details={
                 declaration.free_option: dict(
