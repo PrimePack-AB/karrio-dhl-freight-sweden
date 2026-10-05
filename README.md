@@ -518,6 +518,11 @@ The `booking-pudo` segment looks up the service points nearest the recipient and
 The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO, declaring the PL lanes SENT free.
 Before each booking it checks for free that product matches offer the product for the lane and, for 109, that a nearby service point accepts the product, and it skips the lane otherwise.
 NO bookings leave the EU VAT area, so they carry one commodity, an invoice number, and the `dhl_freight_sweden_customs_handling_full_service` option, the customs service that needs no registration identifier; the Incoterm DAP gives payer code 022 on 109, avoiding the joint declaration that 023 requires, and DDP gives 023 on 112.
+The `booking-declarations` segment books 601 from SE with payer code DAP and a transport declaration that is not free: to HU with a placeholder `dhl_freight_sweden_ekaer_number`, which sends `EKAER_FREE` `"false"` and `EKAER_NUMBER`, and to RO with `dhl_freight_sweden_uit_free` `false` and no number, which sends `UIT_FREE` `"false"` alone.
+It checks product matches for the lane first and skips when 601 is not offered.
+The `rejections` segment sends payloads the connector refuses locally and asserts the DHL error code, so the local rules stay anchored to live behaviour: 109 to PL without its SENT entries (22001), 112 to PL with an AccessPoint party (22015), and 112 to PL with payer code 1 (22020).
+Each case builds a valid request through the connector and `harness.mutated_request` changes the serialized TransportInstruction just before the call, so connector validation stays intact.
+Rejection attempts count against the booking budget, and a response carrying a shipment id fails the test and reports the id as a finding.
 The sandbox enforced the capacity filter for PL but returned the same SE points for a 2.5 kg and a 500 kg parcel (2026-10-05), so the capacity check runs against PL.
 
 Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
@@ -525,4 +530,4 @@ To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT
 Every live call writes its request and response as JSON to the capture directory, with the `client-key` header, the client key, and the account number redacted.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
-Planned segments, not yet implemented: a wider customs matrix covering the other customs services and non-EU destinations, the freight products, and expected rejections for the DHL validation errors the connector does not catch locally.
+Planned segments, not yet implemented: a wider customs matrix covering the other customs services and non-EU destinations, and the freight products.
