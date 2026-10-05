@@ -30,18 +30,40 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
         self.assertEqual(lib.to_dict(request.serialize()), ServicePointsRequest)
 
     def test_create_service_points_unexpected_keys(self):
-        with self.assertRaises(errors.ShippingSDKDetailedError) as context:
-            service_points.service_points_request(
-                {**ServicePointsParams, "parcels": [{"weight": 25}]},
-                gateway.settings,
-            )
+        for key, value in (("parcels", [{"weight": 25}]), ("piece", {"weight": 25})):
+            with self.subTest(key=key):
+                with self.assertRaises(errors.ShippingSDKDetailedError) as context:
+                    service_points.service_points_request(
+                        {**ServicePointsParams, key: value},
+                        gateway.settings,
+                    )
 
-        exception = context.exception
-        self.assertEqual(exception.code, "SHIPPING_SDK_FIELD_ERROR")
-        self.assertIn("parcels", str(exception))
+                exception = context.exception
+                self.assertEqual(exception.code, "SHIPPING_SDK_FIELD_ERROR")
+                self.assertIn(key, str(exception))
+                self.assertEqual(
+                    exception.details,
+                    {key: dict(code="unexpected", message="unexpected payload key")},
+                )
+
+    def test_create_service_points_request_converts_lb_in_parcel(self):
+        request = service_points.service_points_request(
+            {**ServicePointsParams, "parcel": ImperialParcel},
+            gateway.settings,
+        )
         self.assertEqual(
-            exception.details,
-            {"parcels": dict(code="unexpected", message="unexpected payload key")},
+            lib.to_dict(request.serialize())["piece"],
+            {"width": 25.4, "height": 25.4, "length": 25.4, "weight": 2.27},
+        )
+
+    def test_create_service_points_request_tolerates_parcel_fields(self):
+        request = service_points.service_points_request(
+            {**ServicePointsParams, "parcel": FullKarrioParcel},
+            gateway.settings,
+        )
+        self.assertEqual(
+            lib.to_dict(request.serialize())["piece"],
+            {"width": 40, "height": 40, "length": 60, "weight": 25},
         )
 
     def test_find_service_points(self):
@@ -112,7 +134,29 @@ ServicePointsParams = {
     "location_types": ["locker"],
     "max_items": 2,
     "distance": {"value": 10, "unit": "km"},
-    "piece": {"length": 60, "width": 40, "height": 40, "weight": 25},
+    "parcel": {"length": 60, "width": 40, "height": 40, "weight": 25},
+}
+
+ImperialParcel = {
+    "weight": 5,
+    "weight_unit": "LB",
+    "length": 10,
+    "width": 10,
+    "height": 10,
+    "dimension_unit": "IN",
+}
+
+FullKarrioParcel = {
+    "id": "parcel_1",
+    "weight": 25,
+    "length": 60,
+    "width": 40,
+    "height": 40,
+    "packaging_type": "small_box",
+    "description": "Books",
+    "reference_number": "REF-1",
+    "options": {"insurance": 100},
+    "items": [{"title": "Book", "quantity": 1, "weight": 25, "weight_unit": "KG"}],
 }
 
 ServicePointsRequest = {

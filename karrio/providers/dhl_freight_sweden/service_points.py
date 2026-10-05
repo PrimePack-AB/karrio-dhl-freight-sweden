@@ -17,7 +17,7 @@ import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
 
 ACCEPTED_PAYLOAD_KEYS = frozenset(
-    {"address", "location_types", "max_items", "distance", "piece"}
+    {"address", "location_types", "max_items", "distance", "parcel"}
 )
 
 
@@ -28,12 +28,15 @@ def service_points_request(
     """Build a ``NearestServicePointRequest`` body from a lookup payload.
 
     Top-level keys outside ``ACCEPTED_PAYLOAD_KEYS`` raise a field error
-    rather than being silently dropped.
+    rather than being silently dropped. ``parcel`` is one karrio
+    ``Parcel``-shaped dict, chosen by the caller, that the point must fit;
+    it is sent in KG/CM as the request ``piece``.
     """
     lookup.guard_payload_keys(payload, ACCEPTED_PAYLOAD_KEYS, "service points")
     address = payload.get("address") or {}
     distance = payload.get("distance") or {}
-    piece = payload.get("piece") or {}
+    parcel = payload.get("parcel")
+    piece = lookup.to_metric_measurements(parcel) if parcel else None
 
     request = dict(
         address=dict(
@@ -50,12 +53,12 @@ def service_points_request(
         distanceUnit=distance.get("unit"),
         piece=(
             dict(
-                width=piece.get("width"),
-                height=piece.get("height"),
-                length=piece.get("length"),
-                weight=piece.get("weight"),
+                width=piece["width"],
+                height=piece["height"],
+                length=piece["length"],
+                weight=piece["weight"],
             )
-            if payload.get("piece")
+            if piece
             else None
         ),
     )
