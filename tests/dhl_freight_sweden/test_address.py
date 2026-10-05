@@ -1,11 +1,12 @@
 """DHL Freight address validation tests (PostalCodes API route lookup).
 
-Route fixtures were captured live from the sandbox on 2026-09-17
+Route fixtures are PostalCodes API route responses
 (GET /postalcodeapi/v1/postalcodes/SE/{pc}/route): 11120 Stockholm and
 41103 Göteborg are generally bookable with home delivery, 98138 Kiruna is
 bookable without home delivery (product 118 unavailable), and 99999
 returns the PascalCase ``ErrorResult`` the live API emits where the
-vendored spec declares camelCase.
+vendored spec declares camelCase
+(fixtures/sandbox/lookup-postal-code-se-99999-16010.json).
 """
 
 import unittest
