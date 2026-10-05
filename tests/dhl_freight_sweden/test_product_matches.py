@@ -46,6 +46,23 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
             },
         )
 
+    def test_create_product_matches_unexpected_keys(self):
+        with self.assertRaises(errors.ShippingSDKDetailedError) as context:
+            product_matches.product_matches_request(
+                {
+                    **ProductMatchParams,
+                    "piece": {"weight": 2.5},
+                    "services": ["dhl_freight_sweden_parcel_connect"],
+                },
+                gateway.settings,
+            )
+
+        exception = context.exception
+        self.assertEqual(exception.code, "SHIPPING_SDK_FIELD_ERROR")
+        self.assertIn("piece, services", str(exception))
+        self.assertEqual(set(exception.details), {"piece", "services"})
+        self.assertEqual(exception.details["piece"]["code"], "unexpected")
+
     def test_find_product_matches(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = "[]"
