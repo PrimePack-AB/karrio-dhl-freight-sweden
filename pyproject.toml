@@ -35,6 +35,7 @@ include-package-data = true
 "" = "."
 
 [tool.setuptools.packages.find]
+include = ["karrio*"]
 exclude = ["tests.*", "tests"]
 namespaces = true
 [tool.setuptools.exclude-package-data]
