@@ -63,11 +63,11 @@ def service_points_request(
         ),
     )
 
-    return lib.Serializable(request, lib.to_dict)
+    return lib.Serializable(request, provider_utils.to_dict)
 
 
 def parse_service_points_response(
-    _response: lib.Deserializable[dict],
+    _response: lib.Deserializable[typing.Union[dict, list]],
     settings: provider_utils.Settings,
 ) -> typing.Tuple[typing.List[dict], typing.List[models.Message]]:
     """Parse a nearest-service-points response into point dicts + Messages.
@@ -111,14 +111,14 @@ def _normalize_service_point(point: dict) -> dict:
     options. Both identifiers are kept: the sandbox accepts either at booking,
     and which one DHL consumes downstream is unresolved.
     """
-    return lib.to_dict(
+    return provider_utils.to_dict(
         {
             "id": point.get("id"),
             "service_point_id": point.get("servicePointId"),
             "name": point.get("name"),
             "shop_name": point.get("shopName"),
             "type": point.get("locationType"),
-            "address": lib.to_dict(
+            "address": provider_utils.to_dict(
                 {
                     "street": point.get("street"),
                     "city": point.get("cityName"),
@@ -127,7 +127,7 @@ def _normalize_service_point(point: dict) -> dict:
                 }
             )
             or None,
-            "coordinates": lib.to_dict(
+            "coordinates": provider_utils.to_dict(
                 {
                     "latitude": point.get("latitude"),
                     "longitude": point.get("longitude"),

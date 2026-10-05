@@ -44,12 +44,12 @@ class Mapper(mapper.Mapper):
     
     
     def parse_cancel_shipment_response(
-        self, response: lib.Deserializable[str]
+        self, response: lib.Deserializable[dict]
     ) -> typing.Tuple[models.ConfirmationDetails, typing.List[models.Message]]:
         return provider.parse_shipment_cancel_response(response, self.settings)
     
     def parse_shipment_response(
-        self, response: lib.Deserializable[str]
+        self, response: lib.Deserializable[typing.List[dict]]
     ) -> typing.Tuple[models.ShipmentDetails, typing.List[models.Message]]:
         return provider.parse_shipment_response(response, self.settings)
     

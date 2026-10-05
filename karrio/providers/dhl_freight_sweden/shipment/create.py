@@ -356,9 +356,9 @@ def shipment_request(
 
     return lib.Serializable(
         request,
-        lib.to_dict,
+        provider_utils.to_dict,
         dict(
-            print_options=lib.to_dict(print_options),
+            print_options=provider_utils.to_dict(print_options),
             customs_omitted=lib.identity(
                 dict(
                     shipper_country_code=shipper.country_code,

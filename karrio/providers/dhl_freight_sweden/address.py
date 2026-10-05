@@ -131,7 +131,7 @@ def address_validation_request(
             postal_code=address.postal_code,
             service=product,
         ),
-        lib.to_dict,
+        provider_utils.to_dict,
         dict(service=product),
     )
 
