@@ -209,7 +209,18 @@ Both `shipper` and `recipient` (postal code and country) are required; the conne
 Parcel fields the lookup does not use (`description`, `items`, `options`, `reference_number`, ...) are ignored.
 A parcel without `weight_unit` or `dimension_unit` is read as KG or CM, and LB/IN parcels are converted, so pieces always go out in KG and CM with a volume in m³ when all three dimensions are set.
 No `packageType` is sent, because the connector has no mapping from karrio packaging types to DHL package type codes.
-The optional shipment totals are `total_weight`, `total_volume`, `total_number_of_pieces`, `total_loading_meters`, `total_pallet_places`, and `import_export`, sent as given.
+The optional scalar keys are shipment totals and the trade direction:
+
+| Key | `MatchCriteria` field | Unit or values |
+|-----|-----------------------|----------------|
+| `total_weight` | `totalWeight` | kg |
+| `total_volume` | `totalVolume` | m³ |
+| `total_loading_meters` | `totalLoadingMeters` | loading metres |
+| `total_pallet_places` | `totalPalletPlaces` | pallet places |
+| `total_number_of_pieces` | `totalNumberOfPieces` | count |
+| `import_export` | `importExport` | `E` or `I` |
+
+These keys are passed through to the DHL `MatchCriteria` fields as given, in DHL's metric units, with no conversion.
 Any other top-level key raises a field error naming it before any carrier call, so a misspelled or unsupported key (for example `piece` or `services`) is never silently dropped.
 Each product carries `code`, `name`, `from_countries`, `to_countries`, `to_country_postal_excludes`, and `rules_for_country_delivery_types`; the delivery-type rules signal whether a product delivers to a service point.
 
