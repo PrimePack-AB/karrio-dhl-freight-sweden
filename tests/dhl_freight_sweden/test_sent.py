@@ -7,13 +7,13 @@ identifier is sent (validation error 22001, sandbox 2026-10-05). The
 connector requires one of them explicitly.
 """
 
+import typing
 import unittest
 
-import karrio.lib as lib
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import SentInformationError
 
-from .fixture import gateway
+from .fixture import detail_keys, gateway, serialize_request
 from .test_shipment import _payload, _recipient_dk, _recipient_pl, _recipient_se
 
 
@@ -25,7 +25,7 @@ class TestDHLFreightSent(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**payload)
         )
-        return lib.to_dict(request.serialize())
+        return serialize_request(request)
 
     def _error(self, payload: dict) -> SentInformationError:
         with self.assertRaises(SentInformationError) as context:
@@ -43,7 +43,7 @@ class TestDHLFreightSent(unittest.TestCase):
             with self.subTest(lane=lane):
                 error = self._error(payload)
 
-                self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_free"})
+                self.assertEqual(detail_keys(error), {"dhl_freight_sweden_sent_free"})
                 self.assertIn("dhl_freight_sweden_sent_free", str(error))
 
     def test_lane_from_pl_with_explicit_sent_free_is_sent(self):
@@ -87,7 +87,7 @@ class TestDHLFreightSent(unittest.TestCase):
             _parcel_connect(_recipient_pl, {"dhl_freight_sweden_sent_ref": "123456789A"})
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_carkey"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_sent_carkey"})
         self.assertIn("dhl_freight_sweden_sent_carkey", str(error))
 
     def test_sent_free_with_identifiers_fails(self):
@@ -110,7 +110,7 @@ class TestDHLFreightSent(unittest.TestCase):
                 )
 
                 self.assertEqual(
-                    set(error.details),
+                    detail_keys(error),
                     {"dhl_freight_sweden_sent_free", *identifiers},
                 )
 
@@ -120,7 +120,7 @@ class TestDHLFreightSent(unittest.TestCase):
         )
 
         self.assertEqual(
-            set(error.details),
+            detail_keys(error),
             {"dhl_freight_sweden_sent_ref", "dhl_freight_sweden_sent_carkey"},
         )
 
@@ -135,7 +135,7 @@ class TestDHLFreightSent(unittest.TestCase):
             )
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_sent_ref"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_sent_ref"})
 
     def test_non_pl_lane_sends_no_sent_entries(self):
         serialized = self._serialize(
@@ -151,7 +151,7 @@ class TestDHLFreightSent(unittest.TestCase):
         self.assertNotIn("additionalInformation", serialized)
 
 
-def _parcel_connect(recipient: dict, options: dict = None) -> dict:
+def _parcel_connect(recipient: dict, options: typing.Optional[dict] = None) -> dict:
     return _payload("dhl_freight_sweden_parcel_connect_b2c", recipient, options)
 
 

@@ -2,13 +2,12 @@
 
 import unittest
 
-import karrio.lib as lib
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import (
     AdditionalInformationError,
 )
 
-from .fixture import gateway
+from .fixture import detail_keys, gateway, serialize_request
 from .test_shipment import _payload, _recipient_pl, _recipient_se
 
 
@@ -20,7 +19,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**payload)
         )
-        return lib.to_dict(request.serialize())
+        return serialize_request(request)
 
     def _error(self, payload: dict) -> AdditionalInformationError:
         with self.assertRaises(AdditionalInformationError) as context:
@@ -85,7 +84,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
         )
 
         self.assertEqual(
-            set(error.details), {"dhl_freight_sweden_additional_information"}
+            detail_keys(error), {"dhl_freight_sweden_additional_information"}
         )
         self.assertIn("SENT_FREE", str(error))
 
@@ -113,7 +112,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
                 )
 
                 self.assertEqual(
-                    set(error.details), {"dhl_freight_sweden_additional_information"}
+                    detail_keys(error), {"dhl_freight_sweden_additional_information"}
                 )
                 self.assertIn(code, str(error))
 
@@ -143,7 +142,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
         )
 
         self.assertEqual(
-            set(error.details), {"dhl_freight_sweden_additional_information"}
+            detail_keys(error), {"dhl_freight_sweden_additional_information"}
         )
 
 

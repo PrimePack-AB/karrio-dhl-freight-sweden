@@ -12,7 +12,7 @@ endpoint declares no 4xx responses).
 
 import unittest
 from unittest.mock import patch
-from .fixture import gateway
+from .fixture import as_list, gateway, proxy_of, serialize_request, settings_of
 
 import karrio.lib as lib
 import karrio.core.errors as errors
@@ -25,9 +25,9 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
 
     def test_create_service_points_request(self):
         request = service_points.service_points_request(
-            ServicePointsParams, gateway.settings
+            ServicePointsParams, settings_of(gateway)
         )
-        self.assertEqual(lib.to_dict(request.serialize()), ServicePointsRequest)
+        self.assertEqual(serialize_request(request), ServicePointsRequest)
 
     def test_create_service_points_unexpected_keys(self):
         for key, value in (("parcels", [{"weight": 25}]), ("piece", {"weight": 25})):
@@ -35,7 +35,7 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
                 with self.assertRaises(errors.ShippingSDKDetailedError) as context:
                     service_points.service_points_request(
                         {**ServicePointsParams, key: value},
-                        gateway.settings,
+                        settings_of(gateway),
                     )
 
                 exception = context.exception
@@ -49,20 +49,20 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
     def test_create_service_points_request_converts_lb_in_parcel(self):
         request = service_points.service_points_request(
             {**ServicePointsParams, "parcel": ImperialParcel},
-            gateway.settings,
+            settings_of(gateway),
         )
         self.assertEqual(
-            lib.to_dict(request.serialize())["piece"],
+            serialize_request(request)["piece"],
             {"width": 25.4, "height": 25.4, "length": 25.4, "weight": 2.27},
         )
 
     def test_create_service_points_request_tolerates_parcel_fields(self):
         request = service_points.service_points_request(
             {**ServicePointsParams, "parcel": FullKarrioParcel},
-            gateway.settings,
+            settings_of(gateway),
         )
         self.assertEqual(
-            lib.to_dict(request.serialize())["piece"],
+            serialize_request(request)["piece"],
             {"width": 40, "height": 40, "length": 60, "weight": 25},
         )
 
@@ -70,9 +70,9 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = "{}"
             request = service_points.service_points_request(
-                ServicePointsParams, gateway.settings
+                ServicePointsParams, settings_of(gateway)
             )
-            gateway.proxy.find_service_points(request)
+            proxy_of(gateway).find_service_points(request)
             url = mock.call_args.kwargs["url"]
         self.assertIn(
             "/servicepointlocatorapi/v1/servicepoint/findnearestservicepoints", url
@@ -93,34 +93,34 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = ServicePointsResponse
             request = service_points.service_points_request(
-                ServicePointsParams, gateway.settings
+                ServicePointsParams, settings_of(gateway)
             )
             parsed = service_points.parse_service_points_response(
-                gateway.proxy.find_service_points(request), gateway.settings
+                proxy_of(gateway).find_service_points(request), settings_of(gateway)
             )
-            self.assertListEqual(lib.to_dict(parsed), ParsedServicePoints)
+            self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedServicePoints)
 
     def test_parse_service_points_error(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = ErrorResponse
             request = service_points.service_points_request(
-                ServicePointsParams, gateway.settings
+                ServicePointsParams, settings_of(gateway)
             )
             parsed = service_points.parse_service_points_response(
-                gateway.proxy.find_service_points(request), gateway.settings
+                proxy_of(gateway).find_service_points(request), settings_of(gateway)
             )
-            self.assertListEqual(lib.to_dict(parsed), ParsedErrorResponse)
+            self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedErrorResponse)
 
     def test_parse_service_points_non_object_response(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = "[]"
             request = service_points.service_points_request(
-                ServicePointsParams, gateway.settings
+                ServicePointsParams, settings_of(gateway)
             )
             parsed = service_points.parse_service_points_response(
-                gateway.proxy.find_service_points(request), gateway.settings
+                proxy_of(gateway).find_service_points(request), settings_of(gateway)
             )
-            self.assertListEqual(lib.to_dict(parsed), ParsedNonObjectResponse)
+            self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedNonObjectResponse)
 
 
 ServicePointsParams = {

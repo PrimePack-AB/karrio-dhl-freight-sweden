@@ -14,7 +14,7 @@ rates when the recipient is in Sweden.
 
 import unittest
 from unittest.mock import patch
-from .fixture import gateway
+from .fixture import gateway, proxy_of
 
 import karrio.sdk as karrio
 import karrio.lib as lib
@@ -37,7 +37,7 @@ class TestDHLFreightRating(unittest.TestCase):
         # through the gateway's own rate pipeline instead; this exercises the
         # same mapper/proxy calls the unified interface makes after its check.
         request = gateway.mapper.create_rate_request(models.RateRequest(**payload))
-        response = gateway.proxy.get_rates(request)
+        response = proxy_of(gateway).get_rates(request)
         return gateway.mapper.parse_rate_response(response)
 
     def test_get_rates_makes_no_http_call(self):

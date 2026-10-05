@@ -10,13 +10,12 @@ carrier-side failure these checks pre-empt.
 
 import unittest
 
-import karrio.lib as lib
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import (
     ServicePointEligibilityError,
 )
 
-from .fixture import gateway
+from .fixture import detail_keys, gateway, serialize_request
 from .test_shipment import _payload, _recipient_de, _recipient_pl, _recipient_se
 
 
@@ -30,7 +29,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
         )
         return next(
             party
-            for party in lib.to_dict(request.serialize())["parties"]
+            for party in serialize_request(request)["parties"]
             if party["type"] == "AccessPoint"
         )
 
@@ -48,7 +47,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             )
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_service_point"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_service_point"})
         self.assertIn("no access point", str(error))
 
     def test_parcel_connect_to_de_rejects_parcel_station(self):
@@ -60,7 +59,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             )
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_service_point_type"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_service_point_type"})
         self.assertIn("only ParcelShop", str(error))
 
     def test_parcel_connect_to_de_accepts_parcel_shop(self):
@@ -119,7 +118,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             )
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_service_point_type"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_service_point_type"})
 
     def test_freight_product_rejects_access_point(self):
         error = self._error(
@@ -149,7 +148,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
                 )
 
                 self.assertEqual(
-                    set(error.details), {"dhl_freight_sweden_service_point"}
+                    detail_keys(error), {"dhl_freight_sweden_service_point"}
                 )
                 self.assertIn("dhl_freight_sweden_service_point_type", str(error))
 

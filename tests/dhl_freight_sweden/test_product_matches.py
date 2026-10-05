@@ -10,7 +10,15 @@ builder now derives pieces from karrio parcels.
 
 import unittest
 from unittest.mock import patch
-from .fixture import gateway
+from .fixture import (
+    as_dict,
+    as_list,
+    detail_keys,
+    gateway,
+    proxy_of,
+    serialize_request,
+    settings_of,
+)
 
 import karrio.lib as lib
 import karrio.core.errors as errors
@@ -23,14 +31,14 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
 
     def test_create_product_matches_request(self):
         request = product_matches.product_matches_request(
-            ProductMatchParams, gateway.settings
+            ProductMatchParams, settings_of(gateway)
         )
-        self.assertEqual(lib.to_dict(request.serialize()), ProductMatchRequest)
+        self.assertEqual(serialize_request(request), ProductMatchRequest)
 
     def test_create_product_matches_missing_parties(self):
         with self.assertRaises(errors.ShippingSDKDetailedError) as context:
             product_matches.product_matches_request(
-                MissingPartiesParams, gateway.settings
+                MissingPartiesParams, settings_of(gateway)
             )
 
         exception = context.exception
@@ -55,30 +63,30 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
                     "piece": {"weight": 2.5},
                     "services": ["dhl_freight_sweden_parcel_connect"],
                 },
-                gateway.settings,
+                settings_of(gateway),
             )
 
         exception = context.exception
         self.assertEqual(exception.code, "SHIPPING_SDK_FIELD_ERROR")
         self.assertIn("piece, services", str(exception))
-        self.assertEqual(set(exception.details), {"piece", "services"})
-        self.assertEqual(exception.details["piece"]["code"], "unexpected")
+        self.assertEqual(detail_keys(exception), {"piece", "services"})
+        self.assertEqual(as_dict(exception.details)["piece"]["code"], "unexpected")
 
     def test_create_product_matches_request_from_karrio_parcels(self):
         request = product_matches.product_matches_request(
-            KarrioParcelsParams, gateway.settings
+            KarrioParcelsParams, settings_of(gateway)
         )
         self.assertEqual(
-            lib.to_dict(request.serialize())["pieces"], KarrioParcelsPieces
+            serialize_request(request)["pieces"], KarrioParcelsPieces
         )
 
     def test_find_product_matches(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = "[]"
             request = product_matches.product_matches_request(
-                ProductMatchParams, gateway.settings
+                ProductMatchParams, settings_of(gateway)
             )
-            gateway.proxy.find_product_matches(request)
+            proxy_of(gateway).find_product_matches(request)
             url = mock.call_args.kwargs["url"]
         self.assertIn("/productapi/v1/productmatches", url)
         self.assertEqual(mock.call_args.kwargs["method"], "POST")
@@ -97,23 +105,23 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = ProductMatchesResponse
             request = product_matches.product_matches_request(
-                ProductMatchParams, gateway.settings
+                ProductMatchParams, settings_of(gateway)
             )
             parsed = product_matches.parse_product_matches_response(
-                gateway.proxy.find_product_matches(request), gateway.settings
+                proxy_of(gateway).find_product_matches(request), settings_of(gateway)
             )
-            self.assertListEqual(lib.to_dict(parsed), ParsedProductMatches)
+            self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedProductMatches)
 
     def test_parse_product_matches_error(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = ErrorResponse
             request = product_matches.product_matches_request(
-                ProductMatchParams, gateway.settings
+                ProductMatchParams, settings_of(gateway)
             )
             parsed = product_matches.parse_product_matches_response(
-                gateway.proxy.find_product_matches(request), gateway.settings
+                proxy_of(gateway).find_product_matches(request), settings_of(gateway)
             )
-            self.assertListEqual(lib.to_dict(parsed), ParsedErrorResponse)
+            self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedErrorResponse)
 
 
 ProductMatchParams = {

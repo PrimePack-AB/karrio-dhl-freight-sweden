@@ -23,7 +23,7 @@ from karrio.providers.dhl_freight_sweden import (
 )
 from karrio.providers.dhl_freight_sweden.shipment import create
 
-from .fixture import gateway
+from .fixture import gateway, settings_of
 
 EVIDENCE_DIR = pathlib.Path(__file__).parent / "fixtures" / "sandbox"
 EVIDENCE_FILES = sorted(EVIDENCE_DIR.glob("*.json"))
@@ -201,7 +201,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                     lib.Deserializable(
                         [booking["response"], printed["response"] if printed else None]
                     ),
-                    gateway.settings,
+                    settings_of(gateway),
                 )
 
                 self.assertEqual(messages, [])
@@ -222,7 +222,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                 for booking in exchanges_to(evidence, TI_PATH):
                     details, messages = create.parse_shipment_response(
                         lib.Deserializable([booking["response"], printed["response"]]),
-                        gateway.settings,
+                        settings_of(gateway),
                     )
 
                     self.assertEqual(messages, [])
@@ -237,7 +237,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
             with self.subTest(path.name):
                 (booking,) = exchanges_to(evidence, TI_PATH)
                 details, messages = create.parse_shipment_response(
-                    lib.Deserializable([booking["response"], None]), gateway.settings
+                    lib.Deserializable([booking["response"], None]), settings_of(gateway)
                 )
 
                 self.assertIsNone(details)
@@ -253,7 +253,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                     response = lib.Deserializable(item["response"])
                     if "/productmatches" in item["endpoint"]:
                         products, messages = product_matches.parse_product_matches_response(
-                            response, gateway.settings
+                            response, settings_of(gateway)
                         )
                         self.assertEqual(
                             [product["code"] for product in products],
@@ -262,7 +262,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                         self.assertEqual(messages, [])
                     elif "/findnearestservicepoints" in item["endpoint"]:
                         points, messages = service_points.parse_service_points_response(
-                            response, gateway.settings
+                            response, settings_of(gateway)
                         )
                         if item["http_status"] == 200:
                             self.assertEqual(len(points), len(item["response"]["servicePoints"]))
@@ -274,8 +274,10 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                                 [item["response"]["errorMessage"]],
                             )
                     elif item["endpoint"].endswith("/route"):
+                        # attrs drops the leading underscore of Deserializable._ctx, so the init parameter is ctx.
+                        route = lib.Deserializable(item["response"], ctx={})  # pyright: ignore[reportCallIssue]
                         details, messages = address.parse_address_validation_response(
-                            lib.Deserializable(item["response"], ctx={}), gateway.settings
+                            route, settings_of(gateway)
                         )
                         if item["http_status"] == 200:
                             self.assertIsNotNone(details)
@@ -287,7 +289,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                             )
                     else:
                         self.assertEqual(
-                            error.parse_error_response(item["response"], gateway.settings), []
+                            error.parse_error_response(item["response"], settings_of(gateway)), []
                         )
 
 

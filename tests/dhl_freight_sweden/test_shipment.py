@@ -15,11 +15,16 @@ import typing
 import unittest
 from unittest.mock import patch
 from .fixture import (
-    gateway,
-    warn_gateway,
-    warn_case_gateway,
+    as_dict,
+    as_list,
     enforce_gateway,
+    gateway,
+    proxy_of,
+    serialize_request,
+    settings_of,
     unrecognized_gateway,
+    warn_case_gateway,
+    warn_gateway,
     zpl_gateway,
 )
 
@@ -38,7 +43,7 @@ class TestDHLFreightShipment(unittest.TestCase):
             models.ShipmentRequest(**ShipmentPayload102)
         )
 
-        self.assertEqual(lib.to_dict(request.serialize()), ShipmentRequest102)
+        self.assertEqual(serialize_request(request), ShipmentRequest102)
         self.assertEqual(request.ctx["print_options"], PrintOptions)
 
     def test_create_shipment_request_232(self):
@@ -46,14 +51,14 @@ class TestDHLFreightShipment(unittest.TestCase):
             models.ShipmentRequest(**ShipmentPayload232)
         )
 
-        self.assertEqual(lib.to_dict(request.serialize()), ShipmentRequest232)
+        self.assertEqual(serialize_request(request), ShipmentRequest232)
         self.assertEqual(request.ctx["print_options"], PrintOptions)
 
     def test_create_shipment_request_401_doorstep(self):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload401)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["productCode"], "401")
         self.assertIsInstance(serialized["productCode"], str)
@@ -66,7 +71,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload103)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["productCode"], "103")
         self.assertIsInstance(serialized["productCode"], str)
@@ -76,7 +81,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["productCode"], "202")
         self.assertIsInstance(serialized["productCode"], str)
@@ -85,7 +90,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["productCode"], "109")
         self.assertIsInstance(serialized["productCode"], str)
@@ -95,7 +100,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109Shop)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["productCode"], "109")
         self.assertIsInstance(serialized["productCode"], str)
@@ -105,7 +110,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202Customs)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["customsInformation"], CustomsInformation)
         # hsItemId serializes as the raw HS string, not a coerced int.
@@ -117,7 +122,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload102Customs)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertNotIn("customsInformation", serialized)
 
@@ -146,7 +151,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 request = gateway.mapper.create_shipment_request(
                     models.ShipmentRequest(**payload)
                 )
-                serialized = lib.to_dict(request.serialize())
+                serialized = serialize_request(request)
 
                 if keeps_customs:
                     document = serialized["customsInformation"]["customsDocuments"][0]
@@ -165,7 +170,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 .parse()
             )
 
-        booking = lib.to_dict(mock.call_args_list[0].kwargs["data"])
+        booking = as_dict(lib.to_dict(mock.call_args_list[0].kwargs["data"]))
         self.assertNotIn("customsInformation", booking)
         self.assertIsNotNone(details)
         self.assertEqual(lib.to_dict(messages), [IntraEUCustomsWarning])
@@ -191,7 +196,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 .parse()
             )
 
-        booking = lib.to_dict(mock.call_args_list[0].kwargs["data"])
+        booking = as_dict(lib.to_dict(mock.call_args_list[0].kwargs["data"]))
         self.assertNotIn("customsInformation", booking)
         self.assertFalse(set(booking.get("additionalServices") or {}) & CustomsServiceKeys)
         self.assertIsNotNone(details)
@@ -231,7 +236,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertNotIn("customsInformation", serialized)
 
@@ -241,7 +246,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202Proforma)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertEqual(document["type"], "ProformaInvoice")
@@ -255,7 +260,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109CustomsNO)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(
             serialized["customsInformation"]["customsDocuments"],
@@ -266,7 +271,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202Customs)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertNotIn("eori", document)
@@ -275,7 +280,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202InvoiceNotCommercial)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertEqual(document["type"], "ProformaInvoice")
@@ -285,7 +290,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202MerchandiseNoFlag)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertEqual(document["type"], "ProformaInvoice")
@@ -294,7 +299,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202CustomsWithinNO)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertNotIn("transportMovement", document)
@@ -303,7 +308,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109CustomsNO)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertFalse(
             set(serialized.get("additionalServices") or {}) & CustomsServiceKeys
@@ -342,7 +347,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                         **{**ShipmentPayload109CustomsNO, "options": options}
                     )
                 )
-                serialized = lib.to_dict(request.serialize())
+                serialized = serialize_request(request)
 
                 self.assertEqual(serialized["additionalServices"], expected)
 
@@ -360,7 +365,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 }
             )
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertFalse(
             set(serialized.get("additionalServices") or {}) & CustomsServiceKeys
@@ -370,7 +375,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109CustomsVOEC)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(
             serialized["additionalServices"],
@@ -389,7 +394,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                         )
                     )
                 )
-                serialized = lib.to_dict(request.serialize())
+                serialized = serialize_request(request)
 
                 commodity = serialized["customsInformation"]["customsCommodities"][0]
                 self.assertEqual(commodity["netWeight"], expected)
@@ -398,7 +403,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109CustomsQuantity)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         commodity = serialized["customsInformation"]["customsCommodities"][0]
         self.assertEqual(commodity["customsValue"], 60.0)
@@ -409,7 +414,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload109CustomsNoInvoice)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertEqual(document["id"], "ORDER-2026-042")
@@ -446,7 +451,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 request = gateway.mapper.create_shipment_request(
                     models.ShipmentRequest(**payload)
                 )
-                serialized = lib.to_dict(request.serialize())
+                serialized = serialize_request(request)
 
                 document = serialized["customsInformation"]["customsDocuments"][0]
                 self.assertEqual(document["invoiceDate"], expected)
@@ -491,7 +496,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertIsNone(shipment.customs.commodities[0].quantity)
 
         request = gateway.mapper.create_shipment_request(shipment)
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         commodity = serialized["customsInformation"]["customsCommodities"][0]
         self.assertEqual(commodity["customsValue"], 30.0)
@@ -502,7 +507,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202Customs)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["payerCode"], {"code": "DAP"})
 
@@ -510,7 +515,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayloadWithReference)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(
             serialized["references"],
@@ -521,7 +526,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayloadWithInstructions)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         self.assertEqual(serialized["pickupInstruction"], "Ring the bell on arrival")
         self.assertEqual(serialized["deliveryInstruction"], "Leave at reception")
@@ -532,7 +537,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload202GapCurrency)
         )
-        serialized = lib.to_dict(request.serialize())
+        serialized = serialize_request(request)
 
         commodities = serialized["customsInformation"]["customsCommodities"]
         self.assertEqual(
@@ -638,7 +643,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 )
             ).from_(gateway)
 
-        booking = lib.to_dict(mock.call_args_list[0].kwargs["data"])
+        booking = as_dict(lib.to_dict(mock.call_args_list[0].kwargs["data"]))
         self.assertFalse(
             set(booking.get("additionalServices") or {}) & CustomsServiceKeys
         )
@@ -679,20 +684,20 @@ class TestDHLFreightShipment(unittest.TestCase):
         booking_call, print_call = mock.call_args_list
         self.assertEqual(
             booking_call.kwargs["url"],
-            f"{gateway.settings.transport_instruction_url}"
+            f"{settings_of(gateway).transport_instruction_url}"
             "/transportinstruction/sendtransportinstruction",
         )
         self.assertEqual(
             print_call.kwargs["url"],
-            f"{gateway.settings.print_url}/print/printdocumentsbyid",
+            f"{settings_of(gateway).print_url}/print/printdocumentsbyid",
         )
         self.assertEqual(
             booking_call.kwargs["headers"]["client-key"],
-            gateway.settings.client_key,
+            settings_of(gateway).client_key,
         )
         self.assertEqual(
             print_call.kwargs["headers"]["client-key"],
-            gateway.settings.client_key,
+            settings_of(gateway).client_key,
         )
         self.assertEqual(lib.to_dict(print_call.kwargs["data"]), PrintByIdRequest)
 
@@ -706,7 +711,7 @@ class TestDHLFreightShipment(unittest.TestCase):
             )
 
         self.assertListEqual(
-            lib.to_dict(parsed_response),
+            as_list(lib.to_dict(parsed_response)),
             [_expected_details("TI-102-0001", "102"), []],
         )
 
@@ -720,7 +725,7 @@ class TestDHLFreightShipment(unittest.TestCase):
             )
 
         self.assertListEqual(
-            lib.to_dict(parsed_response),
+            as_list(lib.to_dict(parsed_response)),
             [_expected_details("TI-232-0001", "232"), []],
         )
 
@@ -734,7 +739,7 @@ class TestDHLFreightShipment(unittest.TestCase):
             )
 
         self.assertListEqual(
-            lib.to_dict(parsed_response),
+            as_list(lib.to_dict(parsed_response)),
             [{**_expected_details("TI-102-0001", "102"), "docs": {}}, []],
         )
 
@@ -843,7 +848,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(details.label_type, "PDF")
         self.assertEqual(
             details.meta["carrier_tracking_link"],
-            gateway.settings.tracking_url.format(shipment_id),
+            settings_of(gateway).tracking_url.format(shipment_id),
         )
 
     def test_parse_error_response(self):
@@ -855,7 +860,7 @@ class TestDHLFreightShipment(unittest.TestCase):
                 .parse()
             )
 
-        self.assertListEqual(lib.to_dict(parsed_response), ParsedErrorResponse)
+        self.assertListEqual(as_list(lib.to_dict(parsed_response)), ParsedErrorResponse)
 
     def _called_urls(self, mock) -> typing.List[str]:
         return [call.kwargs["url"] for call in mock.call_args_list]
@@ -874,9 +879,9 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(
             self._called_urls(mock),
             [
-                f"{gateway.settings.transport_instruction_url}"
+                f"{settings_of(gateway).transport_instruction_url}"
                 "/transportinstruction/sendtransportinstruction",
-                f"{gateway.settings.print_url}/print/printdocumentsbyid",
+                f"{settings_of(gateway).print_url}/print/printdocumentsbyid",
             ],
         )
 
@@ -909,9 +914,9 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(
             self._called_urls(mock),
             [
-                f"{gateway.settings.transport_instruction_url}"
+                f"{settings_of(gateway).transport_instruction_url}"
                 "/transportinstruction/sendtransportinstruction",
-                f"{gateway.settings.print_url}/print/printdocumentsbyid",
+                f"{settings_of(gateway).print_url}/print/printdocumentsbyid",
             ],
         )
 
@@ -957,7 +962,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = RouteResponseKiruna
             with self.assertRaises(PostalCodeNotServableError) as context:
-                enforce_gateway.proxy.create_shipment(request)
+                proxy_of(enforce_gateway).create_shipment(request)
 
         self.assertEqual(context.exception.code, "SHIPPING_SDK_FIELD_ERROR")
         self.assertIn("98138", str(context.exception))
@@ -972,7 +977,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = RouteLookupInvalidCode
             with self.assertRaises(PostalCodeNotServableError) as context:
-                enforce_gateway.proxy.create_shipment(request)
+                proxy_of(enforce_gateway).create_shipment(request)
 
         self.assertIn("99999", str(context.exception))
         urls = self._called_urls(mock)
@@ -1076,7 +1081,7 @@ def _expected_details(shipment_id: str, product: str) -> dict:
         "label_type": "PDF",
         "docs": {"label": LabelBase64},
         "meta": {
-            "carrier_tracking_link": gateway.settings.tracking_url.format(shipment_id),
+            "carrier_tracking_link": settings_of(gateway).tracking_url.format(shipment_id),
             "product_code": product,
         },
     }

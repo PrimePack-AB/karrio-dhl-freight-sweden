@@ -7,13 +7,13 @@ transport instructions the live sandbox accepted on 2026-10-05 (bookings
 cubic-metre precision.
 """
 
+import typing
 import unittest
 
-import karrio.lib as lib
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import PayerCodeError
 
-from .fixture import gateway
+from .fixture import detail_keys, gateway, serialize_request
 from .test_shipment import (
     Customs,
     _payload,
@@ -32,7 +32,7 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**payload)
         )
-        return lib.to_dict(request.serialize())
+        return serialize_request(request)
 
     def _payer_code(self, payload: dict) -> str:
         return self._serialize(payload)["payerCode"]["code"]
@@ -55,7 +55,7 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
             _with_options(ShipmentPayload112PL, {"dhl_freight_sweden_payer_code": "1"})
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_payer_code"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_payer_code"})
         self.assertIn("valid codes: 022, 023", str(error))
 
     def test_explicit_022_on_parcel_connect_plus_is_sent(self):
@@ -93,14 +93,14 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
     def test_untranslatable_incoterm_on_parcel_connect_plus_fails(self):
         error = self._error(_with_incoterm(_parcel_connect_plus, "EXW"))
 
-        self.assertEqual(set(error.details), {"customs.incoterm"})
+        self.assertEqual(detail_keys(error), {"customs.incoterm"})
         self.assertIn("valid codes: 022, 023", str(error))
 
     def test_incoterm_ddp_on_parcel_connect_requires_joint_declaration(self):
         error = self._error(_with_incoterm(_parcel_connect, "DDP"))
 
         self.assertEqual(
-            set(error.details), {"dhl_freight_sweden_customs_joint_declaration"}
+            detail_keys(error), {"dhl_freight_sweden_customs_joint_declaration"}
         )
 
     def test_explicit_023_on_parcel_connect_requires_joint_declaration(self):
@@ -111,7 +111,7 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
         )
 
         self.assertEqual(
-            set(error.details), {"dhl_freight_sweden_customs_joint_declaration"}
+            detail_keys(error), {"dhl_freight_sweden_customs_joint_declaration"}
         )
 
     def test_incoterm_ddp_on_parcel_connect_with_joint_declaration_is_023(self):
@@ -135,7 +135,7 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
             _payload("dhl_freight_sweden_euroconnect_plus", _recipient_de)
         )
 
-        self.assertEqual(set(error.details), {"dhl_freight_sweden_payer_code"})
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_payer_code"})
         self.assertIn("DAP, DDP", str(error))
 
     def test_home_delivery_return_requires_explicit_payer_code(self):
@@ -228,7 +228,7 @@ _parcel_shop_krakow = {
 }
 
 
-def _pl_payload(service: str, options: dict = None) -> dict:
+def _pl_payload(service: str, options: typing.Optional[dict] = None) -> dict:
     return {
         "service": service,
         "shipper": _shipper,

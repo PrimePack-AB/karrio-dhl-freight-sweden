@@ -1,5 +1,19 @@
-"""DHL Freight (SE API Farm) carrier test fixtures."""
+"""DHL Freight (SE API Farm) carrier test fixtures and typed accessors.
 
+The SDK types ``gateway.settings`` and ``gateway.proxy`` as the generic
+core classes and ``lib.to_dict`` as a dict, list, or Any union; the
+accessors below narrow them to what these tests know they hold, without
+changing any runtime value.
+"""
+
+import enum
+import typing
+
+import karrio.core.errors as errors
+import karrio.core.models as models
+import karrio.lib as lib
+import karrio.mappers.dhl_freight_sweden.proxy as connector_proxy
+import karrio.mappers.dhl_freight_sweden.settings as connector_settings
 import karrio.sdk as karrio
 
 
@@ -29,3 +43,48 @@ warn_gateway = _gateway({"address_validation": "warn"})
 enforce_gateway = _gateway({"address_validation": "enforce"})
 warn_case_gateway = _gateway({"address_validation": "Warn"})
 unrecognized_gateway = _gateway({"address_validation": "strict"})
+
+
+def settings_of(gateway) -> connector_settings.Settings:
+    return typing.cast(connector_settings.Settings, gateway.settings)
+
+
+def proxy_of(gateway) -> connector_proxy.Proxy:
+    return typing.cast(connector_proxy.Proxy, gateway.proxy)
+
+
+def as_dict(value: typing.Any) -> typing.Dict[str, typing.Any]:
+    """``value`` as a dict, asserting it is one."""
+    assert isinstance(value, dict), type(value)
+    return typing.cast(typing.Dict[str, typing.Any], value)
+
+
+def as_list(value: typing.Any) -> typing.List[typing.Any]:
+    """``value`` as a list, asserting it is one."""
+    assert isinstance(value, list), type(value)
+    return typing.cast(typing.List[typing.Any], value)
+
+
+def serialize_request(request: lib.Serializable) -> typing.Dict[str, typing.Any]:
+    """The serialized request payload as a plain dict."""
+    return as_dict(lib.to_dict(request.serialize()))
+
+
+def detail_keys(error: errors.ShippingSDKDetailedError) -> typing.Set[str]:
+    """The keys of an SDK error's ``details``, which the SDK types as optional."""
+    return set(error.details or {})
+
+
+def members(enum_type: typing.Any) -> typing.List[enum.Enum]:
+    """The members of a ``lib.Enum`` or ``lib.StrEnum``, whose base the SDK picks at runtime."""
+    return list(enum_type)
+
+
+def shipment_request(**fields: typing.Any) -> models.ShipmentRequest:
+    """A ``ShipmentRequest`` from plain dict fields, which its attrs converters accept."""
+    return models.ShipmentRequest(**fields)
+
+
+def address_validation_request(**fields: typing.Any) -> models.AddressValidationRequest:
+    """An ``AddressValidationRequest`` from plain dict fields, which its attrs converters accept."""
+    return models.AddressValidationRequest(**fields)

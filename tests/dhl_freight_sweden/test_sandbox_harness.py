@@ -4,7 +4,6 @@ import datetime
 import pathlib
 import unittest
 
-import karrio.core.models as models
 import karrio.lib as lib
 from sandbox_tests.dhl_freight_sweden import (
     booking,
@@ -13,7 +12,7 @@ from sandbox_tests.dhl_freight_sweden import (
     test_booking_declarations as declarations,
 )
 
-from .fixture import gateway
+from .fixture import gateway, serialize_request, shipment_request
 
 NOW = datetime.datetime(2026, 10, 5, 12, 0, 0)
 LIVE = {
@@ -201,12 +200,12 @@ SERVICE_POINT = {
 
 
 def _serialize(request: lib.Serializable) -> dict:
-    return lib.to_dict(request.serialize())
+    return serialize_request(request)
 
 
 def _pl_request(product: str, options: dict) -> lib.Serializable:
     return gateway.mapper.create_shipment_request(
-        models.ShipmentRequest(
+        shipment_request(
             service=product,
             shipper=booking.SHIPPER,
             recipient=booking.RECIPIENTS["PL"],
@@ -294,7 +293,7 @@ class TestSandboxDeclarationPayloads(unittest.TestCase):
             with self.subTest(country=country):
                 serialized = _serialize(
                     gateway.mapper.create_shipment_request(
-                        models.ShipmentRequest(
+                        shipment_request(
                             service=declarations.PRODUCT,
                             shipper=booking.SHIPPER,
                             recipient=booking.RECIPIENTS[country],
