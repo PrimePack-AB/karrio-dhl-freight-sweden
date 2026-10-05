@@ -181,14 +181,15 @@ class Builder:
         return out
 
     def with_label(
-        self, exchange: Exchange, response_path: pathlib.Path, pdf_path: pathlib.Path, text_path: pathlib.Path
+        self, exchange: Exchange, print_body: Json, pdf_path: pathlib.Path, text_path: pathlib.Path
     ) -> Exchange:
         """Attach the printed label's page size and extracted text to a Print API exchange.
 
-        ``pdf_path`` must hold the bytes of the response's only report, and
-        ``text_path`` the ``pdftotext -layout`` output of that PDF.
+        ``pdf_path`` must hold the bytes of the only report in ``print_body``,
+        the raw Print API response, and ``text_path`` the ``pdftotext -layout``
+        output of that PDF.
         """
-        (report,) = json.loads(response_path.read_text())["reports"]
+        (report,) = print_body["reports"]
         pdf = pdf_path.read_bytes()
         assert base64.b64decode(report["content"]) == pdf, f"{pdf_path} is not the printed label"
         media_box = MEDIA_BOX.search(pdf)
@@ -548,7 +549,7 @@ def _(b: Builder) -> Json:
         [b.file_exchange(d / "de-booking-request.json", d / "de-booking-response.json", "POST", TI, 200),
          b.with_label(
              b.file_exchange(d / "de-print-request.json", d / "de-print-response.json", "POST", PRINT, 200),
-             d / "de-print-response.json", d / "label_2906724865.pdf", d / "label_2906724865.txt",
+             json.loads((d / "de-print-response.json").read_text()), d / "label_2906724865.pdf", d / "label_2906724865.txt",
          )],
         primary=1,
     )
@@ -566,8 +567,34 @@ def _(b: Builder) -> Json:
         f"{PHONE_PROBE} (curl call 3 in live-probe-results.md)",
         [b.with_label(
             b.file_exchange(d / "dk-reprint-request.json", d / "dk-reprint-response.json", "POST", PRINT, 200),
-            d / "dk-reprint-response.json", d / "label_2906723800.pdf", d / "label_2906723800.txt",
+            json.loads((d / "dk-reprint-response.json").read_text()), d / "label_2906723800.pdf", d / "label_2906723800.txt",
         )],
+    )
+
+
+SUITE_LABELS = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005"
+
+
+@evidence("label-2906761354-109-se-dk-parcelshop.json")
+def _(b: Builder) -> Json:
+    run = "20261005-191426"
+    d = b.state_root / SUITE_LABELS
+    response = json.loads((b.suite / run / "006-booking-109.response.json").read_text())["response"]
+    return b.document(
+        "label",
+        "109 SE to DK ParcelShop 8009-115191 booked with Consignee Mette Hansen, Vesterbrogade 10, "
+        "and consignee phone +45 20 12 34 56, printed with page type Label as one 297.638 x 595.276 pt "
+        "(105 x 210 mm) PDF page; the label text shows the Consignee name below the sender block and the "
+        "Consignee name and address in the TE block, the sender's +46 8 123 456 as the only Phn. line, "
+        "and no consignee phone.",
+        "109", "SE 11143 -> DK 1620", "2906761354", None,
+        f"{SUITE_RUN}: test_booking_export; label PDF decoded from the print response into {SUITE_LABELS}",
+        [b.suite_exchange(run, "005-booking-109"),
+         b.with_label(
+             b.suite_exchange(run, "006-booking-109"), response,
+             d / "label_2906761354.pdf", d / "label_2906761354.txt",
+         )],
+        primary=1,
     )
 
 

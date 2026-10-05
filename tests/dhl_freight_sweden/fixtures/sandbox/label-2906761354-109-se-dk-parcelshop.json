@@ -1,0 +1,220 @@
+{
+ "kind": "label",
+ "summary": "109 SE to DK ParcelShop 8009-115191 booked with Consignee Mette Hansen, Vesterbrogade 10, and consignee phone +45 20 12 34 56, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows the Consignee name below the sender block and the Consignee name and address in the TE block, the sender's +46 8 123 456 as the only Phn. line, and no consignee phone.",
+ "captured_at": "2026-10-05T17:14:34Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "109",
+ "route": "SE 11143 -> DK 1620",
+ "booking_id": "2906761354",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export; label PDF decoded from the print response into agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-05T17:14:34Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-191426/005-booking-109.request.json",
+    "sha256": "2b1e62824459deb8ce90880d25907b6e57beb283418edb2bb0b45b259407073f"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-191426/005-booking-109.response.json",
+    "sha256": "de9d45428bd4bd36a416b9228a894b54e9250856a60bb5f2d535c11eb5822313"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "København V",
+       "countryCode": "DK",
+       "postalCode": "1620",
+       "street": "Vesterbrogade 10"
+      },
+      "contactName": "Mette Hansen",
+      "email": "mette.hansen@example.dk",
+      "name": "Mette Hansen",
+      "phone": "+45 20 12 34 56",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "København V",
+       "countryCode": "DK",
+       "postalCode": "1620",
+       "street": "Vesterbrogade 10"
+      },
+      "id": "8009-115191",
+      "name": "SHOP",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761354",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Mette Hansen",
+       "contactName": "Mette Hansen",
+       "address": {
+        "street": "Vesterbrogade 10",
+        "cityName": "København V",
+        "postalCode": "1620",
+        "countryCode": "DK"
+       },
+       "phone": "+45 20 12 34 56",
+       "email": "mette.hansen@example.dk"
+      },
+      {
+       "id": "8009-115191",
+       "type": "AccessPoint",
+       "name": "SHOP",
+       "address": {
+        "street": "Vesterbrogade 10",
+        "cityName": "København V",
+        "postalCode": "1620",
+        "countryCode": "DK"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025216"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LDK1620+70530000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-05T17:14:34Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-191426/006-booking-109.request.json",
+    "sha256": "e8ed8b0adbb2e01d7187c8712d98532b1f5b51dc069132dd32ec3f86bcc4edc8"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261005-191426/006-booking-109.response.json",
+    "sha256": "d1894bb4a9578e04fb36d553c1cb69efcbde37d0f5e10248e4a4b48a4c1bd9ad"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761354"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761354.pdf",
+      "content": "<base64 omitted: 107808 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005/label_2906761354.pdf",
+     "sha256": "39146767583172850d5cc1e3bfb3ed42a8ec9273dfffcf654fe2cfd3d3e9ceb2"
+    },
+    "page_size_pt": [
+     297.638,
+     595.276
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005/label_2906761354.txt",
+     "sha256": "ae259159d483081d6e23b9a969b4e53d859683f6ea8a3e070476055cad4fd1fc"
+    },
+    "text": "              DHL PARCEL CONNECT\n\n\n\n\n                                ST\n     Test Shipper AB                                Cust. No.\n     Kungsgatan 1                                   116768\n     11143 Stockholm                                Phn.\n     SWEDEN                                         +46 8 123 456\n\n                                                    Cust. No.\n     Mette Hansen\n\n\n\n\n                                   T\n     SHOP 8009-115191\n     Vesterbrogade 10\n     1620 KØBENHAVN V\n     DENMARK\n\n\n\n Domestic routing\n\n                    200-DK-E\n\n  Shipment Id:\n\n\n\n                    TE\n                  2906761354\n  Date created: 2026-10-05\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 116768\n  Weight:         1.0 / 1.0\n  Shipping mark: SANDBOX-TEST\n  Delivery instr:\n                                                                  1/1\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\nTE\n Mette Hansen Vesterbrogade 10\n DK 1620 København V\n\n\n\n\n  ST                      (2L)DK1620+70530000\n\n\n\n\n                        (00)373221512525025216\n                                                  Print By DHL API FARM\n\f"
+   }
+  }
+ ]
+}
