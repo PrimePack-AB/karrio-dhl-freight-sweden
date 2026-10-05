@@ -53,7 +53,7 @@ Connection settings are passed through the gateway's `config` dict (e.g. `config
 The connector always transmits the consignee `phone_number` on the booking; DHL's label renderer decides per destination country whether it prints (live-verified 2026-09-10: suppressed for SE→DE, absent on a DK PUDO label — in both cases only the sender phone printed, as `Phn.`).
 For parcelshop/parcelstation-addressed 109 shipments the mandatory "Customer information" label section is auto-composed from the Consignee party, so no connector input is needed.
 `parties[].references` exists as the optional shipper-controlled free-text channel for custom label print text.
-Phone format per product manual Appendix D: exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only — dots, letters, and slash are forbidden.
+Phone format per product manual v5.23 Appendix D (§10.5 p200): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only — dots, letters, and slash are forbidden.
 The connector transmits `phone_number` as given, so callers should pre-format numbers to those constraints.
 
 ## Per-product requirements
@@ -67,6 +67,79 @@ Parcel dimensions are sent in centimetres, and some products enforce minimum pie
 
 DHL validates these minimums server-side at booking; the connector does not check them and forwards the dimensions as given.
 Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional service rather than an access-point party: set the `dhl_freight_sweden_doorstep_access_code` option and the connector sends it as `additionalServices.doorstepDelivery.accessCode`.
+
+## Booking rules
+
+The connector checks payer codes, access points, and SENT entries before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
+The rules follow the DHL Freight Sweden product manual, version 5.23, valid from 2025-04-14, which is cited here rather than vendored:
+<https://dhlpaket.se/dashboard/wp-content/uploads/sites/2/2025/04/DHL-FREIGHT-SWEDEN-PRODUCT-MANUAL-v5.23.pdf> (sha256 `c16b0a0dcb1a1cfe8c7ca767ff11e2192d8d86fd233ed6ef77693981fc5d3295`).
+Section and page references below are to that version.
+
+### Payer codes
+
+`payerCode` carries the product's terms-of-delivery code, validated against the product's "Payer codes" table.
+
+| Product | Valid codes | Default | Manual |
+|---------|-------------|---------|--------|
+| 102, 209, 210, 211, 212 | 1, 3, 4 | 1 | §5.2 p11, §5.5 p23, §5.6 p26, §5.7 p31, §5.8 p35 |
+| 103, 118, 401 | 1, 4 | 1 | §5.14 p61, §5.18 p73, §5.19 p77 |
+| 104 | 3 | 3 | §5.15 p64 |
+| 402, 502 | 3, 4 | none | §5.20 p82 |
+| 107 | 001 | 001 | §5.17 p70 |
+| 109 | 022, 023 (023 only with customs joint declaration) | 022 | §5.16 p67 |
+| 112 | 023 | 023 | §5.3 p15 |
+| 232 | DAP, DDP | none | §5.10 p42 |
+| 202, 233, SPI, 601 | export EXW, FCA, CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.4 p20, §5.11 p47, §5.12 p52, §5.21 p88 |
+| 205 | export CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.9 p39 |
+
+A lane is an import when the recipient is in SE and the shipper is not; the import column applies only to the products that list one.
+The code resolves in this order:
+
+1. The `dhl_freight_sweden_payer_code` option, which must be a valid code.
+2. `customs.incoterm` when it is a valid code. For 109 and 112, which accept only Combiterms, the Incoterm is translated per §7.6 p169 (CPT, CIP, DAP, DPU to 022; DDP to 023) and the result must be valid. For other products an Incoterm outside the product's codes is not used.
+3. The product default from the table. A product without a default needs an explicit payer code.
+
+Payer code 023 on 109 additionally requires the `dhl_freight_sweden_customs_joint_declaration` option.
+Product codes the connector does not define keep the previous fallback of option, then Incoterm, then `1`.
+
+### Access points
+
+The `dhl_freight_sweden_service_point` options produce an AccessPoint party only where the manual lists an access-point delivery for the product and the recipient country.
+
+| Product | Country | Sub types | Manual |
+|---------|---------|-----------|--------|
+| 103 | SE | ParcelShop, ParcelStation | §5.14 p59-60 |
+| 109 | AT, BE, BG, CZ, DK, EE, FI, HU, LT, LV, NL, PL, SK | ParcelShop, ParcelStation | Appendix B.3, §10.3.2 p196-197 |
+| 109 | DE, ES, FR, GB, HR, IT, NO, PT, RO, SI | ParcelShop | Appendix B.3, §10.3.2 p196-197 |
+
+Every other product and country accepts no AccessPoint party, including 109 to IE and LU and all of 112 (§5.3 p14), for which DHL answers 22015 "AccessPoint Party is not allowed for this product".
+A `dhl_freight_sweden_service_point` value that is a sub type or location type name (`ParcelShop`, `ParcelStation`, `servicepoint`, `locker`, `postoffice`, `postbank`, in any case) is rejected: the option takes the service point id, and the sub type goes in `dhl_freight_sweden_service_point_type`.
+
+Appendix M (§10.14.2 p237, §10.14.3.2 p240) states that the AccessPoint `subtype` carries the location type (`servicepoint`, `locker`, `postoffice`), while the transport-instruction booking spec enumerates `ParcelShop` and `ParcelStation`.
+The connector sends `ParcelShop` and `ParcelStation`, and live sandbox bookings for DK and PL were accepted with `ParcelShop`.
+
+### SENT
+
+Lanes with the shipper or the recipient in PL carry SENT entries under the shipment's `additionalInformation`.
+
+| Option | Type | Sent as |
+|--------|------|---------|
+| `dhl_freight_sweden_sent_ref` | string, at most 20 characters | `SENT_REF` |
+| `dhl_freight_sweden_sent_carkey` | string, at most 20 characters | `SENT_CARKEY` |
+| `dhl_freight_sweden_sent_free` | boolean | `SENT_FREE` |
+
+Both identifiers send `SENT_REF` and `SENT_CARKEY`; one without the other fails.
+Without identifiers the connector sends `SENT_FREE` `"true"`, unless `dhl_freight_sweden_sent_free` is `false`, which fails, or the generic `dangerous_good` option is set without any SENT option, which fails and asks for an explicit SENT choice.
+The manual documents `SENT_REF` and `SENT_CARKEY` (e.g. §5.4 p19) but not `SENT_FREE`; the live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", live sandbox 2026-10-05).
+The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
+
+The `dhl_freight_sweden_additional_information` option passes further entries through, as a list of `{"code": ..., "stringValue": ...}` objects (`dateValue` and `numericValue` are also accepted), for example the HU `EKAER_FREE` or RO `UIT_FREE` codes from the same "Related fields" tables.
+Entries follow the SENT entries; an entry without a code, or with a code the SENT options already produce, fails.
+
+### Discrepancies
+
+For 112 the DHL Product API catalog (`GET /productapi/v1/products/112`, test host, 2026-10-05) lists CPT, CIP, DAP, DPU, DDP, 022, and 023, while the manual lists only 023; the connector follows the manual.
+The live sandbox rejected payer code 1 for 112 (22020 "Payercode 1 is not valid for product") and accepted 023; the other catalog codes are untested.
 
 ## Capabilities
 
@@ -99,6 +172,7 @@ They also bypass the SDK origin check, so EU-origin return lanes can be looked u
 ```
 
 The service-point products are 103 (Service Point B2C, domestic), 104 (Service Point C2B, domestic), and 109 (Parcel Connect B2C, international).
+Only 103 and 109 take an AccessPoint party (see [Access points](#access-points)); the 104 parties table (§5.15 p64) lists none, so 104 books without the service-point options.
 
 ### Step 1: eligible products
 
@@ -164,7 +238,7 @@ Filter and rank candidates in this order so the fallback loop has a deterministi
 1. `service_point_id` is present and the address has all four fields. DHL requires a complete AccessPoint party and does not registry-validate ids or names at booking, so incomplete or invented values misroute rather than fail.
 2. Capacity: pass the parcel as the `piece` filter, and keep a local margin check for lockers.
 3. Distance: apply a business threshold using `distance` and `distance_unit`.
-4. Location type: product 109 to DE allows `ParcelShop` only per the product catalog, so enforce that locally for DE recipients.
+4. Location type: the connector rejects sub types the destination does not accept (for 109 to DE, `ParcelShop` only), so filter candidates by the [Access points](#access-points) table before booking.
 5. Opening hours are not available (Servicepoint API 2.10.0), so do not promise them to recipients.
 
 ### Step 3: booking
@@ -196,7 +270,8 @@ payload = {
     # lanes leaving the EU VAT area need customs (commodities, incoterm);
     # within it customs data is dropped with a customs_omitted_intra_eu
     # warning. The payer code resolves from dhl_freight_sweden_payer_code,
-    # else customs.incoterm, else the consignor-pays default "1"
+    # else customs.incoterm, else the product default (see Booking rules);
+    # lanes to or from PL also send SENT entries
 }
 
 details, messages = (
@@ -214,6 +289,9 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | Failure | Origin | Action |
 |---------|--------|--------|
 | "requires the full service point details; missing ..." | connector field error | fix the option mapping |
+| "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
+| "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
+| payer code or SENT field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
 | linehaul failure without postalCode (22006) | DHL validation | reject the candidate |
@@ -280,7 +358,7 @@ The error table and fallback loop above apply unchanged.
 ## Address validation
 
 Home-delivery shipments with product 118 (Hemleverans Paket B2C) are only servable to postal codes with home-delivery coverage, and the transport API does not fully validate postal codes at booking.
-`GET /postalcodeapi/v1/postalcodes/{cc}/{pc}/route` resolves a postal code to its route, and the product manual (§10.14.8) ties the route's `homeDeliveryParcel` flag to product 118.
+`GET /postalcodeapi/v1/postalcodes/{cc}/{pc}/route` resolves a postal code to its route, and the product manual v5.23 (§10.14.8 p243) ties the route's `homeDeliveryParcel` flag to product 118.
 
 ```python
 details, messages = karrio.Address.validate(
