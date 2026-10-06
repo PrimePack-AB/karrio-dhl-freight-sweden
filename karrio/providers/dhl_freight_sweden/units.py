@@ -729,19 +729,92 @@ class ShippingOption(lib.Enum):
     recipient_instructions = dhl_freight_sweden_delivery_instruction
 
 
+FLAG_TRUE_SPELLINGS: typing.FrozenSet[str] = frozenset({"true", "1", "yes"})
+FLAG_FALSE_SPELLINGS: typing.FrozenSet[str] = frozenset({"false", "0", "no"})
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class InvalidFlag:
+    """A raw bool-option value that spells neither true, false, nor unset."""
+
+    value: typing.Any
+
+
+Flag = typing.Union[bool, None, InvalidFlag]
+
+
+def parse_flag(value: typing.Any) -> Flag:
+    """Read a raw bool-option value strictly.
+
+    The SDK reads a bool option as ``value is not False``, so "false", 0, and
+    None would select it. True, 1, and "true", "1", "yes" read as True;
+    False, 0, and "false", "0", "no" read as False (strings trimmed and
+    case-insensitive); None and a blank string read as None (unset). Any
+    other value, including floats and other integers, is an InvalidFlag.
+    """
+    if value is None or isinstance(value, bool):
+        return value
+
+    if isinstance(value, int):
+        return {1: True, 0: False}.get(value, InvalidFlag(value))
+
+    if isinstance(value, str):
+        spelling = value.strip().lower()
+
+        if not spelling:
+            return None
+        if spelling in FLAG_TRUE_SPELLINGS:
+            return True
+        if spelling in FLAG_FALSE_SPELLINGS:
+            return False
+
+    return InvalidFlag(value)
+
+
+def _flag_values(options: typing.Dict[str, typing.Any]) -> typing.Dict[str, Flag]:
+    """The strictly read value of every bool-typed option key, aliases included."""
+    return {
+        key: parse_flag(value)
+        for key, value in options.items()
+        if key in ShippingOption and ShippingOption[key].value.type is bool  # type: ignore
+    }
+
+
+def invalid_flags(options: typing.Dict[str, typing.Any]) -> typing.Dict[str, typing.Any]:
+    """The raw value of each bool-typed option key that reads as an InvalidFlag."""
+    return {
+        key: flag.value
+        for key, flag in _flag_values(options).items()
+        if isinstance(flag, InvalidFlag)
+    }
+
+
 def shipping_options_initializer(
     options: dict,
     package_options: typing.Optional[units.ShippingOptions] = None,
 ) -> units.ShippingOptions:
-    """Apply default values to the given options."""
+    """Apply default values to the given options.
+
+    Bool-typed options are read with ``parse_flag``: unset and invalid values
+    are dropped, so the option reads as absent, and the initializer never
+    raises. ``shipment_request`` refuses the invalid values it finds through
+    ``invalid_flags``.
+    """
 
     if package_options is not None:
         options.update(package_options.content)
 
+    flags = _flag_values(options)
+    readable = {
+        key: flags.get(key, value)
+        for key, value in options.items()
+        if key not in flags or isinstance(flags[key], bool)
+    }
+
     def items_filter(key: str) -> bool:
         return key in ShippingOption  # type: ignore
 
-    return units.ShippingOptions(options, ShippingOption, items_filter=items_filter)
+    return units.ShippingOptions(readable, ShippingOption, items_filter=items_filter)
 
 
 # The API Farm publishes no money-rate API for these products (the pricequote
