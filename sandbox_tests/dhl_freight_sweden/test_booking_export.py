@@ -370,7 +370,8 @@ class TestSandboxBookingExport(unittest.TestCase):
         )
 
     def test_book_205_no_forced(self):
-        # No probe has ever matched 205 (README.md, excluded postal codes);
+        # No probe has ever matched 205 (docs/concepts/destinations.md,
+        # excluded postal codes);
         # like the 112 GB case, this books past the matches check to record
         # DHL's answer.
         self.export(

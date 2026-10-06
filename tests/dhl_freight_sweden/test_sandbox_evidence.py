@@ -1,7 +1,7 @@
 """Offline checks on the committed sandbox evidence files.
 
-The evidence files back the sandbox findings note and the README's sandbox
-citations, so these tests keep them free of secrets and label payloads and
+The evidence files back the sandbox citations in the README, the findings
+note, and the pages under docs/, so these tests keep them free of secrets and label payloads and
 show that their response bodies still parse with the connector's parsers.
 """
 

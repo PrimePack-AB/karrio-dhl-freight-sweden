@@ -265,7 +265,7 @@ The 103 service-point label prints a `Phn.` line with no number ([label-29067612
 
 ## Pending verification
 
-The README lists PostalCode error 16012 as "not supported", and no capture shows 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]).
+The README no longer lists PostalCode error 16012 as "not supported", because no capture shows 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]).
 
 ## Untested
 
