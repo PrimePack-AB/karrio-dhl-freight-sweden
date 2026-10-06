@@ -1,6 +1,6 @@
 """Sandbox segment ``booking-approved``: DHL-approved TransportInstruction products.
 
-Each test books one shipment and prints its label: 102 (SE domestic),
+Each test books one shipment and prints its label: 102 and 401 (SE domestic),
 601 (SE to DK), and 118 (SE home delivery behind the ``enforce`` postal-code
 pre-flight). Bookings count against ``DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS``
 and cannot be cancelled through the API.
@@ -30,6 +30,20 @@ class TestSandboxBookingApproved(unittest.TestCase):
             "102",
             dict(
                 service="102",
+                shipper=booking.SHIPPER,
+                recipient=booking.RECIPIENTS["SE"],
+                parcels=[booking.PARCEL],
+            ),
+        )
+
+    def test_book_401_domestic(self):
+        booking.book(
+            self,
+            self.session,
+            self.gateway,
+            "401",
+            dict(
+                service="401",
                 shipper=booking.SHIPPER,
                 recipient=booking.RECIPIENTS["SE"],
                 parcels=[booking.PARCEL],
