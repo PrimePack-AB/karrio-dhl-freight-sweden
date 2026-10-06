@@ -520,7 +520,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
 | "Label type ... is not supported; the DHL Freight Sweden Print API returns PDF labels only" | connector field error | set the `label_type` named in `details` (request or `config`) to `PDF`, or leave it unset; see [Connection settings](#connection-settings) |
 | payer code, SENT, EKAER, UIT, or GR VAT number/TIN field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
-| "Customs requires customs information for a shipment from ... which crosses the border of the EU VAT area ..." | connector field error | add `customs.commodities`, `customs.invoice`, or `customs.invoice_date`, and for a `documents` shipment at least `customs.invoice`, per [Booking rules](#booking-rules) |
+| "Shipment from ... crosses the EU VAT area border without customs data ..." | connector field error | add `customs.commodities`, `customs.invoice`, or `customs.invoice_date`, and for a `documents` shipment at least `customs.invoice`, per [Booking rules](#booking-rules) |
 | "Customs requires a commercial invoice for an export of goods for sale ..." | connector field error | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
