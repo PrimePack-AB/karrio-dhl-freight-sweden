@@ -17,7 +17,7 @@ The probe-first gate, the never-retry rule for rejected bookings, and all transp
 The recon of 2026-10-06 found:
 
 - 202 has one extra-EU booking (SE to GB Northern Ireland, without customs, `sandbox_tests/dhl_freight_sweden/test_booking_export.py:229-236`) and neither an intra-EU booking nor a customs-carrying booking.
-- 205 has no coverage of any kind and was never matched by a product-matches probe (`karrio/providers/dhl_freight_sweden/units.py:299-300`).
+- 205 has no coverage of any kind and was never matched by a product-matches probe (`README.md:300`, excluded postal codes).
 - 233 appears in matches fixtures only and was never booked.
 - 601 covers intra-EU DK, HU with EKAER, and RO with UIT, but no extra-EU lane.
 - 401 was never booked; it is a domestic-only product (`units.py:1153-1160`) and the SE-to-SE matches fixture lists it as offered.

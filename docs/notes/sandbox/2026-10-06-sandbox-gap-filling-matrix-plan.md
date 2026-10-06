@@ -165,8 +165,9 @@ Insert at the end of the class, after `test_book_202_gb_northern_ireland_without
 
 ```python
     def test_book_205_no_forced(self):
-        # No probe has ever matched 205 (units.py:299-300); like the 112 GB
-        # case, this books past the matches check to record DHL's answer.
+        # No probe has ever matched 205 (README.md, excluded postal codes);
+        # like the 112 GB case, this books past the matches check to record
+        # DHL's answer.
         self.export(
             "205",
             "NO",
