@@ -29,8 +29,8 @@ DAP = {"dhl_freight_sweden_payer_code": "DAP"}
 ALAND_PARCEL_SHOP = {
     "dhl_freight_sweden_service_point": "8011-221003201",
     "dhl_freight_sweden_service_point_type": "ParcelShop",
-    "dhl_freight_sweden_service_point_name": "Posti",
-    "dhl_freight_sweden_service_point_street": "Torggatan 10",
+    "dhl_freight_sweden_service_point_name": "c/o Posti",
+    "dhl_freight_sweden_service_point_street": "Nygatan 6",
     "dhl_freight_sweden_service_point_city": "Mariehamn",
     "dhl_freight_sweden_service_point_postal_code": "22100",
     "dhl_freight_sweden_service_point_country_code": "FI",
