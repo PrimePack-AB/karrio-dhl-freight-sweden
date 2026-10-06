@@ -1,7 +1,7 @@
 """Karrio DHL Freight address validation (PostalCodes API).
 
 The SE API Farm PostalCodes API resolves a postal code to its delivery
-route; the product manual (§10.14.8) ties the route's ``homeDeliveryParcel``
+route; the product manual (§10.14.7) ties the route's ``homeDeliveryParcel``
 flag to product 118 availability. The unified ``validate_address`` protocol
 method and the booking pre-flight share this evaluation.
 """

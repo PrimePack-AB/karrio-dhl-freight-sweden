@@ -6,8 +6,8 @@ title: "DHL Freight SE sandbox findings, 2026-10-05"
 
 All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
-The rules are compared against the DHL Freight Sweden product manual version 5.23, valid from 2025-04-14 (sha256 `c16b0a0dcb1a1cfe8c7ca767ff11e2192d8d86fd233ed6ef77693981fc5d3295`), and page numbers below refer to that version.
-The manual uses the deprecated names DHL EUROCONNECT, DHL EUROLINE, and DHL EURAPID for the products now named DHL ROAD FREIGHT STANDARD (202), DHL ROAD FREIGHT DIRECT (205), and DHL ROAD FREIGHT PRIORITY (233); the Product API already returns the current names for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
+The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version unless marked v5.23.
+The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
 
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
@@ -62,7 +62,7 @@ Its text shows the Consignee name below the sender block and the Consignee name 
 The 109 NO label of 2906761305 shows the Consignee name and address, Karl Johans gate 10, 0154 Oslo, at the bottom, apart from the shop's CHRISTIAN KROHGS GATE 1, 0186 OSLO, and likewise prints only the sender's phone ([label-2906761305][lb-305]).
 The home-delivery labels of 102, 112, 118, and 601 and the 103 service-point label print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761297][lb-297], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]); the section [Phone numbers on labels](#phone-numbers-on-labels) compares these labels with the manual.
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
-The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (p243).
+The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (§10.14.7 p235).
 The 103 and 109 bookings to RO, HU, NO, and DK were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
 
 ## Rejections
@@ -81,29 +81,29 @@ No booking was created by any of them.
 | 22006 | `Parties[2].PostalCode` | Error retrieving gateway linehaul for shipment | same request | [rejection-22001-103][r-22001-103] |
 
 The PostalCode API rejected the unknown SE postal code 99999 with HTTP 400 and the PascalCase ErrorResult `{"ErrorCode": 16010, "Status": 400, "UserMessage": "Post code '99999' not found."}` ([lookup-postal-code-se-99999-16010.json][l-pc-99999]).
-Its route lookup for PL 30-079 answered HTTP 400 with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), which matches the manual listing the route service only for domestic products (p236).
+Its route lookup for PL 30-079 answered HTTP 400 with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), which matches the manual listing the route service only for domestic products (§10.14.1 p230).
 
-## Deviations from manual v5.23
+## Deviations from manual v5.26
 
 ### Payer codes for 109 and 112
 
-The manual lists only payer code 023 for 112 (§5.3 p15), but the sandbox accepted 112 to PL with payer code 022 ([booking-2906761149][b-149]) as well as 023 ([booking-2906761131][b-131]).
+The manual lists only payer code 023 for 112 (§5.3 p19), but the sandbox accepted 112 to PL with payer code 022 ([booking-2906761149][b-149]) as well as 023 ([booking-2906761131][b-131]).
 It rejected payer code 1 for 112 with 22020 ([rejection-22020][r-22020]).
-The Product API catalog lists CPT, 022, DPU, DAP, 023, CIP, and DDP for both 109 and 112, with `customs` `true` only for DDP ([lookup-products-109-112-payer-codes.json][l-products]), while the manual lists only the Combiterms 022 and 023 for 109 (§5.16 p67) and 023 for 112 (p15).
+The Product API catalog lists CPT, 022, DPU, DAP, 023, CIP, and DDP for both 109 and 112, with `customs` `true` only for DDP ([lookup-products-109-112-payer-codes.json][l-products]), while the manual lists only the Combiterms 022 and 023 for 109 (§5.14 p63) and 023 for 112 (p19).
 No booking used an Incoterm as the payer code for 109 or 112.
 
 ### SENT for PL
 
-The manual marks the SENT reference and carrier key optional in the related-fields tables of 202 (p19) and 601 (p87) and does not mention SENT for 109 (pp65-69) or 112 (pp13-16), and it does not document `SENT_FREE`.
+Manual v5.23 marks the SENT reference and carrier key optional in the related-fields tables of 202 (v5.23 p19) and 601 (v5.23 p87) and does not mention SENT for 109 (v5.23 pp66-68) or 112 (v5.23 pp13-16), and it does not document `SENT_FREE`.
 The sandbox rejected 109 to PL without SENT entries with 22001 ([rejection-22001][r-22001]) and accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123][b-123], [booking-2906761131][b-131]).
 The vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines an `AdditionalInformation` schema that no other schema references.
 No booking sent `SENT_REF` and `SENT_CARKEY`, so the sandbox's acceptance of real SENT identifiers is untested.
 
 ### EKAER and UIT for HU and RO
 
-The manual lists EKAER (HU) and UIT (RO) entries in the related-fields tables of 202 (p19), 205 (p38), 233 (p46), SPI (p51), PPI (p56), and 601 (p87), and not for 109 or 112.
+The manual lists EKAER (HU) and UIT (RO) entries in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), and not for 109 or 112.
 The sandbox accepted 109 and 112 to RO and HU without these entries ([booking-2906761263][b-263], [booking-2906761271][b-271], [booking-2906761289][b-289], [booking-2906761297][b-297]), which matches the manual.
-For 601 it accepted `EKAER_FREE` `"false"` with a placeholder EKAER number to HU ([booking-2906761339][b-339]) and `UIT_FREE` `"false"` without a UIT number to RO ([booking-2906761347][b-347]); the latter matches the v5.23 release note that the UIT code is not mandatory even when a shipment is not UIT free (p7).
+For 601 it accepted `EKAER_FREE` `"false"` with a placeholder EKAER number to HU ([booking-2906761339][b-339]) and `UIT_FREE` `"false"` without a UIT number to RO ([booking-2906761347][b-347]); the latter matches the related-fields tables, which mark the UIT code for a shipment that is not UIT free conditional, "Code should be provided if possible" (§5.19 p82).
 The EKAER number in that booking, `E0000SANDBOX0001`, is made up, and the sandbox accepted it.
 
 ### Service point capacity filter
@@ -114,40 +114,42 @@ For Warszawa the 2.5 kg piece returned points, while the 500 kg piece was answer
 
 ### Service point ids and sub types
 
-For 103 the manual says only the four-digit part nnnn of an id like SE-nnnn00 is to be used (p239), but the sandbox accepted the full id SE-982000 ([booking-2906761230][b-230]).
+For 103 the manual says only the four-digit part nnnn of an id like SE-nnnn00 is to be used (§10.14.2.1 p231), but the sandbox accepted the full id SE-982000 ([booking-2906761230][b-230]).
 For SE the lookup's `id` and `servicePointId` are equal (SE-982000), while elsewhere they differ, for example `id` 101 and `servicePointId` 8005-PL-4516440 in Warszawa ([lookup-service-points-pl-capacity-too-large.json][l-sp-pl]) and `id` 231652 and `servicePointId` 8023-231652 in București ([booking-2906761263][b-263]).
-Appendix M states that the AccessPoint sub type carries the location type `servicepoint`, `locker`, or `postoffice` (p237, p240), while the vendored spec enumerates `ParcelShop` and `ParcelStation`.
+Appendix M states that the AccessPoint sub type carries the location type `servicepoint`, `locker`, or `postoffice` (§10.14.2.2 p232), while the vendored spec enumerates `ParcelShop` and `ParcelStation`.
 The sandbox accepted `ParcelShop` for PL, RO, NO, and DK ([booking-2906761123][b-123], [booking-2906761263][b-263], [booking-2906761305][b-305], [booking-2906761354][b-354]) and `ParcelStation` for a HU locker ([booking-2906761289][b-289]).
-Their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p240.
+Their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p232.
 
 ### Service types and lookup size for service point products
 
-The manual says only shops and stations with service type `parcel:pick-up` can be selected for 109 (p240), but the sandbox accepted 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289][b-289]).
-For 103 the manual says to always search the ten closest service points (p61), while the suite's 103 booking searched five ([booking-2906761230][b-230]); the lookup segment's capacity check searched ten ([lookup-service-points-se-capacity-not-applied.json][l-sp-se]).
+The manual says only shops and stations with service type `parcel:pick-up` can be selected for 109 (§10.14.2.2 p232), but the sandbox accepted 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289][b-289]).
+For 103 the manual says to always search the ten closest service points (§5.12 p57), while the suite's 103 booking searched five ([booking-2906761230][b-230]); the lookup segment's capacity check searched ten ([lookup-service-points-se-capacity-not-applied.json][l-sp-se]).
 
 ### Customs to NO
 
-The manual's Customs handling - Full service section says a commercial invoice must be sent to DHL and lists routing barcode 001 on the label (p97), and for 109 it asks for two copies of the customs documents on the outside of the package (p66).
+The manual's Customs handling - Full service section says a commercial invoice must be sent to DHL and lists routing barcode 001 on the label (§6.5 p92), and for 109 it asks for two copies of the customs documents on the outside of the package (§5.14 p62).
 The sandbox accepted 109 and 112 to NO with `customsHandlingFullService`, one commodity, and a `ProformaInvoice` document without an invoice amount or EORI ([booking-2906761305][b-305], [booking-2906761313][b-313]).
 No documents were e-mailed to DHL for these bookings, and the evidence does not show whether DHL would act on a missing commercial invoice.
 109 to NO returned routing code 2LNO0186+70530001, ending in 001, while 112 to NO returned 2LNO0154+000000 without it.
 
 ### Routing code reference and product codes
 
-For 112 (p14) and 109 (p66) the manual asks for the label's routing code to be sent as a reference in the IFTMIN shipment instruction.
+For 112 (§5.3 p18) and 109 (§5.14 p62) the manual asks for the label's routing code to be sent as a reference in the IFTMIN shipment instruction.
 The API bookings sent no routing code, and every booking response returned `routingCode` (for example [booking-2906761131][b-131] and [booking-2906761123][b-123]).
-Product matches for SE to PL returned both 601 and HDI ([lookup-product-matches-se-pl.json][l-pm-pl]), and the manual names HDI as the invoice-file code for 601 (p86).
+Product matches for SE to PL returned both 601 and HDI ([lookup-product-matches-se-pl.json][l-pm-pl]), and the manual names HDI as the invoice-file code for 601 (§5.19 p81).
 Product matches for SE 11143 to SE 41101 returned 502, 118, 104, 102, 402, 211, 401, and 103 ([lookup-product-matches-se-se.json][l-pm-se]).
 
 ### Phone numbers on labels
 
-The manual's label field description (§9.4.2) marks the sender phone, field 6 "Consignor or pickup party phone number", mandatory (p174).
-For field 9 it lists the consignee or delivery party phone number as conditional, the receiving service point's phone number for 103, and for 109 and 112 makes printing the receiver phone mandatory to BG, CZ, DK, EE, FI, HR, HU, IE, IT, LT, LV, NO, PL, RO, SI, and SK "if it is existing in shipment" and not allowed to AT, BE, DE, ES, FR, GB, LU, NL, and PT (p176).
-It makes the receiver's mobile phone number mandatory for 118 (p72) and the consignee phone number and e-mail address mandatory for 601 (p86).
+The manual's label field description (§9.4.2) marks the sender phone, field 6 "Consignor or pickup party phone number", conditional, and does not allow printing it for 104, for 402/502, or for 107 from AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, while making it mandatory for 107 from SK (p168).
+For field 9 it marks the consignee or delivery party phone number conditional and the receiving parcelshop's phone number mandatory for 103 (p170).
+It does not allow printing the receiver phone for 109 and 112 to AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, makes it mandatory for 109 and 112 to SK, and does not allow it for 118 or 401 (p170).
+It makes the receiver's mobile phone number mandatory in the shipment data for 118 (§5.16 p68) and the consignee phone number and e-mail address mandatory for 601 (§5.19 p81).
 Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone, and the 103 booking sent no AccessPoint phone.
-The 109 labels to DK and NO print the sender phone and no consignee phone, although the bookings sent +45 20 12 34 56 and +47 400 00 000 ([label-2906761354][lb-354], [label-2906761305][lb-305]).
-The 112 label to HU prints a `Phn.` line with neither the sender phone nor the consignee phone +36 30 000 0000 ([label-2906761297][lb-297]).
-The 102, 118, and 601 labels and the 103 service-point label likewise print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]).
+The 109 labels to DK and NO print the sender phone and no consignee phone, although the bookings sent +45 20 12 34 56 and +47 400 00 000 ([label-2906761354][lb-354], [label-2906761305][lb-305]), which matches the field 9 rule for 109 to DK and NO.
+The 112 label to HU prints a `Phn.` line with neither the sender phone nor the consignee phone +36 30 000 0000 ([label-2906761297][lb-297]), and the 118 label prints a `Phn.` line with no number ([label-2906761255][lb-255]); both match the field 9 rules for 112 to HU and for 118, and the missing sender phone matches the conditional field 6.
+The 102 and 601 labels print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761248][lb-248]), where fields 6 and 9 are conditional.
+The 103 service-point label prints a `Phn.` line with no number ([label-2906761230][lb-230]), while the manual makes the receiving parcelshop's phone number mandatory for 103; this remains a deviation.
 
 ## Pending verification
 
@@ -155,12 +157,12 @@ The README lists PostalCode error 16012 as "not supported", and no capture shows
 
 ## Untested
 
-No booking used the freight products 202, 205, 209, 210, 211, 212, 232, 233, SPI, or PPI, or the parcel and home delivery products 104, 107, 401, 402, and 502.
+No booking used the freight products 202, 205, 209, 210, 211, 212, 232, 233, or SPI, or the parcel and home delivery products 104, 107, 401, 402, and 502.
 601 was booked only to DK, HU, and RO; 601 to HU or RO without EKAER or UIT entries, with a free flag `"true"`, or with a UIT number, and 601 to PL, are untested.
 109 with home addressing and no AccessPoint party is untested.
 Customs was tested only as Customs handling - Full service to NO; Customs handling - Standard, the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
 No additional service other than `customsHandlingFullService` was sent, payer codes 3 and 4 with a freight payer party were not used, and 601 used only DAP.
-Every booking had a single piece of 1 kg and 30 × 20 × 10 cm, so multi-piece shipments and bookings below the minimum piece dimensions the manual states for 102 (p10) and 112 (p13) are untested.
+Every booking had a single piece of 1 kg and 30 × 20 × 10 cm, so multi-piece shipments and bookings below the minimum piece dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17) are untested.
 The Print API was called only for labels, and the PickupRequest, TimeTable, PriceQuote, and HomeDeliveryLocator APIs were not called.
 
 [b-073]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761073-109-se-pl.json

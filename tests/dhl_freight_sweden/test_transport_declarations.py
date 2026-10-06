@@ -1,9 +1,10 @@
 """DHL Freight (SE API Farm) EKAER and UIT additionalInformation tests.
 
-The "Related fields" tables of product manual v5.23 for products 202, 205,
+The "Related fields" tables of product manual v5.26 for products 202, 205,
 233, SPI, and 601 list EKAER_FREE with EKAER_NUMBER (AN..20) for HU and
-UIT_FREE with UIT_NUMBER (AN..19) for RO; the UIT number is optional even
-when the shipment is not UIT free (release note p7).
+UIT_FREE with UIT_NUMBER (AN..19) for RO; the UIT number is conditional even
+when the shipment is not UIT free ("Code should be provided if possible",
+e.g. §5.4 p23).
 """
 
 import typing
