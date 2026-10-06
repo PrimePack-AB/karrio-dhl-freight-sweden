@@ -226,6 +226,7 @@ def _label_type(report, settings: provider_utils.Settings) -> str:
 def _check_label_type(
     payload: models.ShipmentRequest, settings: provider_utils.Settings
 ) -> None:
+    supported = provider_units.SUPPORTED_LABEL_TYPES
     field, label_type = next(
         (
             (field, value)
@@ -233,13 +234,12 @@ def _check_label_type(
                 ("label_type", payload.label_type),
                 ("config.label_type", settings.connection_config.label_type.state),
             ]
-            if value
+            if value and str(value).upper() not in supported
         ),
-        ("label_type", "PDF"),
+        (None, None),
     )
-    supported = provider_units.SUPPORTED_LABEL_TYPES
 
-    if str(label_type).upper() not in supported:
+    if field is not None:
         raise LabelTypeError(
             f"Label type {label_type} is not supported; the DHL Freight Sweden "
             f"Print API returns {', '.join(supported)} labels only",
