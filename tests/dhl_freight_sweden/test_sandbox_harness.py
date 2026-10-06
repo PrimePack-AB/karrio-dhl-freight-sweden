@@ -10,6 +10,7 @@ from sandbox_tests.dhl_freight_sweden import (
     harness,
     rejection,
     test_booking_declarations as declarations,
+    test_booking_export as export,
 )
 
 from .fixture import gateway, serialize_request, shipment_request
@@ -352,3 +353,25 @@ class TestSandboxDeclarationPayloads(unittest.TestCase):
                 )
 
                 self.assertEqual(serialized["additionalInformation"], expected)
+
+
+class TestSandboxExportPayloads(unittest.TestCase):
+    def test_aland_customs_without_service_carries_customs_information(self):
+        serialized = _serialize(
+            gateway.mapper.create_shipment_request(
+                shipment_request(
+                    **export.export_payload(
+                        "109", booking.ALAND, export.ALAND_PARCEL_SHOP, customs_service=False
+                    )
+                )
+            )
+        )
+
+        self.assertEqual(
+            serialized["customsInformation"]["customsDocuments"][0]["type"], "CommercialInvoice"
+        )
+        self.assertEqual(len(serialized["customsInformation"]["customsCommodities"]), 1)
+        self.assertFalse(
+            {"customsHandlingStandard", "customsHandlingFullService"}
+            & set(serialized.get("additionalServices") or {})
+        )
