@@ -233,7 +233,8 @@ The 202, 233, and 601 full-service bookings to NO returned 2LNO0154+11000001, 2L
 Product matches on account 116768 list `customsJointDeclaration` among the customs additional services of 601 on all five CH lookups, to CH 8001 with a 2 kg and a 20 kg piece, CH 1201, CH 3011, and CH 6900 ([se-ch-8001][l-ch-8001], [se-ch-8001-20kg][l-ch-8001-20kg], [se-ch-1201][l-ch-1201], [se-ch-3011][l-ch-3011], [se-ch-6900][l-ch-6900]).
 The manual's Customs, joint declaration section lists NO as its only valid country and allows the service only according to a separate agreement (§6.8 p98).
 No booking has sent `customsJointDeclaration` to CH or to any other country, so the evidence shows only that the catalog offers the service on the CH lanes, not that DHL would accept such a booking.
-No committed fixture records the additional services of 601 to NO, so the evidence cannot show whether the catalog lists the joint declaration there as well.
+Product matches to NO 0154 list `customsJointDeclaration` for 601, 109, and 112 ([se-no-0154-customs][l-no-0154-customs]).
+601, 202, 233, and HDI list the same customs services to NO 0154 as to the five CH lanes, which suggests the catalog's customs service lists do not vary by destination, so a service's presence on a lane does not show that DHL would accept it there.
 
 ### Routing code reference and product codes
 
@@ -315,6 +316,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [l-pc-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-pl-route-16009.json
 [l-pc-ch]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json
 [l-sp-ch]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-ch-8001-none.json
+[l-no-0154-customs]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-no-0154-customs.json
 [l-ch-8001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json
 [l-ch-8001-20kg]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001-20kg.json
 [l-ch-1201]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-1201.json
