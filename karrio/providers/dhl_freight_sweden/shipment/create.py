@@ -77,6 +77,12 @@ class ExcludedDestinationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class QrCodeEligibilityError(errors.ShippingSDKDetailedError):
+    """Raised when the product or origin country offers no print API QR code."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class PartyTaxIdError(errors.ShippingSDKDetailedError):
     """Raised when a party lacks the VAT number/TIN its product and lane require."""
 
@@ -373,6 +379,7 @@ def shipment_request(
 
     print_options = dhl_freight_sweden_print.OptionsType(
         label=True,
+        qrCode=_qr_code(options, service, shipper.country_code),
         pageOptions=dhl_freight_sweden_print.PageOptionsType(pageType=page_type),
     )
 
@@ -606,6 +613,36 @@ def _check_customs_service_identifiers(
                 for field, label in missing.items()
             },
         )
+
+
+def _qr_code(
+    options: units.ShippingOptions,
+    product_code: str,
+    origin_country: typing.Optional[str],
+) -> typing.Optional[bool]:
+    if not options.dhl_freight_sweden_qr_code.state:
+        return None
+
+    countries = provider_units.QR_CODE_COUNTRIES.get(product_code, frozenset())
+
+    if (origin_country or "").upper() not in countries:
+        raise QrCodeEligibilityError(
+            f"Product {product_code} from {origin_country} offers no print API "
+            "QR code"
+            + lib.identity(
+                f"; it is available from {', '.join(sorted(countries))}"
+                if any(countries)
+                else ""
+            ),
+            details={
+                "dhl_freight_sweden_qr_code": dict(
+                    code="invalid",
+                    message="QR code not available for product and country",
+                )
+            },
+        )
+
+    return True
 
 
 def _check_destination(product_code: str, recipient) -> None:

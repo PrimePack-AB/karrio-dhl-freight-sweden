@@ -267,6 +267,17 @@ PARTY_TAX_ID_PRODUCTS = (
 )
 
 
+# Products offering a QR code through the print API selection "qrCode":
+# true, by the country the shipment is sent from. Product manual v5.26
+# §5.15 p65 lists BE, BG, CZ, DE, ES, LU, and PT for 107, whose shipments
+# are returned from the consumer's country to the original sender.
+QR_CODE_COUNTRIES: typing.Dict[str, typing.FrozenSet[str]] = {
+    ShippingService.dhl_freight_sweden_parcel_return_connect_c2b.value: frozenset(
+        ["BE", "BG", "CZ", "DE", "ES", "LU", "PT"]
+    ),
+}
+
+
 class PayerCodes(typing.NamedTuple):
     """Terms-of-delivery codes a product accepts.
 
@@ -489,6 +500,9 @@ class ShippingOption(lib.Enum):
 
     # Print page layout override (PageTypeEnum).
     dhl_freight_sweden_label_page_type = lib.OptionEnum("labelPageType", str)
+
+    # Print API QR code, see QR_CODE_COUNTRIES.
+    dhl_freight_sweden_qr_code = lib.OptionEnum("qrCode", bool)
 
     # Terms-of-delivery code, validated against the product's PAYER_CODES
     # entry. Falls back to customs.incoterm, then to the product default.
