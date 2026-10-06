@@ -331,24 +331,98 @@ class TestDHLFreightShipment(unittest.TestCase):
         document = serialized["customsInformation"]["customsDocuments"][0]
         self.assertNotIn("eori", document)
 
-    def test_create_shipment_request_invoice_without_commercial_flag_is_proforma(self):
+    def test_shipment_sale_without_commercial_invoice_surfaces_field_error(self):
+        cases = {
+            "merchandise, flag false": ShipmentPayload202InvoiceNotCommercial,
+            "merchandise, flag unset": ShipmentPayload202MerchandiseNoFlag,
+            "content type unset, flag false": {
+                **ShipmentPayload202InvoiceNotCommercial,
+                "customs": {
+                    key: value
+                    for key, value in ShipmentPayload202InvoiceNotCommercial[
+                        "customs"
+                    ].items()
+                    if key != "content_type"
+                },
+            },
+            "other, flag false": {
+                **ShipmentPayload202InvoiceNotCommercial,
+                "customs": {
+                    **ShipmentPayload202InvoiceNotCommercial["customs"],
+                    "content_type": "other",
+                },
+            },
+        }
+
+        for case, payload in cases.items():
+            with self.subTest(case=case):
+                with patch(
+                    "karrio.mappers.dhl_freight_sweden.proxy.lib.request"
+                ) as mock:
+                    details, messages = (
+                        karrio.Shipment.create(models.ShipmentRequest(**payload))
+                        .from_(gateway)
+                        .parse()
+                    )
+
+                mock.assert_not_called()
+                self.assertIsNone(details)
+                self.assertEqual(len(messages), 1)
+                self.assertEqual(messages[0].code, "SHIPPING_SDK_FIELD_ERROR")
+                self.assertEqual(
+                    set(messages[0].details), {"customs.commercial_invoice"}
+                )
+                self.assertIn("commercial invoice", messages[0].message)
+
+    def test_create_shipment_request_non_sale_content_without_flag_is_proforma(self):
+        for content_type in ("gift", "sample", "documents", "return_merchandise", "GIFT"):
+            with self.subTest(content_type=content_type):
+                request = gateway.mapper.create_shipment_request(
+                    models.ShipmentRequest(
+                        **{
+                            **ShipmentPayload202InvoiceNotCommercial,
+                            "customs": {
+                                **ShipmentPayload202InvoiceNotCommercial["customs"],
+                                "content_type": content_type,
+                            },
+                        }
+                    )
+                )
+                serialized = serialize_request(request)
+
+                document = serialized["customsInformation"]["customsDocuments"][0]
+                self.assertEqual(document["type"], "ProformaInvoice")
+                self.assertEqual(document["id"], "INV-2026-001")
+
+    def test_create_shipment_request_merchandise_with_flag_is_commercial(self):
         request = gateway.mapper.create_shipment_request(
-            models.ShipmentRequest(**ShipmentPayload202InvoiceNotCommercial)
+            models.ShipmentRequest(**ShipmentPayload202Customs)
         )
         serialized = serialize_request(request)
 
         document = serialized["customsInformation"]["customsDocuments"][0]
-        self.assertEqual(document["type"], "ProformaInvoice")
-        self.assertEqual(document["id"], "INV-2026-001")
+        self.assertEqual(document["type"], "CommercialInvoice")
 
-    def test_create_shipment_request_merchandise_without_flag_is_proforma(self):
-        request = gateway.mapper.create_shipment_request(
-            models.ShipmentRequest(**ShipmentPayload202MerchandiseNoFlag)
-        )
-        serialized = serialize_request(request)
+    def test_create_shipment_request_intra_eu_sale_without_flag_omits_customs(self):
+        for customs in (
+            ShipmentPayload202InvoiceNotCommercial["customs"],
+            ShipmentPayload202MerchandiseNoFlag["customs"],
+        ):
+            with self.subTest(customs=customs):
+                request = gateway.mapper.create_shipment_request(
+                    models.ShipmentRequest(
+                        **{
+                            **_payload(
+                                "dhl_freight_sweden_road_freight_standard",
+                                _recipient_de,
+                            ),
+                            "customs": customs,
+                        }
+                    )
+                )
+                serialized = serialize_request(request)
 
-        document = serialized["customsInformation"]["customsDocuments"][0]
-        self.assertEqual(document["type"], "ProformaInvoice")
+                self.assertNotIn("customsInformation", serialized)
 
     def test_create_shipment_request_transport_movement_from_shipper_country(self):
         request = gateway.mapper.create_shipment_request(
