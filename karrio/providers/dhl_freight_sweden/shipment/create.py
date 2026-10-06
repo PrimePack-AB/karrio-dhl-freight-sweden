@@ -107,6 +107,12 @@ class LabelTypeError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class CustomsInformationRequiredError(errors.ShippingSDKDetailedError):
+    """Raised before booking when a lane leaving the EU VAT area carries no customs data."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 def parse_shipment_response(
     _response: lib.Deserializable[typing.List[dict]],
     settings: provider_utils.Settings,
@@ -330,6 +336,8 @@ def shipment_request(
             requested_customs_services,
         ]
     )
+    if not (within_eu_vat_area or has_customs_data):
+        _refuse_without_customs_data(shipper, recipient)
     if not within_eu_vat_area:
         _check_customs_service_identifiers(options, customs_options)
     if has_customs_data and not within_eu_vat_area:
@@ -800,6 +808,29 @@ def _check_commercial_invoice(
             "customs.commercial_invoice": dict(
                 code="required",
                 message="commercial invoice required for goods for sale",
+            )
+        },
+    )
+
+
+def _refuse_without_customs_data(
+    shipper: units.ComputedAddress, recipient: units.ComputedAddress
+) -> typing.NoReturn:
+    lane = " to ".join(
+        " ".join(part for part in (address.country_code, address.postal_code) if part)
+        for address in (shipper, recipient)
+    )
+
+    raise CustomsInformationRequiredError(
+        f"Customs requires customs information for a shipment from {lane}, "
+        "which crosses the border of the EU VAT area, and the shipment carries none, "
+        "so the connector refuses the booking before sending it. "
+        "Add customs.commodities, customs.invoice, or customs.invoice_date; "
+        "a documents shipment without commodities needs customs.invoice.",
+        details={
+            "customs": dict(
+                code="required",
+                message="customs.commodities, customs.invoice, or customs.invoice_date is required",
             )
         },
     )
