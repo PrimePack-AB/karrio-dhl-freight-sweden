@@ -1,3 +1,4 @@
+import fnmatch
 import re
 import typing
 
@@ -750,6 +751,56 @@ class PostalCodeExclusion(typing.NamedTuple):
         low, high = f"{self.low:0{width}d}", f"{self.high:0{width}d}"
         return low if low == high else f"{low}-{high}"
 
+    def excluded_codes(self) -> str:
+        return f"{self.country} postal codes {self.describe()} ({self.region})"
+
+    def required_code(self) -> str:
+        return f"{POSTAL_CODE_FORMATS[self.country].description} postal code"
+
+    def verdict(self, postal_code: typing.Optional[str]) -> typing.Optional[bool]:
+        """Whether the code is excluded, or None when it is malformed or missing."""
+        key = postal_code_key(self.country, postal_code)
+        return None if key is None else self.low <= key <= self.high
+
+
+class PostalCodePatternExclusion(typing.NamedTuple):
+    """Postal codes of a country a product does not serve, as wildcard patterns.
+
+    A pattern is matched against the whole normalised code, ``*`` standing
+    for any characters and ``?`` for one, as in the Product API catalog's
+    ``postalCodeExcludes``; the single pattern ``*`` excludes the whole
+    country, a missing code included. A missing code matched by no pattern
+    cannot be shown to be served, so it counts as excluded.
+    """
+
+    product: str
+    country: str
+    patterns: typing.Tuple[str, ...]
+    region: str
+    parties: typing.Tuple[str, ...] = ("recipient",)
+
+    def describe(self) -> str:
+        return ", ".join(self.patterns)
+
+    def excluded_codes(self) -> str:
+        return lib.identity(
+            f"{self.country} ({self.region})"
+            if self.patterns == ("*",)
+            else f"{self.country} postal codes {self.describe()} ({self.region})"
+        )
+
+    def required_code(self) -> str:
+        return "postal code"
+
+    def verdict(self, postal_code: typing.Optional[str]) -> typing.Optional[bool]:
+        """Whether the code is excluded, or None when it is missing and unmatched."""
+        code = normalized_postal_code(self.country, postal_code)
+        matched = any(fnmatch.fnmatchcase(code, pattern) for pattern in self.patterns)
+        return True if matched else (None if not code else False)
+
+
+Exclusion = typing.Union[PostalCodeExclusion, PostalCodePatternExclusion]
+
 
 def _excluded(
     products: typing.Iterable[ShippingService],
@@ -778,8 +829,8 @@ CRIMEA_PRODUCTS = (
     ShippingService.dhl_freight_sweden_standard_pallet_international,
 )
 
-# The numeric "Excluded regions/areas" of product manual v5.26. Non-numeric
-# areas (GB JE/GY/BT, the NL Caribbean islands) are not checked.
+# The numeric "Excluded regions/areas" of product manual v5.26; the areas
+# without ranges are in POSTAL_CODE_PATTERN_EXCLUSIONS.
 POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     # 112, §5.3 p18
     *_excluded(PARCEL_CONNECT_PLUS, "DK", "Greenland and the Faroe Islands", (3800, 3999)),
@@ -845,6 +896,78 @@ POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
 )
 
 
+def _patterns(
+    products: typing.Iterable[ShippingService],
+    country: str,
+    region: str,
+    patterns: str,
+    parties: typing.Tuple[str, ...] = ("recipient",),
+) -> typing.Tuple[PostalCodePatternExclusion, ...]:
+    """Exclusions from a comma-separated pattern list, catalog style."""
+    return tuple(
+        PostalCodePatternExclusion(
+            product.value,
+            country,
+            tuple(pattern.strip().upper() for pattern in patterns.split(",") if pattern.strip()),
+            region,
+            parties,
+        )
+        for product in products
+    )
+
+
+PARCEL_CONNECT_PRODUCTS = (*PARCEL_CONNECT_PLUS, *PARCEL_CONNECT)
+NL_CARIBBEAN = "Aruba, Bonaire, Curaçao, Saba, Sint Maarten, and Sint Eustatius"
+NL_CARIBBEAN_CODES = ("AW", "BQ", "CW", "SX")
+CATALOG = "Product API catalog postalCodeExcludes"
+ROAD_FREIGHT_STANDARD = (ShippingService.dhl_freight_sweden_road_freight_standard,)
+ROAD_FREIGHT_PRIORITY = (ShippingService.dhl_freight_sweden_road_freight_priority,)
+HOME_DELIVERY_INTERNATIONAL = (
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c,
+)
+
+# Excluded areas without postal-code ranges. The manual's GB entry for 112
+# (§5.3 p18) and 109 (§5.14 p63) names Jersey (JE), Guernsey (GY), and
+# Northern Ireland (BT), matched as postcode prefixes. Its NL Caribbean
+# islands for 112, 109, and 107 (§5.15 p66) carry no postal codes; they are
+# excluded under their own country codes, which reach DHL unchanged.
+# For 202, 233, and 601, for which the manual lists no excluded areas other
+# than 202's UA range, the patterns are the Product API catalog's
+# postalCodeExcludes quoted verbatim from the product matches answers of
+# 2026-10-06 (tests/dhl_freight_sweden/fixtures/sandbox/
+# lookup-product-matches-se-fi-00100.json); 601's DK list reads 2142 where
+# the others read 2412.
+POSTAL_CODE_PATTERN_EXCLUSIONS: typing.Tuple[PostalCodePatternExclusion, ...] = (
+    *_patterns(
+        PARCEL_CONNECT_PRODUCTS, "GB", "Jersey, Guernsey, and Northern Ireland", "JE*,GY*,BT*"
+    ),
+    *(
+        exclusion
+        for country in NL_CARIBBEAN_CODES
+        for exclusion in (
+            *_patterns(PARCEL_CONNECT_PRODUCTS, country, NL_CARIBBEAN, "*"),
+            *_patterns(PARCEL_RETURN_CONNECT, country, NL_CARIBBEAN, "*", parties=SHIPPER),
+        )
+    ),
+    *_patterns(ROAD_FREIGHT_STANDARD, "DK", CATALOG, "39*, ???,2412"),
+    *_patterns(ROAD_FREIGHT_STANDARD, "ES", CATALOG, "35*,38*,51*,52*"),
+    *_patterns(ROAD_FREIGHT_STANDARD, "FR", CATALOG, "97*"),
+    *_patterns(ROAD_FREIGHT_STANDARD, "GB", CATALOG, "GY*,JE*"),
+    *_patterns(ROAD_FREIGHT_STANDARD, "NO", CATALOG, "917*,8099"),
+    *_patterns(ROAD_FREIGHT_STANDARD, "PT", CATALOG, "9*"),
+    *_patterns(ROAD_FREIGHT_PRIORITY, "DK", CATALOG, "39*, ???,2412"),
+    *_patterns(ROAD_FREIGHT_PRIORITY, "ES", CATALOG, "35*,38*,51*,52*"),
+    *_patterns(ROAD_FREIGHT_PRIORITY, "NO", CATALOG, "917*,8099"),
+    *_patterns(ROAD_FREIGHT_PRIORITY, "PT", CATALOG, "9*"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "DK", CATALOG, "39*,???,2142"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "ES", CATALOG, "35*,38*,51*,52*"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "FR", CATALOG, "97*"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "GB", CATALOG, "GY*,JE*"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "NO", CATALOG, "917*,8099"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "PT", CATALOG, "9*"),
+)
+
+
 def postal_code_key(
     country_code: typing.Optional[str], postal_code: typing.Optional[str]
 ) -> typing.Optional[int]:
@@ -859,7 +982,7 @@ def postal_code_key(
 
 
 class ExcludedParty(typing.NamedTuple):
-    exclusion: PostalCodeExclusion
+    exclusion: Exclusion
     party: str
     postal_code: typing.Optional[str]
     well_formed: bool
@@ -868,15 +991,15 @@ class ExcludedParty(typing.NamedTuple):
 def excluded_party_message(product_code: str, excluded: "ExcludedParty") -> str:
     exclusion = excluded.exclusion
     direction = "to" if excluded.party == "recipient" else "from"
-    excluded_codes = f"{exclusion.country} postal codes {exclusion.describe()} ({exclusion.region})"
+    excluded_codes = exclusion.excluded_codes()
 
     return lib.identity(
         f"Product {product_code} does not ship {direction} {excluded_codes}; "
         f"got {excluded.party} postal code {excluded.postal_code}"
         if excluded.well_formed
         else f"Product {product_code} {direction} {exclusion.country} requires a "
-        f"{POSTAL_CODE_FORMATS[exclusion.country].description} {excluded.party} "
-        f"postal code to rule out {excluded_codes}; got {excluded.postal_code!r}"
+        f"{excluded.party} {exclusion.required_code()} to rule out {excluded_codes}; "
+        f"got {excluded.postal_code!r}"
     )
 
 
@@ -891,18 +1014,22 @@ def excluded_party(
     ``skip_missing`` leaves a party without a postal code unchecked instead
     of treating it as excluded.
     """
+    exclusions: typing.Tuple[Exclusion, ...] = (
+        *POSTAL_CODE_EXCLUSIONS,
+        *POSTAL_CODE_PATTERN_EXCLUSIONS,
+    )
     return next(
         (
-            ExcludedParty(exclusion, party, postal_code, key is not None)
-            for exclusion in POSTAL_CODE_EXCLUSIONS
+            ExcludedParty(exclusion, party, postal_code, verdict is True)
+            for exclusion in exclusions
             if exclusion.product == product_code
             for party in exclusion.parties
             for address in [addresses.get(party) or {}]
             if (address.get("country_code") or "").upper() == exclusion.country
             for postal_code in [address.get("postal_code")]
-            if not (skip_missing and not str(postal_code or "").strip())
-            for key in [postal_code_key(exclusion.country, postal_code)]
-            if key is None or exclusion.low <= key <= exclusion.high
+            for verdict in [exclusion.verdict(postal_code)]
+            if verdict is True
+            or (verdict is None and not (skip_missing and not str(postal_code or "").strip()))
         ),
         None,
     )

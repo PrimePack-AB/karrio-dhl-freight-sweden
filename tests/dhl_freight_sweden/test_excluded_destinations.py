@@ -38,6 +38,23 @@ class TestDHLFreightPostalCodeExclusionTable(unittest.TestCase):
                 self.assertTrue(set(exclusion.parties) <= {"shipper", "recipient"})
 
 
+    def test_pattern_exclusions_name_known_products_and_parties(self):
+        products = {member.value for member in members(units.ShippingService)}
+
+        for exclusion in units.POSTAL_CODE_PATTERN_EXCLUSIONS:
+            with self.subTest(exclusion=exclusion):
+                self.assertIn(exclusion.product, products)
+                self.assertTrue(exclusion.patterns)
+                self.assertTrue(set(exclusion.parties) <= {"shipper", "recipient"})
+
+    def test_pattern_exclusions_do_not_repeat_a_manual_range_country(self):
+        ranges = {(e.product, e.country) for e in units.POSTAL_CODE_EXCLUSIONS}
+
+        for exclusion in units.POSTAL_CODE_PATTERN_EXCLUSIONS:
+            with self.subTest(exclusion=exclusion):
+                self.assertNotIn((exclusion.product, exclusion.country), ranges)
+
+
 class TestDHLFreightExcludedDestinationRating(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
@@ -60,7 +77,7 @@ class TestDHLFreightExcludedDestinationRating(unittest.TestCase):
                 offered = self._offered(_fr(postal_code), [])
 
                 self.assertNotIn(ParcelConnectPlusService, offered)
-                self.assertIn(RoadFreightStandardService, offered)
+                self.assertIn(RoadFreightDirectService, offered)
 
     def test_112_does_not_rate_to_malformed_fr_postal_codes(self):
         for postal_code in ["9720", "972000", "97 2A0", "ABCDE"]:
@@ -144,14 +161,14 @@ class TestDHLFreightExcludedDestinationBooking(unittest.TestCase):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(
                 **_payload(
-                    RoadFreightStandardService,
+                    RoadFreightDirectService,
                     _fr("97200"),
                     {"dhl_freight_sweden_payer_code": "DAP"},
                 )
             )
         )
 
-        self.assertEqual(serialize_request(request)["productCode"], "202")
+        self.assertEqual(serialize_request(request)["productCode"], "205")
 
 
 class ExclusionCases:
@@ -159,7 +176,7 @@ class ExclusionCases:
 
     product: str
     party = "recipient"
-    excluded: typing.List[typing.Tuple[str, str]] = []
+    excluded: typing.List[typing.Tuple[str, typing.Optional[str]]] = []
     served: typing.List[typing.Tuple[str, str]] = []
     malformed: typing.List[typing.Tuple[str, str]] = []
     # Booking rejects a missing postal code; rating still offers the product.
@@ -382,6 +399,115 @@ class TestDHLFreightStandardPalletFromCrimea(CrimeaExclusionCases, unittest.Test
     party = "shipper"
 
 
+class TestDHLFreightParcelConnectPlusAreaExclusions(ExclusionCases, unittest.TestCase):
+    """112 excluded GB and NL areas without postal code ranges, §5.3 p18.
+
+    GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT) are matched by
+    postcode prefix, also under the territory codes JE, GG, and XI, which
+    are checked as GB. The NL Caribbean islands have no postal codes in the
+    manual, so their own country codes are excluded whatever the code.
+    """
+
+    product = "112"
+    excluded = [
+        ("GB", "JE2 3AB"),
+        ("GB", "je2 3ab"),
+        ("GB", "GY1 1AA"),
+        ("GB", "BT1 1AA"),
+        ("GB", "GB-BT1 1AA"),
+        ("JE", "JE2 3AB"),
+        ("GG", "GY1 1AA"),
+        ("XI", "BT1 1AA"),
+        ("BQ", "1234"),
+        ("CW", "A1"),
+        ("AW", None),
+        ("SX", ""),
+    ]
+    served = [("GB", "W1D 1AN"), ("GB", "IM1 1AA"), ("IM", "IM1 1AA")]
+    missing = [("GB", None)]
+
+
+class TestDHLFreightParcelConnectAreaExclusions(TestDHLFreightParcelConnectPlusAreaExclusions):
+    """109 excluded GB and NL areas without postal code ranges, §5.14 p63."""
+
+    product = "109"
+
+
+class TestDHLFreightParcelReturnConnectAreaExclusions(ExclusionCases, unittest.TestCase):
+    """107 excluded NL Caribbean islands, §5.15 p66, applied to the shipper."""
+
+    product = "107"
+    party = "shipper"
+    excluded = [("BQ", "1234"), ("CW", None), ("AW", ""), ("SX", "A1")]
+
+
+class CatalogExclusionCases(ExclusionCases):
+    """Product API catalog postalCodeExcludes of a product the manual gives no
+    excluded areas for, as listed in the 2026-10-06 product matches answers
+    (tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json).
+    """
+
+    excluded = [
+        ("DK", "3900"),
+        ("DK", "3999"),
+        ("DK", "100"),
+        ("FO", "100"),
+        ("GL", "3900"),
+        ("ES", "35001"),
+        ("ES", "38001"),
+        ("ES", "51001"),
+        ("ES", "52080"),
+        ("IC", "35001"),
+        ("NO", "9171"),
+        ("NO", "8099"),
+        ("PT", "9000-001"),
+        ("PT", "PT-9500-100"),
+    ]
+    served = [
+        ("DK", "3800"),
+        ("DK", "1620"),
+        ("ES", "28001"),
+        ("NO", "0154"),
+        ("NO", "9180"),
+        ("PT", "1000-001"),
+        ("GB", "W1D 1AN"),
+        ("GB", "BT1 1AA"),
+        ("GB", "IM1 1AA"),
+    ]
+    missing = [("DK", None), ("NO", "")]
+
+
+class TestDHLFreightRoadFreightStandardCatalogExclusions(CatalogExclusionCases, unittest.TestCase):
+    product = "202"
+    excluded = [
+        *CatalogExclusionCases.excluded,
+        ("DK", "2412"),
+        ("FR", "97400"),
+        ("GB", "JE2 3AB"),
+        ("GB", "GY1 1AA"),
+        ("JE", "JE2 3AB"),
+    ]
+    served = [*CatalogExclusionCases.served, ("DK", "2142"), ("FR", "75004"), ("FR", "98000")]
+
+
+class TestDHLFreightRoadFreightPriorityCatalogExclusions(CatalogExclusionCases, unittest.TestCase):
+    product = "233"
+    excluded = [*CatalogExclusionCases.excluded, ("DK", "2412")]
+    served = [*CatalogExclusionCases.served, ("FR", "97400"), ("GB", "JE2 3AB"), ("GB", "GY1 1AA")]
+
+
+class TestDHLFreightHomeDeliveryInternationalCatalogExclusions(CatalogExclusionCases, unittest.TestCase):
+    product = "601"
+    excluded = [
+        *CatalogExclusionCases.excluded,
+        ("DK", "2142"),
+        ("FR", "97400"),
+        ("GB", "JE2 3AB"),
+        ("GB", "GY1 1AA"),
+    ]
+    served = [*CatalogExclusionCases.served, ("DK", "2412"), ("FR", "75004")]
+
+
 def _address(country: str, postal_code: typing.Optional[str]) -> dict:
     return {
         **_recipient_se,
@@ -437,7 +563,7 @@ def _rates(service: str, party: str, country: str, postal_code: typing.Optional[
     return gateway.mapper.parse_rate_response(proxy_of(gateway).get_rates(request))
 
 
-_FREIGHT_PRODUCTS = ("202", "205", "SPI")
+_FREIGHT_PRODUCTS = ("202", "205", "233", "SPI", "601")
 _CUSTOMS = {
     "commodities": [
         {
@@ -477,6 +603,7 @@ def _rate_payload(recipient: dict, services: list) -> dict:
 
 ParcelConnectPlusService = "dhl_freight_sweden_parcel_connect_plus"
 RoadFreightStandardService = "dhl_freight_sweden_road_freight_standard"
+RoadFreightDirectService = "dhl_freight_sweden_road_freight_direct"
 
 
 if __name__ == "__main__":

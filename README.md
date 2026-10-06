@@ -233,12 +233,13 @@ Service point lookups send the country code as given.
 | Ceuta, Melilla | EA | ES | yes, ES 51000-52999 | not probed |
 
 The Customs column applies the [EU VAT area](#customs-and-the-eu-vat-area) check to the parent country and postal code.
-The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given.
+After the mapping the [excluded postal codes](#excluded-postal-codes) apply: Jersey and Guernsey are excluded from 109, 112, 202, and 601, Northern Ireland from 109 and 112, the Faroe Islands, Greenland, and the Canary Islands from 109, 112, 202, 233, and 601 (the Faroe Islands' three-digit codes as malformed DK codes for 109 and 112), Ceuta and Melilla from 202, 233, and 601 and their codes 51080 and 52080 from 109 and 112, and the Isle of Man from none.
+The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given, excluded from 109, 112, and 107, and passed through on the other products.
 
 ### Excluded postal codes
 
 The "Excluded regions/areas" of the manual's product sections list postal codes the product does not serve.
-The connector checks the numeric ones before the booking request and in rating, where an excluded product is not offered and an explicitly requested one adds a `destination_not_supported` message instead of a rate.
+The connector checks them before the booking request and in rating, where an excluded product is not offered and an explicitly requested one adds a `destination_not_supported` message instead of a rate.
 A booking fails with `details` keyed by `recipient.postal_code` or `shipper.postal_code`.
 
 | Product | Country | Excluded postal codes | Region | Manual |
@@ -266,7 +267,28 @@ Each country's codes are compared in its own format once spaces and a leading `<
 A code of another shape cannot be shown to lie outside the excluded ranges, so it counts as excluded in rating and booking.
 A missing or blank code is not checked in rating, so the product is still offered, while booking rejects it with `details` keyed by the party's `postal_code`.
 The ranges apply to the recipient, except for the UA range of 202, 205, and SPI, products used to and from SE, which applies to both parties, and for 107, a return sent from the listed countries to the original sender, whose ranges apply to the shipper, as the manual's 107 entry for FR reads "Delivery only from France mainland and Corsica" (§5.15 p66).
-The manual's non-numeric areas are not checked: for 112 and 109, GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT), and the NL Caribbean islands Aruba, Bonaire, Curaçao, Saba, Sint Maarten, and Sint Eustatius (§5.3 p18, §5.14 p63), and for 107 the NL Caribbean islands and FR outside mainland France and Corsica, for which the manual gives no postal codes (§5.15 p66).
+The manual's areas without postal-code ranges are checked as patterns, `*` standing for any characters and `?` for one, matched against the whole normalised code.
+For 202, 233, and 601, for which the manual lists no excluded areas other than 202's UA range, the connector applies the Product API catalog's `postalCodeExcludes`, quoted verbatim from the product matches answers of 2026-10-06 ([lookup-product-matches-se-fi-00100.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json)).
+
+| Product | Country | Excluded patterns | Region | Source |
+|---------|---------|-------------------|--------|--------|
+| 112, 109 | GB | `JE*`, `GY*`, `BT*` | Jersey, Guernsey, Northern Ireland | §5.3 p18, §5.14 p63 |
+| 112, 109 | AW, BQ, CW, SX | `*` | Aruba, Bonaire, Curaçao, Saba, Sint Maarten, Sint Eustatius | §5.3 p18, §5.14 p63 |
+| 107 (shipper) | AW, BQ, CW, SX | `*` | Aruba, Bonaire, Curaçao, Saba, Sint Maarten, Sint Eustatius | §5.15 p66 |
+| 202, 233 | DK | `39*`, `???`, `2412` | catalog | catalog |
+| 601 | DK | `39*`, `???`, `2142` | catalog | catalog |
+| 202, 233, 601 | ES | `35*`, `38*`, `51*`, `52*` | catalog | catalog |
+| 202, 601 | FR | `97*` | catalog | catalog |
+| 202, 601 | GB | `GY*`, `JE*` | catalog | catalog |
+| 202, 233, 601 | NO | `917*`, `8099` | catalog | catalog |
+| 202, 233, 601 | PT | `9*` | catalog | catalog |
+
+The manual names the NL Caribbean islands without postal codes, so they are excluded under their own country codes AW, BQ, CW, and SX, which are sent to DHL unchanged, whatever the postal code; an address on the islands under NL is not recognised.
+A pattern list excludes a matching code; a missing code that no pattern matches is not checked in rating and rejected at booking, like a missing code under a range.
+601's DK list reads `2142` where the other products read `2412`; the connector applies each list as DHL returned it.
+The catalog lists different excludes for 109 and 112, which the connector does not apply because the manual covers both products; the [findings note](docs/notes/sandbox/sandbox-findings.md#special-territories-in-product-matches) compares them, including 109 to DK 3900, which product matches offered while the manual excludes DK 3800-3999 ([lookup-product-matches-se-dk-3900.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)).
+205 and SPI were not matched by any probe, so no catalog excludes are applied to them.
+The manual's 107 entry for FR outside mainland France and Corsica gives no postal codes and is not checked (§5.15 p66).
 The manual also points to the DHL Freight website for the present list of postal codes, which the connector does not consult.
 
 ### Additional information pass-through

@@ -133,7 +133,7 @@ class TestDHLFreightTerritoryRating(unittest.TestCase):
         self.assertTrue({"109", "112", "202"} <= offered)
 
     def test_jersey_rates_freight_as_gb(self):
-        self.assertIn("202", _rated(_recipient("JE", "JE2 3AB")))
+        self.assertIn("233", _rated(_recipient("JE", "JE2 3AB")))
 
 
 class TestDHLFreightTerritoryProductMatches(unittest.TestCase):
