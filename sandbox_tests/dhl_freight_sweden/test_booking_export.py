@@ -71,7 +71,14 @@ class TestSandboxBookingExport(unittest.TestCase):
         product: str,
         country: str,
         sub_types: typing.Optional[typing.AbstractSet[str]] = None,
+        require_product_match: bool = True,
     ):
+        """Book ``product`` from SE to ``country``.
+
+        ``require_product_match`` False still records the product matches
+        lookup but books even when it does not offer the product, so DHL's
+        answer to the booking itself is captured.
+        """
         booking.require_booking(self, self.session, product, country)
         recipient = booking.RECIPIENTS[country]
         lane = f"{product}-{country.lower()}"
@@ -84,7 +91,7 @@ class TestSandboxBookingExport(unittest.TestCase):
                 f"product matches pre-check for SE to {country} failed: "
                 f"{[message.message for message in messages]}"
             )
-        if product not in codes:
+        if product not in codes and require_product_match:
             self.skipTest(f"product matches do not offer {product} from SE to {country}")
 
         options: dict = {}
@@ -148,7 +155,9 @@ class TestSandboxBookingExport(unittest.TestCase):
         self.export("112", "FR")
 
     def test_book_112_gb(self):
-        self.export("112", "GB")
+        # Product matches did not offer 112 to GB (fixtures/sandbox/
+        # lookup-product-matches-se-gb.json); the booking records DHL's answer.
+        self.export("112", "GB", require_product_match=False)
 
     def test_book_109_dk_parcel_shop(self):
         self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))
