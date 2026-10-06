@@ -1,0 +1,77 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to ES 35001 (the Canary Islands under ES) returned HDI.",
+ "captured_at": "2026-10-06T08:52:24Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> ES 35001",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_product_matches_territory_es_35001",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T08:52:24Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/005-product-matches-se-es-35001.request.json",
+    "sha256": "bb0b5e123c94a36e45df46608384526173d270208ad0a2424da2109f7b5fc72d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/005-product-matches-se-es-35001.response.json",
+    "sha256": "8856f217e800cdd9afaafe985bcd4863fd519eb971d3004c20dc676b6212180c"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "ES",
+       "postalCode": "35001"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 40.0,
+      "volume": 0.018,
+      "weight": 2.5,
+      "width": 30.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        }
+       }
+      ]
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256"
+  }
+ ]
+}

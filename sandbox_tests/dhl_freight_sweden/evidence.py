@@ -66,6 +66,13 @@ def mtime(path: pathlib.Path) -> str:
     return utc(datetime.datetime.fromtimestamp(path.stat().st_mtime, datetime.timezone.utc))
 
 
+def json_or_text(text: str) -> Json:
+    try:
+        return json.loads(text)
+    except ValueError:
+        return text
+
+
 def endpoint_of(method: str, url: str) -> str:
     return f"{method} {url.split(HOST, 1)[1]}"
 
@@ -123,6 +130,9 @@ class Builder:
         response = json.loads(res_path.read_text())
         assert HOST in request["url"], request["url"]
         body = response.get("response") if response["key"] == "response" else response["error"]
+        if isinstance(body, str):
+            # Captures before the harness decoded empty bodies hold "[]" as text.
+            body = json_or_text(body)
         status = body.get("http_status", 200) if isinstance(body, dict) else 200
         method = "POST" if request.get("data") is not None else "GET"
         return dict(
@@ -266,14 +276,66 @@ class Builder:
         )
 
 
+PRODUCT_MATCH_KEYS = ("code", "name", "shortName", "isDomestic")
+
+
 def reduce_product_matches(exchange: Exchange) -> Exchange:
     exchange["response"] = [
-        dict(product={key: match["product"].get(key) for key in ("code", "name", "shortName", "isDomestic")})
+        dict(product={key: match["product"].get(key) for key in PRODUCT_MATCH_KEYS})
         for match in exchange["response"]
     ]
     exchange["response_reduced"] = (
         "each match keeps product code, name, shortName, and isDomestic; "
         "the full body is identified by response_source.sha256"
+    )
+    return exchange
+
+
+def consignee_country(request: Json) -> typing.Optional[str]:
+    return next(
+        (
+            party["address"].get("countryCode")
+            for party in request.get("parties") or []
+            if party.get("type") == "Consignee"
+        ),
+        None,
+    )
+
+
+def destination_entry(entry: Json) -> Json:
+    country = entry.get("country") or {}
+    return dict(
+        country={key: country.get(key) for key in ("countryCode", "customs")},
+        **({"postalCodeExcludes": entry["postalCodeExcludes"]} if "postalCodeExcludes" in entry else {}),
+    )
+
+
+def reduce_product_matches_with_destinations(exchange: Exchange) -> Exchange:
+    """Like ``reduce_product_matches``, keeping the product destinations that bear on the lane.
+
+    Each match keeps the toCountries entries with a non-empty
+    postalCodeExcludes and the entry of the request's Consignee country.
+    """
+    destination = consignee_country(exchange["request"])
+    exchange["response"] = [
+        dict(
+            product={
+                **{key: match["product"].get(key) for key in PRODUCT_MATCH_KEYS},
+                "toCountries": [
+                    destination_entry(entry)
+                    for entry in match["product"].get("toCountries") or []
+                    if entry.get("postalCodeExcludes")
+                    or (entry.get("country") or {}).get("countryCode") == destination
+                ],
+            }
+        )
+        for match in exchange["response"]
+    ]
+    exchange["response_reduced"] = (
+        "each match keeps product code, name, shortName, isDomestic, and the toCountries "
+        "entries with a non-empty postalCodeExcludes or of the Consignee country, each "
+        "reduced to countryCode, customs, and postalCodeExcludes; the full body is "
+        "identified by response_source.sha256"
     )
     return exchange
 
@@ -557,6 +619,46 @@ def _(b: Builder) -> Json:
         "so the booking-export case 112 to GB skipped without booking.",
         None, "SE 11143 -> GB W1D 1AN", None, None, f"{SUITE_RUN}: test_booking_export",
         [reduce_product_matches(b.suite_exchange("20261006-102955", "001-product-matches-112-gb"))],
+    )
+
+
+TERRITORIES_RUN = "20261006-105223"
+TERRITORY_PROBES: typing.Tuple[typing.Tuple[str, str, str, str], ...] = (
+    ("se-fi-22100", "009", "FI 22100", "Åland under FI"),
+    ("se-ax-22100", "001", "AX 22100", "Åland under its own code AX"),
+    ("se-fi-00100", "007", "FI 00100", "mainland Finland (control)"),
+    ("se-gb-je23ab", "019", "GB JE2 3AB", "Jersey under GB"),
+    ("se-gb-gy11aa", "015", "GB GY1 1AA", "Guernsey under GB"),
+    ("se-gb-bt11aa", "013", "GB BT1 1AA", "Northern Ireland under GB"),
+    ("se-gb-im11aa", "017", "GB IM1 1AA", "the Isle of Man under GB"),
+    ("se-gb-w1d1an", "021", "GB W1D 1AN", "London (control)"),
+    ("se-je-je23ab", "025", "JE JE2 3AB", "Jersey under its own code JE"),
+    ("se-gg-gy11aa", "023", "GG GY1 1AA", "Guernsey under its own code GG"),
+    ("se-dk-3900", "003", "DK 3900", "Greenland under DK"),
+    ("se-fo-100", "011", "FO 100", "the Faroe Islands under their own code FO"),
+    ("se-es-35001", "005", "ES 35001", "the Canary Islands under ES"),
+)
+
+
+def territory_probe(b: Builder, lane: str, sequence: str, destination: str, area: str) -> Json:
+    exchange = reduce_product_matches_with_destinations(
+        b.suite_exchange(TERRITORIES_RUN, f"{sequence}-product-matches-{lane}")
+    )
+    codes = [match["product"]["code"] for match in exchange["response"]]
+    return b.document(
+        "lookup",
+        f"Product matches for SE 11143 to {destination} ({area}) returned "
+        + (", ".join(codes) if codes else "no products")
+        + ".",
+        None, f"SE 11143 -> {destination}", None, None,
+        f"{SUITE_RUN}: test_lookups.test_product_matches_territory_{destination.lower().replace(' ', '_')}",
+        [exchange],
+    )
+
+
+for _lane, _sequence, _destination, _area in TERRITORY_PROBES:
+    evidence(f"lookup-product-matches-{_lane}.json")(
+        lambda b, l=_lane, s=_sequence, d=_destination, a=_area: territory_probe(b, l, s, d, a)
     )
 
 

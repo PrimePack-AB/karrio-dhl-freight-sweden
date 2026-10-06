@@ -1,0 +1,121 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to GB JE2 3AB (Jersey under GB) returned HDI, 233.",
+ "captured_at": "2026-10-06T08:52:34Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> GB JE2 3AB",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_product_matches_territory_gb_je2_3ab",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T08:52:34Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/019-product-matches-se-gb-je23ab.request.json",
+    "sha256": "781fa1494c2f3f9ed7a71a7bbbc3de4ff4b2aa7ab815228a81cf0f99efa58989"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/019-product-matches-se-gb-je23ab.response.json",
+    "sha256": "d4640520982257430688f796b632d8ce4b5d409893f1b93b763085a9da6b8d19"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "GB",
+       "postalCode": "JE2 3AB"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 40.0,
+      "volume": 0.018,
+      "weight": 2.5,
+      "width": 30.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "GB",
+         "customs": true
+        }
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "PT",
+         "customs": false
+        },
+        "postalCodeExcludes": "9*"
+       },
+       {
+        "country": {
+         "countryCode": "GB",
+         "customs": true
+        }
+       },
+       {
+        "country": {
+         "countryCode": "NO",
+         "customs": true
+        },
+        "postalCodeExcludes": "917*,8099"
+       },
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        },
+        "postalCodeExcludes": "35*,38*,51*,52*"
+       },
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        },
+        "postalCodeExcludes": "39*, ???,2412"
+       }
+      ]
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256"
+  }
+ ]
+}

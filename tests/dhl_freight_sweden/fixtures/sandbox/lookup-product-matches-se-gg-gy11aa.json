@@ -1,0 +1,60 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to GG GY1 1AA (Guernsey under its own code GG) returned no products.",
+ "captured_at": "2026-10-06T08:52:35Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> GG GY1 1AA",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_product_matches_territory_gg_gy1_1aa",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T08:52:35Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/023-product-matches-se-gg-gy11aa.request.json",
+    "sha256": "afabea75ff80ded696dfabe809f7928d564cb59bb4c969b3c0a2e55f5da9e6df"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/023-product-matches-se-gg-gy11aa.response.json",
+    "sha256": "83ae6a891ac5707427ff18d5386c2f73f199b06a3d4f051e61461905a9bcd3f7"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "GG",
+       "postalCode": "GY1 1AA"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 40.0,
+      "volume": 0.018,
+      "weight": 2.5,
+      "width": 30.0
+     }
+    ]
+   },
+   "response": [],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256"
+  }
+ ]
+}

@@ -1,0 +1,129 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to DK 3900 (Greenland under DK) returned HDI, 109.",
+ "captured_at": "2026-10-06T08:52:24Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> DK 3900",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_product_matches_territory_dk_3900",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T08:52:24Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/003-product-matches-se-dk-3900.request.json",
+    "sha256": "4d5031e53564a1e3155d62cf29418397e05e9b58244bbee68310b9d468e10bb2"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-105223/003-product-matches-se-dk-3900.response.json",
+    "sha256": "cb2856f737256bef87bb9a47027aa90229760f290229d5952864ea0c8880cb09"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "DK",
+       "postalCode": "3900"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 40.0,
+      "volume": 0.018,
+      "weight": 2.5,
+      "width": 30.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        }
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "109",
+      "name": "DHL Parcel Connect",
+      "shortName": null,
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "FR",
+         "customs": false
+        },
+        "postalCodeExcludes": "97*,98*,99*"
+       },
+       {
+        "country": {
+         "countryCode": "NO",
+         "customs": true
+        },
+        "postalCodeExcludes": "917*,8099"
+       },
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        },
+        "postalCodeExcludes": "38*,???,2412"
+       },
+       {
+        "country": {
+         "countryCode": "IT",
+         "customs": false
+        },
+        "postalCodeExcludes": "00120,22061,23041,4789?"
+       },
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        },
+        "postalCodeExcludes": "35*,38*,51*,52*"
+       },
+       {
+        "country": {
+         "countryCode": "PT",
+         "customs": false
+        },
+        "postalCodeExcludes": "9*"
+       }
+      ]
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256"
+  }
+ ]
+}
