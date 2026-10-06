@@ -523,12 +523,12 @@ def _commodity_line_value(commodity: models.Commodity) -> typing.Optional[float]
 def _invoice_amount_from_lines(
     commodities: typing.List[models.Commodity],
 ) -> typing.Optional[float]:
-    line_values = [
-        value
-        for value in (_commodity_line_value(c) for c in commodities)
-        if value is not None
-    ]
-    return lib.to_money(sum(line_values)) if line_values else None
+    # A partial sum would understate the invoice to customs, so the amount is
+    # derived only when every line carries a value.
+    line_values = [_commodity_line_value(c) for c in commodities]
+    if not line_values or any(value is None for value in line_values):
+        return None
+    return lib.to_money(sum(value for value in line_values if value is not None))
 
 
 def _customs_commodity(
