@@ -30,7 +30,7 @@ class TestSandboxHarnessConfig(unittest.TestCase):
         self.assertFalse(config.enabled)
         self.assertEqual(config.segments, {"lookups"})
         self.assertIsNone(config.products)
-        self.assertEqual(config.max_bookings, 10)
+        self.assertEqual(config.max_bookings, 30)
         self.assertEqual(
             config.capture_dir,
             pathlib.Path(
