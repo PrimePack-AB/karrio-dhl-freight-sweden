@@ -110,6 +110,7 @@ def export_payload(
     product: str,
     recipient: dict,
     options: dict,
+    extra_options: typing.Optional[dict] = None,
     with_customs: bool = True,
     customs_service: bool = True,
     standard_customs: bool = False,
@@ -118,7 +119,8 @@ def export_payload(
 ) -> dict:
     """Shipment payload for ``product`` from ``booking.SHIPPER`` to ``recipient``.
 
-    ``options`` carries the service point and other per-case options;
+    ``options`` carries the service point, and ``extra_options``, such as a
+    case's explicit payer code, override every other option.
     ``customs_service`` False sends the customs data without a customs
     handling service.
     """
@@ -136,6 +138,7 @@ def export_payload(
             **options,
             **(customs_options if customs_service else {}),
             **booking.declaration_options(recipient),
+            **(extra_options or {}),
         },
         **customs,
     )
@@ -215,7 +218,8 @@ class TestSandboxBookingExport(unittest.TestCase):
             export_payload(
                 product,
                 recipient,
-                {**options, **(extra_options or {})},
+                options,
+                extra_options,
                 with_customs=with_customs,
                 customs_service=customs_service,
                 standard_customs=standard_customs,
