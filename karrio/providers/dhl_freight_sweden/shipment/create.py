@@ -210,8 +210,8 @@ def shipment_request(
     payload: models.ShipmentRequest,
     settings: provider_utils.Settings,
 ) -> lib.Serializable:
-    shipper = lib.to_address(payload.shipper)
-    recipient = lib.to_address(payload.recipient)
+    shipper = lib.to_address(provider_units.with_parent_country(payload.shipper))
+    recipient = lib.to_address(provider_units.with_parent_country(payload.recipient))
     packages = lib.to_packages(payload.parcels)
     service = provider_units.ShippingService.map(payload.service).value_or_key
     options = lib.to_shipping_options(
