@@ -69,7 +69,7 @@ Parcel dimensions are sent in centimetres, and some products enforce minimum pie
 | 601 Home Delivery International B2C | 15 cm | 11 cm | 3 cm |
 
 DHL validates these minimums server-side at booking; the connector does not check them and forwards the dimensions as given.
-For DHL Road Freight Direct (205) the server-side minimum is on chargeable weight: the sandbox rejected a booking of one 1 kg piece with 22020 "ChargeableWeight is lower than product min 2500.0" (2026-10-06: [rejection-22020-205-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)).
+For DHL Road Freight Direct (205) the server-side minimum is on chargeable weight: the sandbox rejected a booking of one 1 kg piece from SE to NO with 22020 "ChargeableWeight is lower than product min 2500.0" (2026-10-06: [rejection-22020-205-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)).
 Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional service rather than an access-point party: set the `dhl_freight_sweden_doorstep_access_code` option and the connector sends it as `additionalServices.doorstepDelivery.accessCode`.
 Product manual v5.26 lists FR among the valid countries of Parcel Connect Plus (112) (§5.3 p18, Appendix G p199) and requires the Print and TransportInstruction APIs for FR shipments, the two APIs the connector books and prints through, so the rate sheet includes FR for 112.
 The manual also lists GB for 112, only according to a separate agreement with DHL (§5.3 p18, Appendix G p200), so the rate sheet includes GB for 112 and the connector books it without checking the agreement, which the account must hold.
