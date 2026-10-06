@@ -838,6 +838,21 @@ for _lane, _sequence, _destination, _area in SWISS_PROBES:
     )
 
 
+@evidence("lookup-product-matches-se-no-0154-customs.json")
+def _(b: Builder) -> Json:
+    exchange = reduce_product_matches_with_customs(
+        b.suite_exchange("20261006-123912", "025-product-matches-205-no")
+    )
+    codes = [match["product"]["code"] for match in exchange["response"]]
+    return b.document(
+        "lookup",
+        "Product matches for SE 11143 to NO 0154 returned " + ", ".join(codes)
+        + ", kept with each product's payer codes and customs additional services.",
+        None, "SE 11143 -> NO 0154", None, None, f"{SUITE_RUN}: test_booking_export",
+        [exchange],
+    )
+
+
 @evidence("lookup-postal-code-ch-8001-16009.json")
 def _(b: Builder) -> Json:
     return b.document(
