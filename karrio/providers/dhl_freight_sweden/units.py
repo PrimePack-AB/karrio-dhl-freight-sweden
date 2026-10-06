@@ -221,11 +221,11 @@ class TransportDeclaration(typing.NamedTuple):
     number_required: bool
 
 
-# Products whose "Related fields" tables in product manual v5.23 list the
-# EKAER (HU) and UIT (RO) entries: §5.4 p19 (202), §5.9 p38 (205), §5.11 p46
-# (233), §5.12 p51 (SPI), §5.21 p87 (601); PPI (§5.13 p56) is not a
-# connector product. The v5.23 release note (p7) makes the UIT number
-# optional even when the shipment is not UIT free.
+# Products whose "Related fields" tables in product manual v5.26 list the
+# EKAER (HU) and UIT (RO) entries: §5.4 p23 (202), §5.9 p42 (205), §5.10 p47
+# (233), §5.11 p52 (SPI), §5.19 p82 (601). The same tables mark the UIT code
+# conditional ("Code should be provided if possible") even when the shipment
+# is not UIT free.
 TRANSPORT_DECLARATION_PRODUCTS = (
     ShippingService.dhl_freight_sweden_road_freight_standard.value,
     ShippingService.dhl_freight_sweden_road_freight_direct.value,
@@ -278,76 +278,77 @@ EXPORT_INCOTERMS = ("EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP")
 IMPORT_INCOTERMS = ("EXW", "FCA")
 
 # Payer codes per product from the "Payer codes" tables of DHL Freight
-# Sweden product manual v5.23 (valid from 2025-04-14), section 5.
+# Sweden product manual v5.26 (valid from 2026-11-01), section 5, unless
+# marked v5.23.
 PAYER_CODES: typing.Dict[str, PayerCodes] = {
     ShippingService.dhl_freight_sweden_paket.value: PayerCodes(
-        FREIGHT_PAYER_CODES  # §5.2 p11
+        FREIGHT_PAYER_CODES  # §5.2 p15
     ),
-    # §5.3 p15 lists only 023, so it stays the default; the sandbox also
+    # §5.3 p19 lists only 023, so it stays the default; the sandbox also
     # accepted 022 (tests/dhl_freight_sweden/fixtures/sandbox/
     # booking-2906761149-112-se-pl-payer-022.json).
     ShippingService.dhl_freight_sweden_parcel_connect_plus.value: PayerCodes(
         ("022", "023"), default="023"
     ),
     ShippingService.dhl_freight_sweden_road_freight_standard.value: PayerCodes(
-        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.4 p20
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.4 p24
     ),
     ShippingService.dhl_freight_sweden_special.value: PayerCodes(
-        FREIGHT_PAYER_CODES  # §5.5 p23
+        FREIGHT_PAYER_CODES  # v5.23 §5.5 p23
     ),
     ShippingService.dhl_freight_sweden_pall.value: PayerCodes(
-        FREIGHT_PAYER_CODES  # §5.6 p26
+        FREIGHT_PAYER_CODES  # §5.6 p30
     ),
     ShippingService.dhl_freight_sweden_stycke.value: PayerCodes(
-        FREIGHT_PAYER_CODES  # §5.7 p31
+        FREIGHT_PAYER_CODES  # §5.7 p35
     ),
     ShippingService.dhl_freight_sweden_parti.value: PayerCodes(
-        FREIGHT_PAYER_CODES  # §5.8 p35
+        FREIGHT_PAYER_CODES  # §5.8 p39
     ),
     ShippingService.dhl_freight_sweden_road_freight_direct.value: PayerCodes(
-        ("CPT", "CIP", "DAP", "DPU", "DDP"), IMPORT_INCOTERMS  # §5.9 p39
+        ("CPT", "CIP", "DAP", "DPU", "DDP"), IMPORT_INCOTERMS  # §5.9 p43
     ),
     ShippingService.dhl_freight_sweden_euroconnect_plus.value: PayerCodes(
-        ("DAP", "DDP")  # §5.10 p42
+        ("DAP", "DDP")  # v5.23 §5.10 p42
     ),
     ShippingService.dhl_freight_sweden_road_freight_priority.value: PayerCodes(
-        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.11 p47
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.10 p48
     ),
     ShippingService.dhl_freight_sweden_standard_pallet_international.value: PayerCodes(
-        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.12 p52
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.11 p53
     ),
     ShippingService.dhl_freight_sweden_service_point_b2c.value: PayerCodes(
-        ("1", "4")  # §5.14 p61
+        ("1", "4")  # §5.12 p57
     ),
     ShippingService.dhl_freight_sweden_service_point_c2b.value: PayerCodes(
-        ("3",)  # §5.15 p64
+        ("3",)  # §5.13 p60
     ),
     ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: PayerCodes(
-        ("022", "023"),  # §5.16 p67
+        ("022", "023"),  # §5.14 p63
         default="022",
         joint_declaration_codes=("023",),
     ),
     ShippingService.dhl_freight_sweden_parcel_return_connect_c2b.value: PayerCodes(
-        ("001",)  # §5.17 p70
+        ("001",)  # §5.15 p66
     ),
     ShippingService.dhl_freight_sweden_hemleverans_paket_b2c.value: PayerCodes(
-        ("1", "4")  # §5.18 p73
+        ("1", "4")  # §5.16 p69
     ),
     ShippingService.dhl_freight_sweden_home_delivery_b2c.value: PayerCodes(
-        ("1", "4")  # §5.19 p77
+        ("1", "4")  # §5.17 p73
     ),
     ShippingService.dhl_freight_sweden_home_delivery_c2b.value: PayerCodes(
-        ("3", "4")  # §5.20 p82
+        ("3", "4")  # §5.18 p77
     ),
     ShippingService.dhl_freight_sweden_home_delivery_c2b_502.value: PayerCodes(
-        ("3", "4")  # §5.20 p82
+        ("3", "4")  # §5.18 p77
     ),
     ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: PayerCodes(
-        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.21 p88
+        EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.19 p83
     ),
 }
 
-# Combiterm equivalents of Incoterms (product manual v5.23 §7.6 p169), used
+# Combiterm equivalents of Incoterms (product manual v5.26 §7.6 p163), used
 # to translate customs.incoterm for products that only accept Combiterms.
 COMBITERM_BY_INCOTERM: typing.Dict[str, str] = {
     "CPT": "022",
@@ -372,14 +373,14 @@ PARCEL_SHOP_AND_STATION = frozenset(
 )
 
 # Access-point sub types per product and destination country from DHL
-# Freight Sweden product manual v5.23. Products and countries absent here
-# accept no AccessPoint party (e.g. 112, §5.3 p14; 109 to IE and LU).
+# Freight Sweden product manual v5.26. Products and countries absent here
+# accept no AccessPoint party (e.g. 112, §5.3 p19; 109 to IE and LU).
 ACCESS_POINT_SUB_TYPES: typing.Dict[str, typing.Dict[str, typing.FrozenSet[str]]] = {
-    # §5.14 p59-60
+    # §5.12 p55-56
     ShippingService.dhl_freight_sweden_service_point_b2c.value: {
         "SE": PARCEL_SHOP_AND_STATION
     },
-    # Appendix B.3 §10.3.2 p196-197
+    # Appendix C.3 §10.4.2 p192-194, except IT (v5.23 Appendix B.3 p197)
     ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: {
         "AT": PARCEL_SHOP_AND_STATION,
         "BE": PARCEL_SHOP_AND_STATION,

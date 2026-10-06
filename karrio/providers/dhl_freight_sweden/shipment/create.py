@@ -301,7 +301,7 @@ def shipment_request(
             [
                 dhl_freight_sweden_req.ReferenceType(
                     # DHL Freight (Sweden) shipment-level reference qualifiers
-                    # (product manual appendix E); the qualifier is limited to
+                    # (product manual appendix F); the qualifier is limited to
                     # 3 characters and karrio's reference is the consignor's.
                     qualifier="CU",
                     value=payload.reference,

@@ -1,9 +1,10 @@
 """DHL Freight (SE API Farm) access-point eligibility tests.
 
 AccessPoint parties are checked per product and destination country against
-DHL Freight Sweden product manual v5.23: 103 to SE accepts parcelshops and
-parcelstations (§5.14 p59-60), 109 follows Appendix B.3 (§10.3.2 p196-197),
-and 112 has no accessPoint party (§5.3 p14). The sandbox rejection 22015
+DHL Freight Sweden product manual v5.26: 103 to SE accepts parcelshops and
+parcelstations (§5.12 p55-56), 109 follows Appendix C.3 (§10.4.2 p192-194)
+except IT, which follows v5.23 Appendix B.3 (p197), and 112 has no
+accessPoint party (§5.3 p19). The sandbox rejection 22015
 "AccessPoint Party is not allowed for this product"
 (fixtures/sandbox/rejection-22015-112-se-pl-access-point.json) is the
 carrier-side failure these checks pre-empt.
