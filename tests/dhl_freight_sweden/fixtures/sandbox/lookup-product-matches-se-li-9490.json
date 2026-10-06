@@ -1,0 +1,156 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to LI 9490 (Vaduz, one 2 kg 30x20x15 cm piece) returned 202.",
+ "captured_at": "2026-10-06T12:27:47Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> LI 9490",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_product_matches_li_9490",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T12:27:47Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/013-product-matches-se-li-9490.request.json",
+    "sha256": "45841f31bb013451f76d2acaea0b4fd0cd42b391cd9a81ec31fecbadc4a91bb8"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/013-product-matches-se-li-9490.response.json",
+    "sha256": "1b1143e103efc4d3b1790201361fb646251db39cd28ca0a0c54db6eee4d14b33"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "LI",
+       "postalCode": "9490"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 30.0,
+      "volume": 0.009,
+      "weight": 2.0,
+      "width": 20.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "UA",
+         "customs": true
+        },
+        "postalCodeExcludes": "95*, 96*,97*,98*,99*"
+       },
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        },
+        "postalCodeExcludes": "39*, ???,2412"
+       },
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        },
+        "postalCodeExcludes": "35*,38*,51*,52*"
+       },
+       {
+        "country": {
+         "countryCode": "LI",
+         "customs": true
+        }
+       },
+       {
+        "country": {
+         "countryCode": "NO",
+         "customs": true
+        },
+        "postalCodeExcludes": "917*,8099"
+       },
+       {
+        "country": {
+         "countryCode": "GB",
+         "customs": true
+        },
+        "postalCodeExcludes": "GY*,JE*"
+       },
+       {
+        "country": {
+         "countryCode": "FR",
+         "customs": false
+        },
+        "postalCodeExcludes": "97*"
+       },
+       {
+        "country": {
+         "countryCode": "PT",
+         "customs": false
+        },
+        "postalCodeExcludes": "9*"
+       }
+      ],
+      "payerCodes": [
+       {
+        "code": "CPT",
+        "customs": false
+       },
+       {
+        "code": "FCA",
+        "customs": false
+       },
+       {
+        "code": "EXW",
+        "customs": false
+       },
+       {
+        "code": "DPU",
+        "customs": false
+       },
+       {
+        "code": "DAP",
+        "customs": false
+       },
+       {
+        "code": "CIP",
+        "customs": false
+       },
+       {
+        "code": "DDP",
+        "customs": true
+       }
+      ]
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256; each match also keeps payerCodes reduced to code and customs"
+  }
+ ]
+}
