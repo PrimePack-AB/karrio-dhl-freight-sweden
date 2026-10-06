@@ -32,8 +32,7 @@ def _gateway(config: dict):
 
 gateway = _gateway({})
 
-# Connection-configured label type variant: the config value is metadata
-# (the Print API has no format parameter), used as the last-resort tag.
+# Connection-configured label type variant; the connector refuses ZPL.
 zpl_gateway = _gateway({"label_type": "ZPL"})
 
 # Booking pre-flight mode variants: the address_validation config gates the

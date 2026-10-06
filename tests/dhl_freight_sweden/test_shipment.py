@@ -25,7 +25,6 @@ from .fixture import (
     unrecognized_gateway,
     warn_case_gateway,
     warn_gateway,
-    zpl_gateway,
 )
 
 import karrio.sdk as karrio
@@ -951,23 +950,6 @@ class TestDHLFreightShipment(unittest.TestCase):
     def test_parse_shipment_response_109(self):
         self._assert_labelled_parse(ShipmentPayload109, "TI-109-0001", 109)
 
-    def test_parse_label_type_pdf_magic_over_zpl_config(self):
-        # The account emits PDF regardless of the connection's label type
-        # (fixtures/sandbox/label-*.json are all PDF); the decoded document
-        # magic prefix outranks the connection config tag.
-        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
-            mock.side_effect = [BookingResponse102, PdfMagicPrintResponse]
-            details, messages = (
-                karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload102))
-                .from_(zpl_gateway)
-                .parse()
-            )
-
-        self.assertEqual(messages, [])
-        self.assertIsNotNone(details)
-        self.assertEqual(details.label_type, "PDF")
-        self.assertEqual(details.docs.label, PdfMagicBase64)
-
     def test_parse_label_type_zpl_magic_without_content_type(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.side_effect = [BookingResponse102, ZplMagicPrintResponse]
@@ -1012,20 +994,20 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(details.label_type, "PDF")
         self.assertEqual(details.docs.label, PdfMagicBase64)
 
-    def test_parse_label_type_config_last_resort(self):
-        # Without a known magic prefix or contentType, the connection's
-        # label_type tag is the last resort.
+    def test_parse_label_type_unidentified_document_is_pdf(self):
+        # Without a known magic prefix or contentType, the document is
+        # declared PDF, the only format the connector requests.
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.side_effect = [BookingResponse102, PlainTextPrintResponse]
             details, messages = (
                 karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload102))
-                .from_(zpl_gateway)
+                .from_(gateway)
                 .parse()
             )
 
         self.assertEqual(messages, [])
         self.assertIsNotNone(details)
-        self.assertEqual(details.label_type, "ZPL")
+        self.assertEqual(details.label_type, "PDF")
         self.assertEqual(details.docs.label, PlainTextBase64)
 
     def _assert_labelled_parse(self, payload: dict, shipment_id: str, product: int):
@@ -1954,19 +1936,6 @@ PrintResponse = lib.to_json(
 PdfMagicBase64 = "JVBERi0xLjYgc2FtcGxlIGxhYmVs"  # b"%PDF-1.6 sample label"
 ZplMagicBase64 = "XlhBCl5GTzUwLDUwXkZEVEVTVF5GUwpeWFo="  # b"^XA\n^FO50,50^FDTEST^FS\n^XZ"
 PlainTextBase64 = "cGxhaW4gdGV4dCBkb2N1bWVudCBieXRlcw=="  # b"plain text document bytes"
-
-PdfMagicPrintResponse = lib.to_json(
-    {
-        "reports": [
-            {
-                "name": "Label",
-                "content": PdfMagicBase64,
-                "type": "Label",
-                "valid": True,
-            }
-        ]
-    }
-)
 
 ZplMagicPrintResponse = lib.to_json(
     {
