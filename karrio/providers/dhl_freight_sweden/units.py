@@ -580,6 +580,8 @@ def shipping_options_initializer(
 # Outbound destination footprints from the DHL Product API catalog
 # (GET /productapi/v1/products/{code} toCountries, all from SE; every
 # product below is isDomestic=false).
+# Product manual v5.26 lists GB for 109 only according to a separate
+# agreement (§5.14 p63, Appendix G p200).
 PARCEL_CONNECT_B2C_COUNTRIES = [
     "AT",
     "BE",
@@ -591,6 +593,7 @@ PARCEL_CONNECT_B2C_COUNTRIES = [
     "ES",
     "FI",
     "FR",
+    "GB",
     "HR",
     "HU",
     "IE",
