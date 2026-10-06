@@ -534,6 +534,17 @@ def _(b: Builder) -> Json:
     )
 
 
+@evidence("lookup-product-matches-se-gb.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233, without 109 or 112, "
+        "so the booking-export case 112 to GB skipped without booking.",
+        None, "SE 11143 -> GB W1D 1AN", None, None, f"{SUITE_RUN}: test_booking_export",
+        [reduce_product_matches(b.suite_exchange("20261006-102955", "001-product-matches-112-gb"))],
+    )
+
+
 @evidence("lookup-product-matches-se-se.json")
 def _(b: Builder) -> Json:
     return b.document(

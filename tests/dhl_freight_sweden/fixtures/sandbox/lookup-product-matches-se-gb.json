@@ -1,0 +1,93 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233, without 109 or 112, so the booking-export case 112 to GB skipped without booking.",
+ "captured_at": "2026-10-06T08:29:55Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> GB W1D 1AN",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T08:29:55Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-102955/001-product-matches-112-gb.request.json",
+    "sha256": "75ebbf39f22ce94f55046046978f64858a002e5a8f0139036c54c5b326502ba7"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-102955/001-product-matches-112-gb.response.json",
+    "sha256": "e74954ed3c2947465d09c574cca2a1949d83f2bcd4ec24d99123efc90e0d7239"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "GB",
+       "postalCode": "W1D 1AN"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "601",
+      "name": "DHL Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, and isDomestic; the full body is identified by response_source.sha256"
+  }
+ ]
+}
