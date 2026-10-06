@@ -34,6 +34,8 @@ The code resolves in this order:
 3. The product default from the table. A product without a default needs an explicit payer code.
 
 Payer code 023 on 109 additionally requires the `dhl_freight_sweden_customs_joint_declaration` option.
+The manual conflicts with itself here: the 109 section requires the joint declaration for 023 (§5.14 p63), while the joint declaration section says such bookings must not be sent for 109 and 112 (§6.8 p98).
+The connector follows §5.14, and the question is open with DHL.
 Product codes the connector does not define keep the previous fallback of option, then Incoterm, then `1`.
 
 For 112 the sources disagree.
