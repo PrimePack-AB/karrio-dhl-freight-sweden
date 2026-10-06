@@ -6,8 +6,9 @@ live in the server-side RateSheet and are resolved against the connection's
 service levels by the universal rating mixin. No carrier call is made.
 
 Rate-sheet zones match whole countries, so rates of products that exclude
-the recipient's postal code (``units.POSTAL_CODE_EXCLUSIONS``) are removed
-after the universal resolution.
+a party's postal code (``units.POSTAL_CODE_EXCLUSIONS``) are removed after
+the universal resolution. A party without a postal code is not checked in
+rating; booking requires one.
 """
 
 import typing
@@ -57,6 +58,7 @@ def parse_rate_response(
             provider_units.excluded_party(
                 provider_units.ShippingService.map(rate.service).value_or_key,
                 addresses,
+                skip_missing=True,
             )
         ]
         if hit is not None
