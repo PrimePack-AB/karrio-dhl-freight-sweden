@@ -96,7 +96,7 @@ class PartyTaxIdError(errors.ShippingSDKDetailedError):
 
 
 class CommercialInvoiceRequiredError(errors.ShippingSDKDetailedError):
-    """Raised when an export of goods for sale lacks a commercial invoice."""
+    """Raised before booking when an export of goods for sale lacks a commercial invoice."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -739,8 +739,9 @@ def _check_commercial_invoice(
     non_sale = sorted(provider_units.NOT_SALE_LIKE_CONTENT)
 
     raise CommercialInvoiceRequiredError(
-        f"An export of goods for sale ({origin_country} to {destination_country}) "
-        f"needs a commercial invoice, and {content} counts as a sale. "
+        "Customs requires a commercial invoice for an export of goods for sale "
+        f"({origin_country} to {destination_country}), and {content} counts as a sale, "
+        "so the connector refuses the booking before sending it. "
         "Set customs.commercial_invoice to true, or set customs.content_type to "
         f"{', '.join(non_sale[:-1])} or {non_sale[-1]} to book a proforma invoice.",
         details={
