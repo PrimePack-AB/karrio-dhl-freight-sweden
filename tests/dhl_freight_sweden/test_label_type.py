@@ -3,7 +3,8 @@
 The Print API (vendor/se-api-farm/print-api-2.10.0.json) has no document
 format parameter, and every sandbox label in fixtures/sandbox/label-*.json
 is a PDF, so the connector refuses any other requested label type before
-booking. The request's label_type outranks the connection config's.
+booking. The request's label_type and the connection config's are each
+validated; the request's outranks the config's for the effective format.
 """
 
 import unittest
@@ -104,19 +105,16 @@ class TestDHLFreightLabelType(unittest.TestCase):
         assert details is not None
         self.assertEqual(details.label_type, "PDF")
 
-    def test_request_pdf_outranks_config_zpl(self):
-        details, messages, _ = self._book(
-            {**ShipmentPayload102, "label_type": "PDF"}, zpl_gateway
-        )
+    def test_config_zpl_fails_even_when_the_request_says_pdf(self):
+        error = self._error({**ShipmentPayload102, "label_type": "PDF"}, zpl_gateway)
 
-        self.assertEqual(messages, [])
-        assert details is not None
-        self.assertEqual(details.label_type, "PDF")
+        self.assertEqual(detail_keys(error), {"config.label_type"})
+        self.assertIn("ZPL", str(error))
 
-    def test_unidentified_document_is_declared_pdf_despite_config_zpl(self):
+    def test_unidentified_document_is_declared_pdf(self):
         details, messages, _ = self._book(
             {**ShipmentPayload102, "label_type": "PDF"},
-            zpl_gateway,
+            pdf_lower_gateway,
             PlainTextPrintResponse,
         )
 
