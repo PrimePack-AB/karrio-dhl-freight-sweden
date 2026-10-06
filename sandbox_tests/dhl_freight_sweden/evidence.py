@@ -523,6 +523,9 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "601 SE to NO with payer code DAP, customsHandlingFullService, and a ProformaInvoice, then printed.",
      "601", "SE 11143 -> NO 0154", "20261006-123912", ("039-booking-601", "040-booking-601"),
      "test_booking_export.test_book_601_no_customs_full", 0),
+    ("booking-2906762303-401-se-se.json", "401 within SE with payer code 1, then printed.",
+     "401", "SE 11143 -> SE 11151", "20261006-131222", ("001-booking-401", "002-booking-401"),
+     "test_booking_approved.test_book_401_domestic", 0),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:

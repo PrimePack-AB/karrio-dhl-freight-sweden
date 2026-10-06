@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, and its freight and Standard customs bookings at 10:39.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, and its 401 domestic booking at 11:12.
 A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
@@ -28,7 +28,7 @@ The `label` files come from the suite's print calls of bookings 2906761222, 2906
 
 ## Bookings
 
-All 28 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 29 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg, and only those marked in the table carried customs data.
 None was cancelled, because the API Farm has no cancellation operation.
 
@@ -62,6 +62,7 @@ None was cancelled, because the API Farm has no cancellation operation.
 | 2906762147 | 2026-10-06 10:39:28 | 233 | SE → DK 1620 | DAP | none | none | 2LDK1620+00000000 | [booking-2906762147][b-147] |
 | 2906762154 | 2026-10-06 10:39:31 | 233 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+00000001 | [booking-2906762154][b-154] |
 | 2906762162 | 2026-10-06 10:39:35 | 601 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+00000001 | [booking-2906762162][b-162] |
+| 2906762303 | 2026-10-06 11:12:21 | 401 | SE → SE 11151 | 1 | none | none | 2LSE11151+02000000 | [booking-2906762303][b-303] |
 
 The time is the response `Date` header, except for the three direct bookings whose captures carry no header, where it is the capture file's modification time.
 The 109 and 112 bookings to PL declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, and 2906761347 sent `UIT_FREE` `"false"` without a number, and DHL echoed these entries in the responses.
@@ -234,7 +235,7 @@ The README lists PostalCode error 16012 as "not supported", and no capture shows
 
 ## Untested
 
-No booking used the freight products 205, 209, 210, 211, 212, or SPI, or the parcel and home delivery products 104, 107, 401, 402, and 502; 202 was booked to GB BT1 1AA without customs data, to DK, and to NO with customs handling full service, and 233 to DK and to NO with customs handling full service.
+No booking used the freight products 205, 209, 210, 211, 212, or SPI, or the parcel and home delivery products 104, 107, 402, and 502; 202 was booked to GB BT1 1AA without customs data, to DK, and to NO with customs handling full service, and 233 to DK and to NO with customs handling full service.
 The booking-export 205 cases to DK 1620 and NO 0154 skipped without booking, because product matches for both lanes returned HDI, 109, 202, 112, 601, and 233 and not 205 ([lookup-product-matches-se-dk-1620][l-pm-205-dk], [lookup-product-matches-se-no-0154][l-pm-205-no]).
 601 was booked only to DK, HU, NO, and RO; 601 to HU or RO without EKAER or UIT entries, with a free flag `"true"`, or with a UIT number, and 601 to PL, are untested.
 109 with home addressing and no AccessPoint party is untested.
@@ -272,6 +273,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [b-147]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json
 [b-154]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762154-233-se-no.json
 [b-162]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762162-601-se-no.json
+[b-303]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762303-401-se-se.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json
 [r-22005-gb]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json

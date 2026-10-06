@@ -654,7 +654,7 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 
 The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
 Its `test_product_matches_territory_*` cases record the products matched from SE to special territories under their own and their parent country codes (see [Special territories](#special-territories)).
-The `booking-approved` segment books 102 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.
+The `booking-approved` segment books 102 and 401 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.
 The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022 and SENT free.
 The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO, 109 to a ParcelShop in DK, and 112 to the home in FR and GB, declaring the PL lanes SENT free.
 It also books to the special territories Åland (FI 22100), 109 without customs data, and checks that the connector refuses 112 there with customs handling full service or Standard, which DHL rejected with 24003 when these cases booked, and Northern Ireland (GB BT1 1AA), 202 with payer code DAP and without customs data.
