@@ -112,11 +112,16 @@ class TestDHLFreightTerritoryBooking(unittest.TestCase):
                 )
                 self.assertEqual("customsInformation" in serialized, keeps_customs)
 
-    def test_faroe_islands_are_sent_as_dk(self):
-        serialized = _booked(ROAD_FREIGHT_DIRECT, _recipient("FO", "100"))
+    def test_faroe_islands_are_sent_as_dk_with_customs(self):
+        for postal_code in ["100", "FO-100"]:
+            with self.subTest(postal_code=postal_code):
+                serialized = _booked(
+                    ROAD_FREIGHT_DIRECT, _recipient("FO", postal_code), Customs
+                )
 
-        self.assertEqual(_consignee(serialized)["countryCode"], "DK")
-        self.assertEqual(_consignee(serialized)["postalCode"], "100")
+                self.assertEqual(_consignee(serialized)["countryCode"], "DK")
+                self.assertEqual(_consignee(serialized)["postalCode"], postal_code)
+                self.assertIn("customsInformation", serialized)
 
     def test_caribbean_netherlands_codes_pass_through_on_freight_products(self):
         for country in ["BQ", "CW", "AW", "SX"]:

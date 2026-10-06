@@ -150,6 +150,25 @@ class TestDHLFreightExcludedDestinationBooking(unittest.TestCase):
                 self.assertEqual(detail_keys(error), {"recipient.postal_code"})
                 self.assertIn("5-digit", str(error))
 
+    def test_112_to_faroese_and_greenlandic_codes_names_the_excluded_area(self):
+        for country, postal_code in [("DK", "100"), ("DK", "FO-1620"), ("FO", "100")]:
+            with self.subTest(country=country, postal_code=postal_code):
+                error = self._error(
+                    _payload(
+                        ParcelConnectPlusService,
+                        {**_recipient_se, "country_code": country, "postal_code": postal_code},
+                    )
+                )
+
+                self.assertIn(
+                    "does not ship to DK postal codes 3800-3999 "
+                    "(Greenland and the Faroe Islands)",
+                    str(error),
+                )
+                self.assertEqual(
+                    (error.details or {})["recipient.postal_code"]["code"], "invalid"
+                )
+
     def test_112_to_mainland_fr_books(self):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**_payload(ParcelConnectPlusService, _fr("75004")))
@@ -253,6 +272,12 @@ class TestDHLFreightParcelConnectPlusExclusions(ExclusionCases, unittest.TestCas
         ("PT", "9500"),
         ("DK", "DK-3900"),
         ("PT", "PT-9000-001"),
+        ("DK", "100"),
+        ("DK", "FO-100"),
+        ("DK", "FO-1620"),
+        ("DK", "GL 3900"),
+        ("FO", "100"),
+        ("GL", "3900"),
     ]
     served = [
         ("DK", "3799"),
@@ -284,6 +309,9 @@ class TestDHLFreightParcelConnectExclusions(ExclusionCases, unittest.TestCase):
 
     product = "109"
     excluded = [
+        ("DK", "970"),
+        ("DK", "FO 100"),
+        ("FO", "100"),
         ("DK", "3800"),
         ("DK", "3999"),
         ("ES", "35000"),
@@ -334,6 +362,8 @@ class TestDHLFreightParcelReturnConnectExclusions(ExclusionCases, unittest.TestC
     party = "shipper"
     excluded = [
         ("DK", "3800"),
+        ("DK", "100"),
+        ("DK", "GL-1234"),
         ("ES", "35500"),
         ("ES", "51080"),
         ("IT", "00120"),
