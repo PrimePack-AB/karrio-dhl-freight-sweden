@@ -101,6 +101,30 @@ class CustomsDocumentType(lib.StrEnum):
     ProformaInvoice = "ProformaInvoice"
 
 
+# Karrio customs content types that describe goods not sold; every other
+# content type, and an unset one, is sale-like. Mirrors NOT_SALE_LIKE_CONTENT
+# in nordic_conventions' lanes.py.
+NOT_SALE_LIKE_CONTENT: typing.FrozenSet[str] = frozenset(
+    {
+        units.CustomsContentType.documents.name,
+        units.CustomsContentType.gift.name,
+        units.CustomsContentType.return_merchandise.name,
+        units.CustomsContentType.sample.name,
+    }
+)
+
+
+def content_type_of(customs: typing.Optional[models.Customs]) -> typing.Optional[str]:
+    """The customs content type lower-cased, so names and values compare alike."""
+    content_type = getattr(customs, "content_type", None)
+    return (str(content_type).strip().lower() or None) if content_type else None
+
+
+def sale_like(customs: typing.Optional[models.Customs]) -> bool:
+    """Whether customs data describes goods for sale."""
+    return customs is not None and content_type_of(customs) not in NOT_SALE_LIKE_CONTENT
+
+
 class TransportMovement(lib.StrEnum):
     """DHL Freight customs document transport movements."""
 
