@@ -822,11 +822,10 @@ def _refuse_without_customs_data(
     )
 
     raise CustomsInformationRequiredError(
-        f"Customs requires customs information for a shipment from {lane}, "
-        "which crosses the border of the EU VAT area, and the shipment carries none, "
-        "so the connector refuses the booking before sending it. "
-        "Add customs.commodities, customs.invoice, or customs.invoice_date; "
-        "a documents shipment without commodities needs customs.invoice.",
+        f"Shipment from {lane} crosses the EU VAT area border without customs data; "
+        "the connector refuses the booking before sending it. "
+        "Add customs.commodities, customs.invoice, or customs.invoice_date. "
+        "A documents shipment without commodities needs customs.invoice.",
         details={
             "customs": dict(
                 code="required",
