@@ -77,6 +77,12 @@ class ExcludedDestinationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class AlandCustomsServiceError(errors.ShippingSDKDetailedError):
+    """Raised when a customs handling service is requested to or from Åland."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class QrCodeEligibilityError(errors.ShippingSDKDetailedError):
     """Raised when the product or origin country offers no print API QR code."""
 
@@ -221,6 +227,7 @@ def shipment_request(
     )
 
     _check_destination(service, dict(shipper=shipper, recipient=recipient))
+    _check_aland_customs_services(options, dict(shipper=shipper, recipient=recipient))
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
     payer_code = _payer_code(
         service,
@@ -671,6 +678,36 @@ def _check_destination(product_code: str, addresses: typing.Dict[str, typing.Any
                     message=f"{excluded.exclusion.required_code()} required",
                 )
             )
+        },
+    )
+
+
+def _check_aland_customs_services(
+    options: units.ShippingOptions,
+    addresses: typing.Dict[str, typing.Any],
+) -> None:
+    requested = {
+        option: service
+        for option, service in provider_units.ALAND_REJECTED_CUSTOMS_SERVICES.items()
+        if options[option].state
+    }
+    parties = [
+        party
+        for party, address in addresses.items()
+        if provider_units.in_aland(address.country_code, address.postal_code)
+    ]
+
+    if not (requested and parties):
+        return
+
+    raise AlandCustomsServiceError(
+        f"DHL rejects {', '.join(requested.values())} for shipments to or from Åland "
+        f"(FI 22000-22999, {' and '.join(parties)}) with 24003 \"not available for this "
+        f"country combination\" ({', '.join(provider_units.ALAND_CUSTOMS_EVIDENCE)}); "
+        "book without the customs handling service",
+        details={
+            option: dict(code="invalid", message="not available to or from Åland (DHL 24003)")
+            for option in requested
         },
     )
 

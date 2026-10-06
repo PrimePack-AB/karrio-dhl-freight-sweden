@@ -15,7 +15,9 @@ import karrio.core.models as models
 import karrio.lib as lib
 from karrio.providers.dhl_freight_sweden import product_matches, service_points, units
 
-from .fixture import as_dict, gateway, proxy_of, serialize_request, settings_of
+from karrio.providers.dhl_freight_sweden.shipment.create import AlandCustomsServiceError
+
+from .fixture import as_dict, detail_keys, gateway, proxy_of, serialize_request, settings_of
 from .test_shipment import Customs, _payload, _recipient_se
 
 PARENTS = {
@@ -129,6 +131,88 @@ class TestDHLFreightTerritoryBooking(unittest.TestCase):
                 serialized = _booked(ROAD_FREIGHT_DIRECT, _recipient(country, "1234"), Customs)
 
                 self.assertEqual(_consignee(serialized)["countryCode"], country)
+
+
+class TestDHLFreightAlandCustomsServices(unittest.TestCase):
+    """DHL rejected customs handling full service and standard for SE to FI 22100
+    with 24003 (tests/dhl_freight_sweden/fixtures/sandbox/
+    rejection-24003-112-se-fi-aland.json, rejection-24003-112-se-fi-aland-standard.json).
+    """
+
+    SERVICES = {
+        "dhl_freight_sweden_customs_handling_full_service": "customsHandlingFullService",
+        "dhl_freight_sweden_customs_handling_standard": "customsHandlingStandard",
+    }
+
+    def _payload(self, recipient: dict, options: dict, shipper: typing.Optional[dict] = None) -> dict:
+        payload = {
+            **_payload(ROAD_FREIGHT_DIRECT, recipient, {"dhl_freight_sweden_payer_code": "DAP", **options}),
+            "customs": {**Customs, "options": {"eori_number": "SE0000000000"}},
+        }
+        return {**payload, **({"shipper": shipper} if shipper else {})}
+
+    def test_customs_handling_services_to_aland_fail_before_booking(self):
+        for country, postal_code in [("FI", "22100"), ("AX", "22100"), ("FI", "FI-22100"), ("AX", "AX-22999"), ("FI", "22000")]:
+            for option, service in self.SERVICES.items():
+                with self.subTest(country=country, postal_code=postal_code, option=option):
+                    with self.assertRaises(AlandCustomsServiceError) as context:
+                        gateway.mapper.create_shipment_request(
+                            models.ShipmentRequest(
+                                **self._payload(_recipient(country, postal_code), {option: True})
+                            )
+                        )
+
+                    self.assertEqual(detail_keys(context.exception), {option})
+                    self.assertIn("24003", str(context.exception))
+                    self.assertIn(service, str(context.exception))
+                    self.assertIn("rejection-24003-112-se-fi-aland.json", str(context.exception))
+                    self.assertIn(
+                        "rejection-24003-112-se-fi-aland-standard.json", str(context.exception)
+                    )
+
+    def test_customs_handling_services_from_aland_fail_before_booking(self):
+        with self.assertRaises(AlandCustomsServiceError):
+            gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(
+                    **self._payload(
+                        _recipient("NO", "0154"),
+                        {"dhl_freight_sweden_customs_handling_standard": True},
+                        shipper=_recipient("AX", "22100"),
+                    )
+                )
+            )
+
+    def test_aland_without_customs_services_books(self):
+        serialized = serialize_request(
+            gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(**self._payload(_recipient("AX", "22100"), {}))
+            )
+        )
+
+        self.assertIn("customsInformation", serialized)
+        self.assertNotIn("customsHandlingStandard", serialized.get("additionalServices") or {})
+
+    def test_customs_handling_services_outside_aland_book(self):
+        for country, postal_code in [("FI", "21999"), ("FI", "23000"), ("NO", "0154")]:
+            with self.subTest(country=country, postal_code=postal_code):
+                serialized = serialize_request(
+                    gateway.mapper.create_shipment_request(
+                        models.ShipmentRequest(
+                            **self._payload(
+                                _recipient(country, postal_code),
+                                {"dhl_freight_sweden_customs_handling_full_service": True},
+                            )
+                        )
+                    )
+                )
+
+                self.assertEqual(
+                    "customsHandlingFullService" in (serialized.get("additionalServices") or {}),
+                    country == "NO",
+                )
+
+    def test_rating_to_aland_is_unaffected(self):
+        self.assertTrue({"109", "112"} <= _rated(_recipient("AX", "22100")))
 
 
 class TestDHLFreightTerritoryRating(unittest.TestCase):
