@@ -1,8 +1,8 @@
 """Sandbox segment ``booking-export``: Parcel Connect from SE to a destination matrix.
 
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
-Connect Plus, home delivery) from SE to PL, RO, HU, or NO, and 109 to a DK
-ParcelShop. Before spending a booking it checks for free that product
+Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
+ParcelShop, and 112 to FR, which product manual v5.26 adds for 112. Before spending a booking it checks for free that product
 matches offer the product for the lane and, for 109, that a service point
 near the recipient accepts it, and skips otherwise. Lanes to PL declare SENT
 free explicitly.
@@ -141,6 +141,9 @@ class TestSandboxBookingExport(unittest.TestCase):
 
     def test_book_112_no(self):
         self.export("112", "NO")
+
+    def test_book_112_fr(self):
+        self.export("112", "FR")
 
     def test_book_109_dk_parcel_shop(self):
         self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))

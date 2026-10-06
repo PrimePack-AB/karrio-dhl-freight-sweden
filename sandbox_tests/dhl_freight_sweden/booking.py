@@ -94,6 +94,16 @@ RECIPIENTS = {
         "email": "ola.nordmann@example.no",
         "residential": True,
     },
+    "FR": {
+        "person_name": "Jean Dupont",
+        "address_line1": "10 Rue de Rivoli",
+        "city": "Paris",
+        "postal_code": "75004",
+        "country_code": "FR",
+        "phone_number": "+33 6 12 34 56 78",
+        "email": "jean.dupont@example.fr",
+        "residential": True,
+    },
 }
 ADDRESS_FIELDS = ("street", "city", "postal_code", "country_code")
 # Test shipments carry no goods subject to SENT monitoring, so the suite
