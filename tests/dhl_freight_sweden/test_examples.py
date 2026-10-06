@@ -10,6 +10,7 @@ import contextlib
 import io
 import json
 import pathlib
+import re
 import runpy
 import sys
 import typing
@@ -24,6 +25,21 @@ from examples.offline import offline_gateway, transport_instruction
 from .fixture import as_dict, proxy_of, settings_of
 
 EVIDENCE_DIR = pathlib.Path(__file__).parent / "fixtures" / "sandbox"
+REPO = pathlib.Path(__file__).resolve().parents[2]
+QUOTED_BLOCK = re.compile(
+    r"<!-- quoted from (?P<path>\S+) -->\n```python\n(?P<code>.*?)\n```", re.S
+)
+
+
+def _stripped_lines(text: str) -> typing.List[str]:
+    return [line.strip() for line in text.strip().split("\n")]
+
+
+def _contains_run(haystack: typing.List[str], needle: typing.List[str]) -> bool:
+    return any(
+        haystack[start : start + len(needle)] == needle
+        for start in range(len(haystack) - len(needle) + 1)
+    )
 
 
 def _exchange(evidence: str, endpoint: str) -> typing.Dict[str, typing.Any]:
@@ -134,6 +150,24 @@ class TestExamples(unittest.TestCase):
                 self.assertEqual(
                     json.loads(stdout.getvalue()),
                     lib.to_dict(transport_instruction(module.shipment_request())),
+                )
+
+    def test_readme_quotes_the_examples_verbatim(self):
+        quotes = list(QUOTED_BLOCK.finditer((REPO / "README.md").read_text()))
+
+        self.assertEqual(
+            sorted({quote["path"] for quote in quotes}),
+            [
+                "examples/domestic_parcel.py",
+                "examples/export_to_switzerland.py",
+                "examples/service_point_parcel.py",
+            ],
+        )
+        for quote in quotes:
+            with self.subTest(path=quote["path"]):
+                source = (REPO / quote["path"]).read_text()
+                self.assertTrue(
+                    _contains_run(_stripped_lines(source), _stripped_lines(quote["code"]))
                 )
 
 
