@@ -3,7 +3,9 @@
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
 Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
 ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
-GB only according to a separate agreement. Before spending a booking it
+GB only according to a separate agreement. Åland (FI 22100) is booked with
+112 and customs and with 109 without customs data, and Northern Ireland
+(GB BT1 1AA) with 202 without customs data. Before spending a booking it
 checks for free that product matches offer the product for the lane and,
 for 109, that a service point
 near the recipient accepts it, and skips otherwise. Lanes to PL declare SENT
@@ -72,16 +74,24 @@ class TestSandboxBookingExport(unittest.TestCase):
         country: str,
         sub_types: typing.Optional[typing.AbstractSet[str]] = None,
         require_product_match: bool = True,
+        recipient: typing.Optional[dict] = None,
+        with_customs: bool = True,
+        extra_options: typing.Optional[dict] = None,
     ):
         """Book ``product`` from SE to ``country``.
 
         ``require_product_match`` False still records the product matches
         lookup but books even when it does not offer the product, so DHL's
-        answer to the booking itself is captured.
+        answer to the booking itself is captured. ``recipient`` replaces the
+        country's default recipient, and ``with_customs`` False books
+        without customs data even outside the EU VAT area.
         """
         booking.require_booking(self, self.session, product, country)
-        recipient = booking.RECIPIENTS[country]
         lane = f"{product}-{country.lower()}"
+        if recipient is None:
+            recipient = booking.RECIPIENTS[country]
+        else:
+            lane = f"{lane}-{recipient['postal_code'].lower().replace(' ', '')}"
 
         codes, messages = booking.offered_products(
             self.session, self.gateway, f"product-matches-{lane}", recipient
@@ -107,7 +117,9 @@ class TestSandboxBookingExport(unittest.TestCase):
                 )
             options.update(booking.service_point_options(point))
 
-        customs, customs_options = export_customs(product, recipient)
+        customs, customs_options = (
+            export_customs(product, recipient) if with_customs else ({}, {})
+        )
         booking.book(
             self,
             self.session,
@@ -122,6 +134,7 @@ class TestSandboxBookingExport(unittest.TestCase):
                     **options,
                     **customs_options,
                     **booking.declaration_options(recipient),
+                    **(extra_options or {}),
                 },
                 **customs,
             ),
@@ -162,3 +175,17 @@ class TestSandboxBookingExport(unittest.TestCase):
     def test_book_109_dk_parcel_shop(self):
         self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))
 
+    def test_book_112_fi_aland(self):
+        self.export("112", "FI", recipient=booking.ALAND)
+
+    def test_book_109_fi_aland_without_customs(self):
+        self.export("109", "FI", recipient=booking.ALAND, with_customs=False)
+
+    def test_book_202_gb_northern_ireland_without_customs(self):
+        self.export(
+            "202",
+            "GB",
+            recipient=booking.BELFAST,
+            with_customs=False,
+            extra_options={"dhl_freight_sweden_payer_code": "DAP"},
+        )

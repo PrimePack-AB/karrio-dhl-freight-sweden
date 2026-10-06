@@ -115,6 +115,29 @@ RECIPIENTS = {
         "residential": True,
     },
 }
+# Recipients in special territories, under the parent country DHL serves
+# them as (tests/dhl_freight_sweden/fixtures/sandbox/
+# lookup-product-matches-se-fi-22100.json, lookup-product-matches-se-gb-bt11aa.json).
+ALAND = {
+    "person_name": "Erik Eriksson",
+    "address_line1": "Torggatan 10",
+    "city": "Mariehamn",
+    "postal_code": "22100",
+    "country_code": "FI",
+    "phone_number": "+358 40 000 0000",
+    "email": "erik.eriksson@example.ax",
+    "residential": True,
+}
+BELFAST = {
+    "person_name": "Siobhan Kelly",
+    "address_line1": "10 Donegall Place",
+    "city": "Belfast",
+    "postal_code": "BT1 1AA",
+    "country_code": "GB",
+    "phone_number": "+44 7700 900456",
+    "email": "siobhan.kelly@example.co.uk",
+    "residential": True,
+}
 ADDRESS_FIELDS = ("street", "city", "postal_code", "country_code")
 # Test shipments carry no goods subject to SENT monitoring, so the suite
 # declares lanes to PL SENT free; the connector requires the declaration.
