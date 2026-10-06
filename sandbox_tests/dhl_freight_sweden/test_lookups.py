@@ -32,6 +32,21 @@ PARCEL = {
     "height": 15,
     "dimension_unit": "CM",
 }
+SMALL_PARCEL = {
+    "weight": 2,
+    "weight_unit": "KG",
+    "length": 30,
+    "width": 20,
+    "height": 15,
+    "dimension_unit": "CM",
+}
+HEAVY_PARCEL = {**SMALL_PARCEL, "weight": 20}
+CH_ADDRESS = {
+    "street": "Bahnhofstrasse 1",
+    "city": "Zürich",
+    "postal_code": "8001",
+    "country_code": "CH",
+}
 OVERSIZED_PARCEL = {
     "weight": 500,
     "weight_unit": "KG",
@@ -53,11 +68,13 @@ class TestSandboxLookups(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
 
-    def validate(self, label: str, postal_code: str, options: dict = {}):
+    def validate(
+        self, label: str, postal_code: str, options: dict = {}, country_code: str = "SE"
+    ):
         try:
             details, messages = karrio.Address.validate(
                 dict(
-                    address=dict(postal_code=postal_code, country_code="SE"),
+                    address=dict(postal_code=postal_code, country_code=country_code),
                     options=options,
                 )
             ).from_(self.gateway).parse()
@@ -69,12 +86,12 @@ class TestSandboxLookups(unittest.TestCase):
         )
         return details, messages
 
-    def match(self, label: str, recipient: dict):
+    def match(self, label: str, recipient: dict, parcel: dict = PARCEL):
         request = product_matches.product_matches_request(
             dict(
                 shipper=dict(postal_code="11143", country_code="SE"),
                 recipient=recipient,
-                parcels=[PARCEL],
+                parcels=[parcel],
             ),
             harness.settings_of(self.gateway),
         )
@@ -201,6 +218,53 @@ class TestSandboxLookups(unittest.TestCase):
 
     def test_product_matches_territory_es_35001(self):
         self.territory("ES", "35001")
+
+    def swiss_customs_area(
+        self, country_code: str, postal_code: str, parcel: dict = SMALL_PARCEL, suffix: str = ""
+    ):
+        """Record the products matched from SE to the Swiss customs area, whatever they are.
+
+        CH and LI lie outside the EU VAT area, and the connector offers
+        neither 109, 112, nor 107 there, so the capture shows which products
+        DHL matches for a consumer parcel. An empty match list is an answer,
+        not a failure.
+        """
+        label = f"product-matches-se-{country_code.lower()}-{postal_code}{suffix}"
+        _, messages = self.match(
+            label, dict(postal_code=postal_code, country_code=country_code), parcel
+        )
+
+        self.assertEqual(lib.to_dict(messages), [])
+
+    def test_product_matches_ch_8001(self):
+        self.swiss_customs_area("CH", "8001")
+
+    def test_product_matches_ch_1201(self):
+        self.swiss_customs_area("CH", "1201")
+
+    def test_product_matches_ch_3011(self):
+        self.swiss_customs_area("CH", "3011")
+
+    def test_product_matches_ch_6900(self):
+        self.swiss_customs_area("CH", "6900")
+
+    def test_product_matches_ch_8001_20kg(self):
+        self.swiss_customs_area("CH", "8001", HEAVY_PARCEL, "-20kg")
+
+    def test_product_matches_li_9490(self):
+        self.swiss_customs_area("LI", "9490")
+
+    def test_postal_code_route_ch_8001(self):
+        details, messages = self.validate("postal-code-ch-8001", "8001", country_code="CH")
+
+        self.assertIsNone(details)
+        self.assertIn("16009", [message.code for message in messages])
+
+    def test_service_points_ch(self):
+        """Record the service points near Zürich; an empty list is an answer."""
+        self.nearest(
+            "service-points-ch", dict(address=CH_ADDRESS, max_items=5, parcel=SMALL_PARCEL)
+        )
 
     def test_service_points_se(self):
         points, messages = self.nearest(
