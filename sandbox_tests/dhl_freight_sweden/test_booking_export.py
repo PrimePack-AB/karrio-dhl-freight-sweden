@@ -16,7 +16,9 @@ proforma invoice number, and DHL customs handling full service, the customs
 service that needs no registration identifier. The Incoterm sets the payer
 code through the Combiterm translation: DAP gives 022 for 109, which avoids
 the joint customs declaration that 023 requires on 109, and DDP gives 112's
-default 023.
+default 023. The freight products 202, 205, 233, and 601 map to DAP, and each
+freight case also passes that Incoterm as its explicit payer code, because the
+freight products have no default payer code.
 """
 
 import typing
@@ -29,7 +31,7 @@ import karrio.providers.dhl_freight_sweden.shipment.create as create
 import karrio.providers.dhl_freight_sweden.units as provider_units
 from . import booking, harness
 
-INCOTERMS = {"109": "DAP", "112": "DDP"}
+INCOTERMS = {"109": "DAP", "112": "DDP", "202": "DAP", "205": "DAP", "233": "DAP", "601": "DAP"}
 COMMODITY = {
     "title": "Cotton T-shirt",
     "description": "Cotton T-shirt",
