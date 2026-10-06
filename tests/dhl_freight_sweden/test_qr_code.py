@@ -106,7 +106,8 @@ def _return(country: str, options: dict) -> dict:
             **_shipper,
             "company_name": "Test Consumer",
             "city": "Return City",
-            "postal_code": "10115",
+            # 107 checks the shipper postal code against excluded ranges.
+            "postal_code": "1000-001" if country == "PT" else "10115",
             "country_code": country,
         },
     }

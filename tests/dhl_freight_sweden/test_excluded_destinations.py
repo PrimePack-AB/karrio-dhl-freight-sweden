@@ -287,6 +287,44 @@ class TestDHLFreightParcelConnectExclusions(ExclusionCases, unittest.TestCase):
     ]
 
 
+class TestDHLFreightParcelReturnConnectExclusions(ExclusionCases, unittest.TestCase):
+    """107 excluded regions/areas, product manual v5.26 §5.15 p66.
+
+    107 returns a parcel from the listed countries to the original sender,
+    and the manual's FR entry reads "Delivery only from France mainland and
+    Corsica", so the ranges apply to the shipper.
+    """
+
+    product = "107"
+    party = "shipper"
+    excluded = [
+        ("DK", "3800"),
+        ("ES", "35500"),
+        ("ES", "51080"),
+        ("IT", "00120"),
+        ("IT", "47895"),
+        ("NO", "9171"),
+        ("PT", "9500-100"),
+    ]
+    served = [
+        ("DK", "1620"),
+        ("ES", "28001"),
+        ("IT", "00184"),
+        ("NO", "0154"),
+        ("PT", "1000-001"),
+        ("FR", "97200"),
+    ]
+    malformed = [
+        ("PT", "95001"),
+        ("IT", None),
+    ]
+
+    def test_recipient_postal_code_is_not_checked(self):
+        serialized = _book(self.product, "recipient", "SE", "11143")
+
+        self.assertEqual(serialized["productCode"], "107")
+
+
 def _address(country: str, postal_code: typing.Optional[str]) -> dict:
     return {
         **_recipient_se,
