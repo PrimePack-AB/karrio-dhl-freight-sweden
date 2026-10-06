@@ -79,7 +79,7 @@ The sandbox accepted 112 from SE to FR 75004 with payer code 023 and printed its
 
 ## Booking rules
 
-The connector checks payer codes, access points, SENT, EKAER, and UIT entries, and the VAT numbers/TINs of lanes to or from GR before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
+The connector checks payer codes, access points, SENT, EKAER, and UIT entries, the VAT numbers/TINs of lanes to or from GR, excluded postal codes, and the QR code option before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
 The rules follow the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, which is cited here rather than vendored.
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 Section and page references below are to that version.
@@ -183,6 +183,14 @@ The connector transmits two parties, the shipper as Consignor and the recipient 
 On these products, a shipment with the shipper or the recipient in GR fails when either party has neither identifier, with `details` keyed by `shipper.federal_tax_id` or `recipient.federal_tax_id`.
 Other products and lanes send the identifiers when given and do not require them.
 No GR booking has been sent to the sandbox.
+
+### QR code for 107
+
+Product manual v5.26 offers a QR code for Parcel Return Connect (107), shown by the consumer when handing over the return parcel, through the print API selection `"qrCode": true`, valid for BE, BG, CZ, DE, ES, LU, and PT (§5.15 p65), the countries a 107 return is sent from.
+The `dhl_freight_sweden_qr_code` option `true` adds `qrCode` `true` to the print-by-id options of 107 shipments whose shipper is in one of these countries.
+On other products or from other countries the option fails with `details` keyed by `dhl_freight_sweden_qr_code`, as access points do where the manual lists none, and `false` or no option requests no QR code.
+The vendored print spec 2.10.0 defines `qrCode` as a print option, but its `PrintResult` is a list of reports with `name`, `content`, `contentType`, and `type`, and it does not say how a QR code report is named, typed, or ordered.
+The connector returns the first report as the label and does not surface a QR code document; no 107 booking with `qrCode` has been sent to the sandbox.
 
 ### Additional information pass-through
 
