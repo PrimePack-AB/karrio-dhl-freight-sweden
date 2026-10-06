@@ -692,6 +692,66 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertIn("EUR", messages[0].message)
         self.assertIn("SEK", messages[0].message)
 
+    def test_create_shipment_request_invoice_amount_from_commodity_lines(self):
+        for commercial_invoice, content_type, document_type in [
+            (True, "merchandise", "CommercialInvoice"),
+            (False, "sample", "ProformaInvoice"),
+        ]:
+            with self.subTest(document_type=document_type):
+                payload = {
+                    **ShipmentPayload202UndeclaredValue,
+                    "customs": {
+                        **ShipmentPayload202UndeclaredValue["customs"],
+                        "commercial_invoice": commercial_invoice,
+                        "content_type": content_type,
+                    },
+                }
+                request = gateway.mapper.create_shipment_request(
+                    models.ShipmentRequest(**payload)
+                )
+                serialized = serialize_request(request)
+
+                document = serialized["customsInformation"]["customsDocuments"][0]
+                self.assertEqual(document["type"], document_type)
+                self.assertEqual(document["invoiceAmount"], 97.5)
+                self.assertEqual(document["invoiceCurrency"], "EUR")
+                commodities = serialized["customsInformation"]["customsCommodities"]
+                self.assertEqual(
+                    [c["customsValue"] for c in commodities], [60.0, 37.5]
+                )
+
+    def test_create_shipment_request_declared_value_sets_invoice_amount(self):
+        request = gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(
+                **{
+                    **ShipmentPayload202UndeclaredValue,
+                    "customs": {
+                        **ShipmentPayload202UndeclaredValue["customs"],
+                        "duty": {
+                            "paid_by": "sender",
+                            "currency": "EUR",
+                            "declared_value": 150.0,
+                        },
+                    },
+                }
+            )
+        )
+        serialized = serialize_request(request)
+
+        document = serialized["customsInformation"]["customsDocuments"][0]
+        self.assertEqual(document["invoiceAmount"], 150.0)
+        self.assertEqual(document["invoiceCurrency"], "EUR")
+
+    def test_create_shipment_request_unvalued_commodities_omit_invoice_amount(self):
+        request = gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(**ShipmentPayload202UnvaluedCommodities)
+        )
+        serialized = serialize_request(request)
+
+        document = serialized["customsInformation"]["customsDocuments"][0]
+        self.assertNotIn("invoiceAmount", document)
+        self.assertNotIn("invoiceCurrency", document)
+
     def test_shipment_customs_service_missing_identifier_surfaces_field_error(self):
         cases = [
             (
@@ -1637,6 +1697,47 @@ ShipmentPayload202MixedCurrency = {
             },
         ],
         "incoterm": "DAP",
+        "commercial_invoice": True,
+    },
+}
+
+# No duty: the invoice amount and currency come from the commodity lines,
+# 2 x 30.0 + 3 x 12.5 EUR.
+ShipmentPayload202UndeclaredValue = {
+    **_payload("dhl_freight_sweden_road_freight_standard", _recipient_no),
+    "customs": {
+        "commodities": [
+            {
+                **Customs["commodities"][0],
+                "quantity": 2,
+                "value_amount": 30.0,
+            },
+            {
+                **Customs["commodities"][0],
+                "description": "Steel fasteners",
+                "hs_code": "7318159800",
+                "quantity": 3,
+                "value_amount": 12.5,
+            },
+        ],
+        "incoterm": "DAP",
+        "invoice": "INV-2026-001",
+        "commercial_invoice": True,
+    },
+}
+
+ShipmentPayload202UnvaluedCommodities = {
+    **_payload("dhl_freight_sweden_road_freight_standard", _recipient_no),
+    "customs": {
+        "commodities": [
+            {
+                key: value
+                for key, value in Customs["commodities"][0].items()
+                if key not in ("value_amount", "value_currency")
+            }
+        ],
+        "incoterm": "DAP",
+        "invoice": "INV-2026-001",
         "commercial_invoice": True,
     },
 }
