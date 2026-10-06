@@ -217,10 +217,11 @@ A booking fails with `details` keyed by `recipient.postal_code` or `shipper.post
 | 107 (shipper) | IT | 00120, 22061, 23041, 47890-47899 | Vatican, Campione d'Italia, Livigno-Trepalle, San Marino | §5.15 p66 |
 | 107 (shipper) | NO | 8099, 9170-9179 | Jan Mayen and Svalbard | §5.15 p66 |
 | 107 (shipper) | PT | 9000-9999 (first four digits) | the Azores, Madeira, and other islands | §5.15 p66 |
+| 202, 205, SPI (shipper and recipient) | UA | 95000-99999 | Crimea/Sebastopol region | §5.4 p23, §5.9 p43, §5.11 p52 |
 
-Each country's codes are compared in its own format once spaces are removed: four digits for DK and NO, five digits for ES, FR, and IT (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
+Each country's codes are compared in its own format once spaces are removed: four digits for DK and NO, five digits for ES, FR, IT, and UA (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
 A code of another shape, including a missing code, cannot be shown to lie outside the excluded ranges, so it counts as excluded: rating without a recipient postal code does not offer a product with ranges for that country.
-The ranges apply to the recipient, except for 107, a return sent from the listed countries to the original sender, whose ranges apply to the shipper, as the manual's 107 entry for FR reads "Delivery only from France mainland and Corsica" (§5.15 p66).
+The ranges apply to the recipient, except for the UA range of 202, 205, and SPI, products used to and from SE, which applies to both parties, and for 107, a return sent from the listed countries to the original sender, whose ranges apply to the shipper, as the manual's 107 entry for FR reads "Delivery only from France mainland and Corsica" (§5.15 p66).
 The manual's non-numeric areas are not checked: for 112 and 109, GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT), and the NL Caribbean islands Aruba, Bonaire, Curaçao, Saba, Sint Maarten, and Sint Eustatius (§5.3 p18, §5.14 p63), and for 107 the NL Caribbean islands and FR outside mainland France and Corsica, for which the manual gives no postal codes (§5.15 p66).
 The manual also points to the DHL Freight website for the present list of postal codes, which the connector does not consult.
 

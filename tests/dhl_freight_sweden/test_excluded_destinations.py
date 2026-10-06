@@ -177,6 +177,11 @@ class ExclusionCases:
 
     def test_rating_offers_only_served_postal_codes(self):
         test = typing.cast(unittest.TestCase, self)
+        if self.product in _FREIGHT_PRODUCTS and self.party == "shipper":
+            test.skipTest(
+                "the rating mixin classifies delivery into SE as domicile, so "
+                "the international freight products never rate on import lanes"
+            )
         service = units.ShippingService.map(self.product).name_or_key
         cases = [
             *((country, code, False) for country, code in [*self.excluded, *self.malformed]),
@@ -325,6 +330,44 @@ class TestDHLFreightParcelReturnConnectExclusions(ExclusionCases, unittest.TestC
         self.assertEqual(serialized["productCode"], "107")
 
 
+class CrimeaExclusionCases(ExclusionCases):
+    """202 (§5.4 p23), 205 (§5.9 p43), and SPI (§5.11 p52) exclude the
+    Crimea/Sebastopol region, UA postal codes starting with 95 to 99. The
+    products are used to and from SE, so the range applies to both parties.
+    """
+
+    excluded = [("UA", "95000"), ("UA", "97500"), ("UA", "99999")]
+    served = [("UA", "01001"), ("UA", "94999")]
+    malformed = [("UA", "9500"), ("UA", "950000"), ("UA", None)]
+
+
+class TestDHLFreightRoadFreightStandardToCrimea(CrimeaExclusionCases, unittest.TestCase):
+    product = "202"
+
+
+class TestDHLFreightRoadFreightStandardFromCrimea(CrimeaExclusionCases, unittest.TestCase):
+    product = "202"
+    party = "shipper"
+
+
+class TestDHLFreightRoadFreightDirectToCrimea(CrimeaExclusionCases, unittest.TestCase):
+    product = "205"
+
+
+class TestDHLFreightRoadFreightDirectFromCrimea(CrimeaExclusionCases, unittest.TestCase):
+    product = "205"
+    party = "shipper"
+
+
+class TestDHLFreightStandardPalletToCrimea(CrimeaExclusionCases, unittest.TestCase):
+    product = "SPI"
+
+
+class TestDHLFreightStandardPalletFromCrimea(CrimeaExclusionCases, unittest.TestCase):
+    product = "SPI"
+    party = "shipper"
+
+
 def _address(country: str, postal_code: typing.Optional[str]) -> dict:
     return {
         **_recipient_se,
@@ -354,7 +397,13 @@ def _book(product: str, party: str, country: str, postal_code: typing.Optional[s
         **_payload(
             units.ShippingService.map(product).name_or_key,
             lane["recipient"],
-            {"dhl_freight_sweden_payer_code": _PAYER_CODES.get(product)},
+            {
+                "dhl_freight_sweden_payer_code": lib.identity(
+                    "EXW" if party == "shipper" else "DAP"
+                )
+                if product in _FREIGHT_PRODUCTS
+                else None
+            },
         ),
         "shipper": lane["shipper"],
         **({"customs": _CUSTOMS} if outside_eu_vat_area else {}),
@@ -374,7 +423,7 @@ def _rates(service: str, party: str, country: str, postal_code: typing.Optional[
     return gateway.mapper.parse_rate_response(proxy_of(gateway).get_rates(request))
 
 
-_PAYER_CODES = {"202": "DAP", "205": "DAP", "SPI": "DAP"}
+_FREIGHT_PRODUCTS = ("202", "205", "SPI")
 _CUSTOMS = {
     "commodities": [
         {

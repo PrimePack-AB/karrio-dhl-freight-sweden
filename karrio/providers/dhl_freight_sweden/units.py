@@ -663,6 +663,7 @@ POSTAL_CODE_FORMATS: typing.Dict[str, PostalCodeFormat] = {
     "IT": FIVE_DIGITS,
     "NO": FOUR_DIGITS,
     "PT": PORTUGUESE,
+    "UA": FIVE_DIGITS,
 }
 
 
@@ -708,6 +709,12 @@ PARCEL_CONNECT_PLUS = (ShippingService.dhl_freight_sweden_parcel_connect_plus,)
 PARCEL_CONNECT = (ShippingService.dhl_freight_sweden_parcel_connect_b2c,)
 PARCEL_RETURN_CONNECT = (ShippingService.dhl_freight_sweden_parcel_return_connect_c2b,)
 SHIPPER = ("shipper",)
+BOTH_PARTIES = ("shipper", "recipient")
+CRIMEA_PRODUCTS = (
+    ShippingService.dhl_freight_sweden_road_freight_standard,
+    ShippingService.dhl_freight_sweden_road_freight_direct,
+    ShippingService.dhl_freight_sweden_standard_pallet_international,
+)
 
 # The numeric "Excluded regions/areas" of product manual v5.26. Non-numeric
 # areas (GB JE/GY/BT, the NL Caribbean islands) are not checked.
@@ -766,6 +773,12 @@ POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     *_excluded(
         PARCEL_RETURN_CONNECT, "PT", "the Azores, Madeira, and other islands", (9000, 9999),
         parties=SHIPPER,
+    ),
+    # 202 §5.4 p23, 205 §5.9 p43, SPI §5.11 p52: postal codes starting with
+    # 95 to 99. These products are used to and from SE, so both parties.
+    *_excluded(
+        CRIMEA_PRODUCTS, "UA", "Crimea/Sebastopol region", (95000, 99999),
+        parties=BOTH_PARTIES,
     ),
 )
 
