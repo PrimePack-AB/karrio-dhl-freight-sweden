@@ -657,7 +657,6 @@ def _check_destination(product_code: str, addresses: typing.Dict[str, typing.Any
     if excluded is None:
         return
 
-    postal_format = provider_units.POSTAL_CODE_FORMATS[excluded.exclusion.country]
     raise ExcludedDestinationError(
         provider_units.excluded_party_message(product_code, excluded),
         details={
@@ -669,7 +668,7 @@ def _check_destination(product_code: str, addresses: typing.Dict[str, typing.Any
                 if excluded.well_formed
                 else dict(
                     code="required",
-                    message=f"{postal_format.description} postal code required",
+                    message=f"{excluded.exclusion.required_code()} required",
                 )
             )
         },

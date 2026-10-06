@@ -119,6 +119,8 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertNotIn("customsInformation", serialized)
 
     def test_create_shipment_request_customs_by_eu_vat_area(self):
+        # 205, for which neither the manual nor the catalog evidence lists
+        # excluded ES postal codes, so the Canary Islands case books.
         cases = [
             ("PL", "00-001", False),
             ("GR", "10552", False),
@@ -131,14 +133,11 @@ class TestDHLFreightShipment(unittest.TestCase):
 
         for country_code, postal_code, keeps_customs in cases:
             with self.subTest(country_code=country_code, postal_code=postal_code):
-                # 202 to GR requires a VAT number/TIN for every party.
-                tax_id = {"federal_tax_id": "TAX123"} if country_code == "GR" else {}
                 payload = {
                     **ShipmentPayload202Customs,
-                    "shipper": {**ShipmentPayload202Customs["shipper"], **tax_id},
+                    "service": "dhl_freight_sweden_road_freight_direct",
                     "recipient": {
                         **_recipient_se,
-                        **tax_id,
                         "country_code": country_code,
                         "postal_code": postal_code,
                     },
