@@ -2,7 +2,7 @@
 title: "Gap-filling sandbox matrix design, 2026-10-06"
 ---
 
-Status: design approved in session on 2026-10-06; not yet implemented.
+Status: implemented 2026-10-06 on branch sandbox-gap-filling-matrix; outcomes are in the bookings and rejections tables of sandbox-findings.md.
 Line references point at `main` commit f7b4eba, where the supporting recon was done.
 
 ## Goal
