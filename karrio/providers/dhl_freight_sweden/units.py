@@ -128,6 +128,13 @@ NUMERIC_POSTAL_TERRITORY_PARENTS: typing.Dict[str, str] = {
     "IC": "ES",  # Canary Islands
     "EA": "ES",  # Ceuta and Melilla
 }
+NON_EU_VAT_POSTAL_TERRITORY_PREFIXES: typing.Tuple[typing.Tuple[str, str], ...] = (
+    ("DK", "FO"),  # Faroe Islands
+    ("DK", "GL"),  # Greenland
+)
+NON_EU_VAT_POSTAL_CODE_LENGTHS: typing.Tuple[typing.Tuple[str, int], ...] = (
+    ("DK", 3),  # Faroe Islands
+)
 UK_POSTCODE_AREA_CODES: typing.FrozenSet[str] = frozenset({"JE", "GY", "IM", "BT"})
 
 # Territories with their own ISO or customs country code that DHL serves
@@ -240,23 +247,21 @@ def normalized_postal_code(
     return _split_postal_code((country_code or "").upper(), postal_code)[1]
 
 
-FAROESE_POSTAL_CODE_DIGITS = 3
-
-
-def in_danish_territory(
+def outside_by_postal_territory(
     country_code: typing.Optional[str],
     postal_code: typing.Optional[str],
 ) -> bool:
-    """Whether a DK address lies in the Faroe Islands or Greenland by its postal code.
+    """Whether the postal code alone places a member-state address outside the EU VAT area.
 
-    That is a code led by a DK territory code (FO, GL), whatever its number,
-    or a three-digit Faroese code; DK 3800-3999 is covered by the ranges.
+    That is a removed prefix code listed in
+    ``NON_EU_VAT_POSTAL_TERRITORY_PREFIXES`` or a purely numeric code whose
+    digit count ``NON_EU_VAT_POSTAL_CODE_LENGTHS`` lists, such as the Faroe
+    Islands' three-digit codes under DK.
     """
     country = (country_code or "").upper()
-    prefix, postal = _split_postal_code(country, postal_code)
-    return country == "DK" and (
-        prefix not in (None, country)
-        or (postal.isdigit() and len(postal) == FAROESE_POSTAL_CODE_DIGITS)
+    prefix_code, postal = _split_postal_code(country, postal_code)
+    return (country, prefix_code) in NON_EU_VAT_POSTAL_TERRITORY_PREFIXES or (
+        postal.isdigit() and (country, len(postal)) in NON_EU_VAT_POSTAL_CODE_LENGTHS
     )
 
 
@@ -271,11 +276,11 @@ def in_eu_vat_area(
 
     inside_member_state = (
         country in EU_VAT_AREA_COUNTRIES
-        and not in_danish_territory(country, postal_code)
+        and not outside_by_postal_territory(country, postal_code)
         and not any(
-        country == range_country
-        and postal_number is not None
-        and low <= postal_number <= high
+            country == range_country
+            and postal_number is not None
+            and low <= postal_number <= high
             for range_country, low, high in NON_EU_VAT_POSTAL_RANGES
         )
     )
@@ -815,10 +820,11 @@ class PostalCodeExclusion(typing.NamedTuple):
     def verdict(self, postal_code: typing.Optional[str]) -> typing.Optional[bool]:
         """Whether the code is excluded, or None when it is malformed or missing.
 
-        With ``danish_territories`` a code ``in_danish_territory`` is excluded
-        too, whatever its digits.
+        With ``danish_territories`` a code ``outside_by_postal_territory``
+        places in the Faroe Islands or Greenland is excluded too, whatever its
+        digits.
         """
-        if self.danish_territories and in_danish_territory(self.country, postal_code):
+        if self.danish_territories and outside_by_postal_territory(self.country, postal_code):
             return True
         key = postal_code_key(self.country, postal_code)
         return None if key is None else self.low <= key <= self.high
