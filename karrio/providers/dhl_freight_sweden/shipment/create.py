@@ -497,7 +497,11 @@ def _customs_information(
             or datetime.date.today().isoformat()
         ),
         invoiceCurrency=declaration_currency,
-        invoiceAmount=duty.declared_value if duty else None,
+        invoiceAmount=lib.identity(
+            duty.declared_value
+            if duty and duty.declared_value is not None
+            else _invoice_amount_from_lines(commodities)
+        ),
         eori=customs_options.eori_number.state or None,
     )
 
@@ -508,6 +512,23 @@ def _customs_information(
             for commodity in commodities
         ],
     )
+
+
+def _commodity_line_value(commodity: models.Commodity) -> typing.Optional[float]:
+    if commodity.value_amount is None:
+        return None
+    return lib.to_money(commodity.value_amount * (commodity.quantity or 1))
+
+
+def _invoice_amount_from_lines(
+    commodities: typing.List[models.Commodity],
+) -> typing.Optional[float]:
+    line_values = [
+        value
+        for value in (_commodity_line_value(c) for c in commodities)
+        if value is not None
+    ]
+    return lib.to_money(sum(line_values)) if line_values else None
 
 
 def _customs_commodity(
@@ -523,11 +544,7 @@ def _customs_commodity(
     return dhl_freight_sweden_req.CustomsCommodityType(
         countryCodeOfOrigin=commodity.origin_country,
         customsValueCurrency=commodity.value_currency or declaration_currency,
-        customsValue=lib.identity(
-            lib.to_money(commodity.value_amount * quantity)
-            if commodity.value_amount is not None
-            else None
-        ),
+        customsValue=_commodity_line_value(commodity),
         # hsItemId and procedureCode are strings on the wire even though the
         # generated type annotates them as int.
         hsItemId=commodity.hs_code,  # pyright: ignore[reportArgumentType]
