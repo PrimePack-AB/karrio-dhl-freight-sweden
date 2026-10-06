@@ -1,0 +1,37 @@
+{
+ "kind": "lookup",
+ "summary": "PostalCode route for CH 8001 answered 400 with 16009 'Country code 'CH' not supported.'.",
+ "captured_at": "2026-10-06T12:27:40Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/CH/8001/route",
+ "product": null,
+ "route": "CH 8001",
+ "booking_id": null,
+ "error_code": "16009",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_lookups.test_postal_code_route_ch_8001",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/CH/8001/route",
+   "http_status": 400,
+   "date": "2026-10-06T12:27:40Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/001-postal-code-ch-8001.request.json",
+    "sha256": "838086b08f0dd78e0ff73e6006d565403c6c753750bcc197ae8b513de5a89932"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/001-postal-code-ch-8001.response.json",
+    "sha256": "458f57407a1aa1624f8e6d846e054423aa18fe1e0561e67452c2856b146d2770"
+   },
+   "request": null,
+   "response": {
+    "ErrorCode": 16009,
+    "Status": 400,
+    "UserMessage": "Country code 'CH' not supported."
+   }
+  }
+ ]
+}

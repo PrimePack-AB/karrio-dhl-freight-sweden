@@ -1,0 +1,348 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to CH 8001 (Zürich, one 20 kg 30x20x15 cm piece) returned HDI, 202, 601, 233.",
+ "captured_at": "2026-10-06T12:27:46Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> CH 8001",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_product_matches_ch_8001_20kg",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T12:27:46Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/011-product-matches-se-ch-8001-20kg.request.json",
+    "sha256": "5e488d989da06c10a949ef2ee17bcc260621930c0a397b026b40dbd8acb694c1"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/011-product-matches-se-ch-8001-20kg.response.json",
+    "sha256": "3cb15e3eb26e3315ea2b02477501d591744c1e2aec807376e779ad46ac16f4a2"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "CH",
+       "postalCode": "8001"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 15.0,
+      "length": 30.0,
+      "volume": 0.009,
+      "weight": 20.0,
+      "width": 20.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "CH",
+         "customs": true
+        }
+       }
+      ],
+      "payerCodes": [
+       {
+        "code": "EXW",
+        "customs": false
+       },
+       {
+        "code": "DAP",
+        "customs": false
+       },
+       {
+        "code": "DDP",
+        "customs": true
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "CH",
+         "customs": true
+        }
+       },
+       {
+        "country": {
+         "countryCode": "UA",
+         "customs": true
+        },
+        "postalCodeExcludes": "95*, 96*,97*,98*,99*"
+       },
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        },
+        "postalCodeExcludes": "39*, ???,2412"
+       },
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        },
+        "postalCodeExcludes": "35*,38*,51*,52*"
+       },
+       {
+        "country": {
+         "countryCode": "NO",
+         "customs": true
+        },
+        "postalCodeExcludes": "917*,8099"
+       },
+       {
+        "country": {
+         "countryCode": "GB",
+         "customs": true
+        },
+        "postalCodeExcludes": "GY*,JE*"
+       },
+       {
+        "country": {
+         "countryCode": "FR",
+         "customs": false
+        },
+        "postalCodeExcludes": "97*"
+       },
+       {
+        "country": {
+         "countryCode": "PT",
+         "customs": false
+        },
+        "postalCodeExcludes": "9*"
+       }
+      ],
+      "payerCodes": [
+       {
+        "code": "CPT",
+        "customs": false
+       },
+       {
+        "code": "FCA",
+        "customs": false
+       },
+       {
+        "code": "EXW",
+        "customs": false
+       },
+       {
+        "code": "DPU",
+        "customs": false
+       },
+       {
+        "code": "DAP",
+        "customs": false
+       },
+       {
+        "code": "CIP",
+        "customs": false
+       },
+       {
+        "code": "DDP",
+        "customs": true
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "601",
+      "name": "DHL Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "GB",
+         "customs": true
+        },
+        "postalCodeExcludes": "GY*,JE*"
+       },
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        },
+        "postalCodeExcludes": "35*,38*,51*,52*"
+       },
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        },
+        "postalCodeExcludes": "39*,???,2142"
+       },
+       {
+        "country": {
+         "countryCode": "PT",
+         "customs": false
+        },
+        "postalCodeExcludes": "9*"
+       },
+       {
+        "country": {
+         "countryCode": "NO",
+         "customs": true
+        },
+        "postalCodeExcludes": "917*,8099"
+       },
+       {
+        "country": {
+         "countryCode": "CH",
+         "customs": true
+        }
+       },
+       {
+        "country": {
+         "countryCode": "FR",
+         "customs": false
+        },
+        "postalCodeExcludes": "97*"
+       }
+      ],
+      "payerCodes": [
+       {
+        "code": "CPT",
+        "customs": false
+       },
+       {
+        "code": "FCA",
+        "customs": false
+       },
+       {
+        "code": "EXW",
+        "customs": false
+       },
+       {
+        "code": "DPU",
+        "customs": false
+       },
+       {
+        "code": "DAP",
+        "customs": false
+       },
+       {
+        "code": "CIP",
+        "customs": false
+       },
+       {
+        "code": "DDP",
+        "customs": true
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false,
+      "toCountries": [
+       {
+        "country": {
+         "countryCode": "PT",
+         "customs": false
+        },
+        "postalCodeExcludes": "9*"
+       },
+       {
+        "country": {
+         "countryCode": "CH",
+         "customs": true
+        }
+       },
+       {
+        "country": {
+         "countryCode": "NO",
+         "customs": true
+        },
+        "postalCodeExcludes": "917*,8099"
+       },
+       {
+        "country": {
+         "countryCode": "ES",
+         "customs": false
+        },
+        "postalCodeExcludes": "35*,38*,51*,52*"
+       },
+       {
+        "country": {
+         "countryCode": "DK",
+         "customs": false
+        },
+        "postalCodeExcludes": "39*, ???,2412"
+       }
+      ],
+      "payerCodes": [
+       {
+        "code": "CPT",
+        "customs": false
+       },
+       {
+        "code": "FCA",
+        "customs": false
+       },
+       {
+        "code": "EXW",
+        "customs": false
+       },
+       {
+        "code": "DPU",
+        "customs": false
+       },
+       {
+        "code": "DAP",
+        "customs": false
+       },
+       {
+        "code": "CIP",
+        "customs": false
+       },
+       {
+        "code": "DDP",
+        "customs": true
+       }
+      ]
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256; each match also keeps payerCodes reduced to code and customs"
+  }
+ ]
+}

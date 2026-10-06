@@ -1,0 +1,50 @@
+{
+ "kind": "lookup",
+ "summary": "Nearest service points for Bahnhofstrasse 1, 8001 Zürich with a 2 kg 30x20x15 cm piece answered 400 'No matching servicepoint was found'.",
+ "captured_at": "2026-10-06T12:27:55Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+ "product": null,
+ "route": "CH 8001",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_lookups.test_service_points_ch",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 400,
+   "date": "2026-10-06T12:27:55Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/015-service-points-ch.request.json",
+    "sha256": "16e7c8c41859ed299d2bdc2a6fa38af613b5677359c14b3192564bd121ffb6e3"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-142740-switzerland/015-service-points-ch.response.json",
+    "sha256": "a6eb1eaf6f5823e6e69ec9deb4cbf6bfdb39ad8009cf96dd82af643e6cd9cddc"
+   },
+   "request": {
+    "address": {
+     "cityName": "Zürich",
+     "countryCode": "CH",
+     "postalCode": "8001",
+     "street": "Bahnhofstrasse 1"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 15.0,
+     "length": 30.0,
+     "weight": 2.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "errorMessage": "No matching servicepoint was found",
+    "status": "Error"
+   }
+  }
+ ]
+}

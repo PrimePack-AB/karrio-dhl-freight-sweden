@@ -769,6 +769,79 @@ for _lane, _sequence, _destination, _area in TERRITORY_PROBES:
     )
 
 
+SWISS_RUN = "20261006-142740-switzerland"
+SWISS_PROBES: typing.Tuple[typing.Tuple[str, str, str, str], ...] = (
+    ("se-ch-8001", "009", "CH 8001", "Zürich, one 2 kg 30x20x15 cm piece"),
+    ("se-ch-8001-20kg", "011", "CH 8001", "Zürich, one 20 kg 30x20x15 cm piece"),
+    ("se-ch-1201", "003", "CH 1201", "Geneva, one 2 kg 30x20x15 cm piece"),
+    ("se-ch-3011", "005", "CH 3011", "Bern, one 2 kg 30x20x15 cm piece"),
+    ("se-ch-6900", "007", "CH 6900", "Lugano, one 2 kg 30x20x15 cm piece"),
+    ("se-li-9490", "013", "LI 9490", "Vaduz, one 2 kg 30x20x15 cm piece"),
+)
+
+
+def reduce_product_matches_with_payer_codes(exchange: Exchange) -> Exchange:
+    """Like ``reduce_product_matches_with_destinations``, keeping each match's payer codes.
+
+    Each match also keeps its payer codes reduced to code and customs flag.
+    """
+    payer_codes = [
+        [
+            {key: payer.get(key) for key in ("code", "customs")}
+            for payer in match["product"].get("payerCodes") or []
+        ]
+        for match in exchange["response"]
+    ]
+    exchange = reduce_product_matches_with_destinations(exchange)
+    for match, codes in zip(exchange["response"], payer_codes):
+        match["product"]["payerCodes"] = codes
+    exchange["response_reduced"] += "; each match also keeps payerCodes reduced to code and customs"
+    return exchange
+
+
+def swiss_probe(b: Builder, lane: str, sequence: str, destination: str, area: str) -> Json:
+    exchange = reduce_product_matches_with_payer_codes(
+        b.suite_exchange(SWISS_RUN, f"{sequence}-product-matches-{lane}")
+    )
+    codes = [match["product"]["code"] for match in exchange["response"]]
+    method = lane.removeprefix("se-").replace("-", "_")
+    return b.document(
+        "lookup",
+        f"Product matches for SE 11143 to {destination} ({area}) returned "
+        + (", ".join(codes) if codes else "no products")
+        + ".",
+        None, f"SE 11143 -> {destination}", None, None,
+        f"{SUITE_RUN}: test_lookups.test_product_matches_{method}",
+        [exchange],
+    )
+
+
+for _lane, _sequence, _destination, _area in SWISS_PROBES:
+    evidence(f"lookup-product-matches-{_lane}.json")(
+        lambda b, l=_lane, s=_sequence, d=_destination, a=_area: swiss_probe(b, l, s, d, a)
+    )
+
+
+@evidence("lookup-postal-code-ch-8001-16009.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "PostalCode route for CH 8001 answered 400 with 16009 'Country code 'CH' not supported.'.",
+        None, "CH 8001", None, "16009", f"{SUITE_RUN}: test_lookups.test_postal_code_route_ch_8001",
+        [b.suite_exchange(SWISS_RUN, "001-postal-code-ch-8001")],
+    )
+
+
+@evidence("lookup-service-points-ch-8001-none.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Nearest service points for Bahnhofstrasse 1, 8001 Zürich with a 2 kg 30x20x15 cm piece answered 400 "
+        "'No matching servicepoint was found'.",
+        None, "CH 8001", None, None, f"{SUITE_RUN}: test_lookups.test_service_points_ch",
+        [b.suite_exchange(SWISS_RUN, "015-service-points-ch")],
+    )
+
+
 @evidence("lookup-product-matches-se-se.json")
 def _(b: Builder) -> Json:
     return b.document(
