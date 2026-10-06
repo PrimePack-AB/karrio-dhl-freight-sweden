@@ -658,6 +658,8 @@ The `booking-approved` segment books 102 within SE, 601 to DK, and 118 within SE
 The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022 and SENT free.
 The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO, 109 to a ParcelShop in DK, and 112 to the home in FR and GB, declaring the PL lanes SENT free.
 It also books to the special territories Åland (FI 22100), 109 without customs data, and checks that the connector refuses 112 there with customs handling full service or Standard, which DHL rejected with 24003 when these cases booked, and Northern Ireland (GB BT1 1AA), 202 with payer code DAP and without customs data.
+The freight lanes book 202, 205, and 233 to DK inside the EU VAT area and 202, 205, 233, and 601 to NO with customs handling full service, each with the explicit DAP payer code, and 112 and 109 book to NO with customs handling Standard and a made-up EORI number.
+The 205 cases skip unless product matches offer 205, which they did not in the 2026-10-06 run.
 The 112 GB case books even when product matches do not offer 112, to record DHL's answer to the booking.
 Before each booking it checks for free that product matches offer the product for the lane and, for 109, that a nearby service point accepts the product, and it skips the lane otherwise.
 NO and GB bookings leave the EU VAT area, so they carry one commodity, an invoice number, and the `dhl_freight_sweden_customs_handling_full_service` option, the customs service that needs no registration identifier; the Incoterm DAP gives payer code 022 on 109, avoiding the joint declaration that 023 requires, and DDP gives 023 on 112.
@@ -675,7 +677,7 @@ Every live call writes its request and response as JSON to the capture directory
 The account number stays in the captures, because DHL API Farm support traces sandbox bookings by it.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
-Planned segments, not yet implemented: a wider customs matrix covering the other customs services and non-EU destinations, and the freight products.
+Still unbooked: the forced 205 booking to record DHL's answer, the customer's own declaration, the joint declaration including 109 with payer code 023, VOEC, and further destinations outside the EU VAT area.
 
 The sandbox findings so far, with every booking, rejection, and deviation from the product manual, are in [docs/notes/sandbox/sandbox-findings.md](docs/notes/sandbox/sandbox-findings.md).
 Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256, and `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks those files offline.
