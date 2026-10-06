@@ -92,6 +92,8 @@ Customs requires a commercial invoice for a sale, so the connector refuses a pro
 Customs information is sent only when the shipper or the recipient lies outside the EU VAT area (see [Customs and the EU VAT area](#customs-and-the-eu-vat-area)), and there an unset `customs.content_type` and every value except `documents`, `gift`, `return_merchandise`, and `sample` count as a sale.
 A sale needs `customs.commercial_invoice` true, which sends a `CommercialInvoice` document; without it the connector fails with a field error keyed `customs.commercial_invoice`.
 The four non-sale content types may leave `customs.commercial_invoice` false or unset, which sends a `ProformaInvoice` document.
+Either document states `customs.duty.declared_value` as its invoice amount, in `customs.duty.currency` or else the one currency the commodities share.
+Without a declared value, the invoice amount is the sum of the commodity line values, each `value_amount` times `quantity`, and a document whose commodities carry no value states no amount.
 
 ### Payer codes
 
