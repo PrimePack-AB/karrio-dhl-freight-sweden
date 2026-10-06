@@ -6,7 +6,7 @@ title: "DHL Freight SE sandbox findings, 2026-10-05"
 
 All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
-The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version unless marked v5.23.
+The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
 
 The calls came from three sources.
@@ -158,7 +158,7 @@ The README lists PostalCode error 16012 as "not supported", and no capture shows
 
 ## Untested
 
-No booking used the freight products 202, 205, 209, 210, 211, 212, 232, 233, or SPI, or the parcel and home delivery products 104, 107, 401, 402, and 502.
+No booking used the freight products 202, 205, 209, 210, 211, 212, 233, or SPI, or the parcel and home delivery products 104, 107, 401, 402, and 502.
 601 was booked only to DK, HU, and RO; 601 to HU or RO without EKAER or UIT entries, with a free flag `"true"`, or with a UIT number, and 601 to PL, are untested.
 109 with home addressing and no AccessPoint party is untested.
 Customs was tested only as Customs handling - Full service to NO; Customs handling - Standard, the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.

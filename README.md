@@ -76,7 +76,7 @@ Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional s
 The connector checks payer codes, access points, and SENT, EKAER, and UIT entries before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
 The rules follow the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, which is cited here rather than vendored.
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
-Section and page references below are to that version unless marked v5.23.
+Section and page references below are to that version.
 
 ### Payer codes
 
@@ -92,7 +92,6 @@ Section and page references below are to that version unless marked v5.23.
 | 107 | 001 | 001 | §5.15 p66 |
 | 109 | 022, 023 (023 only with customs joint declaration) | 022 | §5.14 p63 |
 | 112 | 022, 023 | 023 | §5.3 p19 (023 only); 022 per sandbox booking 2906761149 ([booking-2906761149-112-se-pl-payer-022.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json)) |
-| 232 | DAP, DDP | none | v5.23 §5.10 p42 |
 | 202, 233, SPI, 601 | export EXW, FCA, CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.4 p24, §5.10 p48, §5.11 p53, §5.19 p83 |
 | 205 | export CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.9 p43 |
 
