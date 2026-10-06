@@ -51,7 +51,8 @@ COMMODITY = {
 
 
 CONSUMER_PARCEL = {**booking.PARCEL, "weight": 2.0, "height": 15.0}
-# The connector sends the invoice amount only from the duty's declared value.
+# The connector would derive the same 200 SEK from COMMODITY; the explicit
+# declared value keeps the request booked as 2906762477 reproducible.
 DECLARED_VALUE = {"duty": {"paid_by": "recipient", "currency": "SEK", "declared_value": 200}}
 
 
