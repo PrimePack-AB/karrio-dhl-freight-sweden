@@ -511,7 +511,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
 | payer code, SENT, EKAER, UIT, or GR VAT number/TIN field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
-| "Customs requires a commercial invoice for an export of goods for sale ..." | connector check before booking | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
+| "Customs requires a commercial invoice for an export of goods for sale ..." | connector field error | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
 | linehaul failure without postalCode (22006) | DHL validation | reject the candidate |
