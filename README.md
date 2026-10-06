@@ -93,7 +93,7 @@ Customs information is sent only when the shipper or the recipient lies outside 
 A sale needs `customs.commercial_invoice` true, which sends a `CommercialInvoice` document; without it the connector fails with a field error keyed `customs.commercial_invoice`.
 The four non-sale content types may leave `customs.commercial_invoice` false or unset, which sends a `ProformaInvoice` document.
 Either document states `customs.duty.declared_value` as its invoice amount, in `customs.duty.currency` or else the one currency the commodities share.
-Without a declared value, the invoice amount is the sum of the commodity line values, each `value_amount` times `quantity`, and a document whose commodities carry no value states no amount.
+Without a declared value, the invoice amount is the sum of the commodity line values, each `value_amount` times `quantity`, but only when every commodity carries a value; otherwise the document states no amount.
 
 ### Payer codes
 
