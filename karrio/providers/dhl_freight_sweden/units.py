@@ -227,6 +227,16 @@ EU_VAT_POSTAL_PREFIXES: typing.Tuple[typing.Tuple[str, str], ...] = (
     ("GB", "BT"),  # Northern Ireland
 )
 
+# Product manual v5.26 lists each customs service as "Can not be combined
+# with" the other three (§6.5 p92, §6.6 p94, §6.7 p96, §6.8 p98).
+EXCLUSIVE_CUSTOMS_SERVICES: typing.Dict[str, str] = {
+    "dhl_freight_sweden_customs_handling_full_service": "customsHandlingFullService",
+    "dhl_freight_sweden_customs_handling_standard": "customsHandlingStandard",
+    "dhl_freight_sweden_customs_own_declaration": "customsCustomersOwnDeclaration",
+    "dhl_freight_sweden_customs_joint_declaration": "customsJointDeclaration",
+}
+EXCLUSIVE_CUSTOMS_SERVICES_CITATION = "§6.5 p92, §6.6 p94, §6.7 p96, §6.8 p98"
+
 # DHL rejected customs handling full service and standard for SE to FI
 # 22100 with 24003 "... is not available for this country combination"
 # (tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json,

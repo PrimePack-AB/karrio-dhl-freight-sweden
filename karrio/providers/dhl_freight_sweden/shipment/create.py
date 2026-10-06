@@ -29,6 +29,12 @@ class CustomsServiceIdentifierError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class CustomsServiceCombinationError(errors.ShippingSDKDetailedError):
+    """Raised when more than one customs service is selected for a shipment."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class CustomsInvoiceNumberError(errors.ShippingSDKDetailedError):
     """Raised when a customs document has neither invoice number nor reference."""
 
@@ -339,6 +345,7 @@ def shipment_request(
     if not (within_eu_vat_area or has_customs_data):
         _refuse_without_customs_data(shipper, recipient)
     if not within_eu_vat_area:
+        _check_customs_service_combination(options)
         _check_customs_service_identifiers(options, customs_options)
     if has_customs_data and not within_eu_vat_area:
         _check_commercial_invoice(
@@ -645,6 +652,27 @@ def _customs_services(
     )
 
     return {key: value for key, value in services.items() if value is not None}
+
+
+def _check_customs_service_combination(options: units.ShippingOptions) -> None:
+    selected = {
+        option: service
+        for option, service in provider_units.EXCLUSIVE_CUSTOMS_SERVICES.items()
+        if options[option].state
+    }
+
+    if len(selected) < 2:
+        return
+
+    raise CustomsServiceCombinationError(
+        f"Customs services {', '.join(selected.values())} cannot be combined; "
+        "product manual v5.26 allows one customs service per shipment "
+        f"({provider_units.EXCLUSIVE_CUSTOMS_SERVICES_CITATION}), so select only one",
+        details={
+            option: dict(code="invalid", message="cannot be combined with another customs service")
+            for option in selected
+        },
+    )
 
 
 def _check_customs_service_identifiers(
