@@ -169,6 +169,16 @@ def mutated_request(
     )
 
 
+def decoded_body(value: typing.Any) -> typing.Any:
+    """A JSON text body decoded, empty bodies such as ``[]`` included; other values unchanged."""
+    if not isinstance(value, str):
+        return value
+    try:
+        return json.loads(value)
+    except ValueError:
+        return value
+
+
 class BookingBudget:
     """Process-wide count of booking attempts against a fixed limit.
 
@@ -292,8 +302,8 @@ class Session:
         for record in records:
             data = dict(lib.to_dict(record.data) or {})
             for field in ("data", "response", "error"):
-                if isinstance(data.get(field), str):
-                    data[field] = lib.failsafe(lambda: json.loads(data[field])) or data[field]
+                if field in data:
+                    data[field] = decoded_body(data[field])
             calls.setdefault(data.get("request_id") or str(record.timestamp), {})[
                 "request" if record.key == "request" else "response"
             ] = dict(key=record.key, **data)
