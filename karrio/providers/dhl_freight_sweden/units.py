@@ -653,8 +653,16 @@ class PostalCodeFormat(typing.NamedTuple):
 
 FOUR_DIGITS = PostalCodeFormat(r"(?P<key>\d{4})", 4, "4-digit")
 FIVE_DIGITS = PostalCodeFormat(r"(?P<key>\d{5})", 5, "5-digit")
+# Portuguese codes are NNNN-NNN; the excluded ranges cover the first four
+# digits, so a bare four-digit prefix is accepted too.
+PORTUGUESE = PostalCodeFormat(r"(?P<key>\d{4})(-?\d{3})?", 4, "NNNN-NNN")
 POSTAL_CODE_FORMATS: typing.Dict[str, PostalCodeFormat] = {
+    "DK": FOUR_DIGITS,
+    "ES": FIVE_DIGITS,
     "FR": FIVE_DIGITS,
+    "IT": FIVE_DIGITS,
+    "NO": FOUR_DIGITS,
+    "PT": PORTUGUESE,
 }
 
 
@@ -680,15 +688,41 @@ class PostalCodeExclusion(typing.NamedTuple):
         return low if low == high else f"{low}-{high}"
 
 
-# The numeric "Excluded regions/areas" of product manual v5.26.
+def _excluded(
+    products: typing.Iterable[ShippingService],
+    country: str,
+    region: str,
+    *ranges: typing.Union[int, typing.Tuple[int, int]],
+    parties: typing.Tuple[str, ...] = ("recipient",),
+) -> typing.Tuple[PostalCodeExclusion, ...]:
+    return tuple(
+        PostalCodeExclusion(product.value, country, low, high, region, parties)
+        for product in products
+        for low, high in (
+            code if isinstance(code, tuple) else (code, code) for code in ranges
+        )
+    )
+
+
+PARCEL_CONNECT_PLUS = (ShippingService.dhl_freight_sweden_parcel_connect_plus,)
+
+# The numeric "Excluded regions/areas" of product manual v5.26. Non-numeric
+# areas (GB JE/GY/BT, the NL Caribbean islands) are not checked.
 POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
-    PostalCodeExclusion(
-        product=ShippingService.dhl_freight_sweden_parcel_connect_plus.value,
-        country="FR",
-        low=97100,
-        high=99999,
-        region="outside mainland France and Corsica",  # §5.3 p18
+    # 112, §5.3 p18
+    *_excluded(PARCEL_CONNECT_PLUS, "DK", "Greenland and the Faroe Islands", (3800, 3999)),
+    *_excluded(PARCEL_CONNECT_PLUS, "ES", "Canary Islands", (35000, 35999), (38000, 38999)),
+    *_excluded(PARCEL_CONNECT_PLUS, "ES", "Ceuta and Melilla", 51080, 52080),
+    *_excluded(PARCEL_CONNECT_PLUS, "FR", "outside mainland France and Corsica", (97100, 99999)),
+    *_excluded(
+        PARCEL_CONNECT_PLUS,
+        "IT",
+        "Campione d'Italia, Livigno, Trepalle, San Marino, Ventotene, Ponza, "
+        "Serle, Isola Bella, and Giglio",
+        22061, 23041, 23030, (47890, 47899), 4020, 4027, 25080, 28838, 58012,
     ),
+    *_excluded(PARCEL_CONNECT_PLUS, "NO", "Jan Mayen and Svalbard", 8099, (9170, 9179)),
+    *_excluded(PARCEL_CONNECT_PLUS, "PT", "the Azores, Madeira, and other islands", (9000, 9999)),
 )
 
 
