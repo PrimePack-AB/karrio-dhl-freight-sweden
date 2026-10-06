@@ -62,6 +62,13 @@ class TestDHLFreightEUVATArea(unittest.TestCase):
             ("GB", "GB-BT1 1AA", True),
             ("SE", "SE-111 43", True),
             ("DK", "100", False),
+            ("DK", "fo 100", False),
+            ("DK", "FO100", False),
+            ("DK", "GL 3900", False),
+            ("DK", "1000", True),
+            ("DK", "DK-2100", True),
+            ("DK", "0100", True),
+            ("DK", "10000", True),
             ("DK", "970", False),
             ("DK", "FO-100", False),
             ("DK", "FO 100", False),
@@ -123,6 +130,10 @@ class TestDHLFreightEUVATArea(unittest.TestCase):
             {"AX": "FI", "FO": "DK", "GL": "DK", "IC": "ES", "EA": "ES"},
         )
         self.assertEqual(units.UK_POSTCODE_AREA_CODES, frozenset({"JE", "GY", "IM", "BT"}))
+        self.assertEqual(
+            units.NON_EU_VAT_POSTAL_TERRITORY_PREFIXES, (("DK", "FO"), ("DK", "GL"))
+        )
+        self.assertEqual(units.NON_EU_VAT_POSTAL_CODE_LENGTHS, (("DK", 3),))
 
 
 class TestDHLFreightPostalCodeNormalisation(unittest.TestCase):
