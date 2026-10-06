@@ -13,6 +13,7 @@ import karrio.lib as lib
 import karrio.core.models as models
 import karrio.providers.dhl_freight_sweden.error as error
 import karrio.providers.dhl_freight_sweden.lookup as lookup
+import karrio.providers.dhl_freight_sweden.units as provider_units
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
 
@@ -45,7 +46,7 @@ def service_points_request(
             additionalAddressInfo=address.get("additional_address_info"),
             cityName=address.get("city"),
             postalCode=address.get("postal_code"),
-            countryCode=address.get("country_code"),
+            countryCode=provider_units.parent_country(address.get("country_code")),
         ),
         locationTypes=payload.get("location_types"),
         maxNumberOfItems=payload.get("max_items"),

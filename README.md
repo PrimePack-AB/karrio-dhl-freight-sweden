@@ -221,8 +221,7 @@ The rule and the tables match the nordic_conventions plugin's territories module
 ### Special territories
 
 Product matches answered no product for the territory codes AX, JE, GG, and FO, while the same postal codes under FI and GB matched products (2026-10-06: [AX 22100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json), [FI 22100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json), [JE JE2 3AB](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-je-je23ab.json), [GB JE2 3AB](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json), [GG GY1 1AA](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gg-gy11aa.json), [FO 100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fo-100.json)).
-The connector therefore rates, books, and looks up product matches for an address with a territory code under its parent country, sending the parent country code with the postal code as given, before the customs area and excluded postal code checks.
-Service point lookups send the country code as given.
+The connector therefore rates, books, and looks up product matches and service points for an address with a territory code under its parent country, sending the parent country code with the postal code as given, before the customs area and excluded postal code checks.
 
 | Territory | Code | Sent as | Customs | Product matches (2026-10-06) |
 |-----------|------|---------|---------|------------------------------|
