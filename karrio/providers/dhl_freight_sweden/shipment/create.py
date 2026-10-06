@@ -736,7 +736,8 @@ def _sent_information(
             dhl_freight_sweden_req.AdditionalInformationType(
                 code=code.value, stringValue=value
             )
-            for _, code, value in given
+            for code, value in [(codes.SENT_FREE, "false")]
+            + [(code, value) for _, code, value in given]
         ]
 
     if any(given) or sent_free is False:
