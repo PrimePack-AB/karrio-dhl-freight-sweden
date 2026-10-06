@@ -82,14 +82,17 @@ The sandbox accepted 112 from SE to FR 75004 with payer code 023 and printed its
 
 ## Booking rules
 
-The connector checks the label type, payer codes, access points, SENT, EKAER, and UIT entries, the VAT numbers/TINs of lanes to or from GR, excluded postal codes, and the QR code option before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
+The connector checks the label type, payer codes, access points, SENT, EKAER, and UIT entries, the VAT numbers/TINs of lanes to or from GR, excluded postal codes, customs data on lanes crossing the EU VAT area border, and the QR code option before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
 The rules follow the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, which is cited here rather than vendored.
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 Section and page references below are to that version.
 
 The DHL API itself accepts a `ProformaInvoice` document on an export ([booking-2906761305-109-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json)).
 Customs requires a commercial invoice for a sale, so the connector refuses a proforma invoice for an export of goods for sale before it sends any request; this check is the connector's own and has no manual citation.
-Customs information is sent only when the shipper or the recipient lies outside the EU VAT area (see [Customs and the EU VAT area](#customs-and-the-eu-vat-area)), and there an unset `customs.content_type` and every value except `documents`, `gift`, `return_merchandise`, and `sample` count as a sale.
+Customs information is sent only when the shipper or the recipient lies outside the EU VAT area (see [Customs and the EU VAT area](#customs-and-the-eu-vat-area)).
+There the booking needs customs data, meaning `customs.commodities`, `customs.invoice`, or `customs.invoice_date`, and the connector refuses a booking without any of them before it sends any request, with a field error keyed `customs`; this check is the connector's own, not a DHL rejection, and DHL accepted such a booking to Åland before the check existed ([booking-2906761917-109-se-fi-aland.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761917-109-se-fi-aland.json)).
+A `documents` shipment without commodities therefore needs at least `customs.invoice`.
+On such a lane an unset `customs.content_type` and every value except `documents`, `gift`, `return_merchandise`, and `sample` count as a sale.
 A sale needs `customs.commercial_invoice` true, which sends a `CommercialInvoice` document; without it the connector fails with a field error keyed `customs.commercial_invoice`.
 The four non-sale content types may leave `customs.commercial_invoice` false or unset, which sends a `ProformaInvoice` document.
 Either document states `customs.duty.declared_value` as its invoice amount, in `customs.duty.currency` or else the one currency the commodities share.
@@ -206,6 +209,7 @@ The connector returns the first report as the label and does not surface a QR co
 ### Customs and the EU VAT area
 
 The connector sends customs information and the requested customs services only when the shipper or the recipient lies outside the EU VAT area for goods; within it, customs data and customs services are dropped with a `customs_omitted_intra_eu` warning.
+Outside the area a booking without customs data fails before the booking request (see [Booking rules](#booking-rules)).
 To or from Åland the customs handling services Standard and full service fail before the booking request, because DHL rejected both with 24003 (see [Special territories](#special-territories)).
 The manual makes customs proceedings mandatory for deliveries outside the European Union or the tax area and names Åland (FI 22) and the Canary Islands as areas outside the tax area (§7.4 p162).
 An address lies inside the area when its country is an EU member state, GR, or MC, its postal code is not in one of the ranges below, and, for DK, the code is neither led by FO or GL nor a three-digit Faroese code, or when it is a GB postcode starting with `BT` (Northern Ireland), which is inside the area for goods.
@@ -250,7 +254,9 @@ The sandbox booked 109 from SE to FI 22100 (Åland) to the Posti ParcelShop 8011
 It rejected 112 from SE to FI 22100 with customs information and `customsHandlingFullService` with 24003 "customsHandlingFullService is not available for this country combination", after product matches had offered 112 for the lane (2026-10-06: [rejection-24003-112-se-fi-aland.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json)).
 It rejected 112 to FI 22100 with `customsHandlingStandard` and an EORI number the same way, 24003 "customsHandlingStandard is not available for this country combination" (2026-10-06: [rejection-24003-112-se-fi-aland-standard.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json)), although the manual lists "NO and Åland Islands (FI 22)" as the valid countries of Customs handling - Standard (§6.6 p94).
 The connector therefore refuses `dhl_freight_sweden_customs_handling_standard` and `dhl_freight_sweden_customs_handling_full_service` before the booking request when the shipper or the recipient lies in FI 22000-22999, also under AX or written `FI-22100` or `AX-22100`, with a `SHIPPING_SDK_FIELD_ERROR` keyed by the option.
-Booking to or from Åland without these services still sends the customs information, as the manual treats Åland as outside the tax area (§7.4 p162), and rating is unchanged.
+Because the manual treats Åland as outside the tax area (§7.4 p162), a booking to or from Åland needs customs data like any lane crossing the EU VAT area border, and the connector now refuses the customs-free 109 booking that the sandbox accepted.
+The one remaining way to book Åland sends the customs information without either customs handling service; the sandbox has not yet received such a booking, so whether DHL accepts it is untested until the `test_book_109_fi_aland_customs_without_service` case runs.
+Rating is unchanged.
 202 to GB JE2 3AB was not sent: the connector refuses it before the booking request under the catalog's `JE*` exclude, and product matches did not offer 202 for that postcode ([lookup-product-matches-se-gb-je23ab.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json)).
 After the mapping the [excluded postal codes](#excluded-postal-codes) apply: Jersey and Guernsey are excluded from 109, 112, 202, and 601, Northern Ireland from 109 and 112, the Faroe Islands, Greenland, and the Canary Islands from 109, 112, 202, 233, and 601 (the Faroe Islands' three-digit codes through the DK 3800-3999 entry for 109 and 112 and the catalog's `???` for the others), Ceuta and Melilla from 202, 233, and 601 and their codes 51080 and 52080 from 109 and 112, and the Isle of Man from none.
 The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given, excluded from 109, 112, and 107, and passed through on the other products.
@@ -514,6 +520,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
 | "Label type ... is not supported; the DHL Freight Sweden Print API returns PDF labels only" | connector field error | set the `label_type` named in `details` (request or `config`) to `PDF`, or leave it unset; see [Connection settings](#connection-settings) |
 | payer code, SENT, EKAER, UIT, or GR VAT number/TIN field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
+| "Customs requires customs information for a shipment from ... which crosses the border of the EU VAT area ..." | connector field error | add `customs.commodities`, `customs.invoice`, or `customs.invoice_date`, and for a `documents` shipment at least `customs.invoice`, per [Booking rules](#booking-rules) |
 | "Customs requires a commercial invoice for an export of goods for sale ..." | connector field error | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
@@ -670,7 +677,8 @@ On 2026-10-06 the CH lanes matched HDI, 202, 601, and 233 and none of 109, 112, 
 The `booking-approved` segment books 102 and 401 within SE, 601 to DK, and 118 within SE behind the `enforce` address validation pre-flight, and prints each label.
 The `booking-pudo` segment looks up the service points nearest the recipient and books the first complete candidate as the AccessPoint party, for 103 within SE and 109 from SE to PL with payer code 022 and SENT free.
 The `booking-export` segment books 109 to a service point and 112 to the home from SE to PL, RO, HU, and NO, 109 to a ParcelShop in DK, and 112 to the home in FR and GB, declaring the PL lanes SENT free.
-It also books to the special territories Åland (FI 22100), 109 without customs data, and checks that the connector refuses 112 there with customs handling full service or Standard, which DHL rejected with 24003 when these cases booked, and Northern Ireland (GB BT1 1AA), 202 with payer code DAP and without customs data.
+It also books to the special territories Åland (FI 22100), 109 with customs data and no customs handling service, which has not run yet, and Northern Ireland (GB BT1 1AA), 202 with payer code DAP and without customs data.
+To Åland it checks without booking that the connector refuses 112 with customs handling full service or Standard, which DHL rejected with 24003 when these cases booked, and 109 without customs data, which DHL booked before the connector required customs data.
 The freight lanes book 202, 205, and 233 to DK inside the EU VAT area and 202, 205, 233, and 601 to NO with customs handling full service, each with the explicit DAP payer code, and 112 and 109 book to NO with customs handling Standard and a made-up EORI number.
 The 205 cases skip unless product matches offer 205, which they did not in the 2026-10-06 run ([lookup-product-matches-se-dk-1620.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-1620.json), [lookup-product-matches-se-no-0154.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-no-0154.json)); the NO case books even so, like the 112 GB case, and DHL answered 22020 "ChargeableWeight is lower than product min 2500.0" (2026-10-06: [rejection-22020-205-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)).
 The 112 GB case books even when product matches do not offer 112, to record DHL's answer to the booking.
