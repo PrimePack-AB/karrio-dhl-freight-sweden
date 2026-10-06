@@ -680,6 +680,11 @@ def _customs_services(
     return {key: value for key, value in services.items() if value is not None}
 
 
+def _named_services(services: typing.Dict[str, str]) -> str:
+    """Karrio option names, each followed by its transport-instruction field."""
+    return ", ".join(f"{option} ({field})" for option, field in services.items())
+
+
 def _check_customs_service_combination(options: units.ShippingOptions) -> None:
     selected = {
         option: service
@@ -691,7 +696,7 @@ def _check_customs_service_combination(options: units.ShippingOptions) -> None:
         return
 
     raise CustomsServiceCombinationError(
-        f"Customs services {', '.join(selected.values())} cannot be combined; "
+        f"Customs services {_named_services(selected)} cannot be combined; "
         "product manual v5.26 allows one customs service per shipment "
         f"({provider_units.EXCLUSIVE_CUSTOMS_SERVICES_CITATION}), so select only one",
         details={
@@ -825,7 +830,7 @@ def _check_aland_customs_services(
         return
 
     raise AlandCustomsServiceError(
-        f"DHL rejects {', '.join(requested.values())} for shipments to or from Åland "
+        f"DHL rejects {_named_services(requested)} for shipments to or from Åland "
         f"(FI 22000-22999, {' and '.join(parties)}) with 24003 \"not available for this "
         f"country combination\" ({', '.join(provider_units.ALAND_CUSTOMS_EVIDENCE)}); "
         "book without the customs handling service",
