@@ -580,6 +580,9 @@ PARCEL_CONNECT_B2C_COUNTRIES = [
     "SI",
     "SK",
 ]
+# FR is listed for 112 by product manual v5.26 (§5.3 p18, Appendix G p199),
+# which excludes FR postal codes 97100-99999 and requires the Print and
+# TransportInstruction APIs for FR; the connector books through both.
 PARCEL_CONNECT_PLUS_COUNTRIES = [
     "AT",
     "BE",
@@ -590,6 +593,7 @@ PARCEL_CONNECT_PLUS_COUNTRIES = [
     "EE",
     "ES",
     "FI",
+    "FR",
     "HR",
     "HU",
     "IE",

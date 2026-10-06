@@ -70,6 +70,8 @@ Parcel dimensions are sent in centimetres, and some products enforce minimum pie
 
 DHL validates these minimums server-side at booking; the connector does not check them and forwards the dimensions as given.
 Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional service rather than an access-point party: set the `dhl_freight_sweden_doorstep_access_code` option and the connector sends it as `additionalServices.doorstepDelivery.accessCode`.
+Product manual v5.26 lists FR among the valid countries of Parcel Connect Plus (112) (§5.3 p18, Appendix G p199) and requires the Print and TransportInstruction APIs for FR shipments, the two APIs the connector books and prints through, so the rate sheet includes FR for 112.
+The manual limits 112 delivery in FR to mainland France and Corsica and excludes postal codes 97100-99999 (§5.3 p18); the connector checks neither this range nor the other excluded regions the manual lists for 112 and forwards the address as given.
 
 ## Booking rules
 
