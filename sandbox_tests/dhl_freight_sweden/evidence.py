@@ -556,6 +556,21 @@ def _(b: Builder) -> Json:
     )
 
 
+@evidence("rejection-24003-112-se-fi-aland-standard.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "112 SE to FI 22100 (Åland) home delivery with payer code 023, customs handling standard, a made-up "
+        "EORI number, one commodity, and a proforma invoice, after product matches offered 112, was rejected "
+        "with 24003 'customsHandlingStandard is not available for this country combination'.",
+        "112", "SE 11143 -> FI 22100", None, "24003",
+        f"{SUITE_RUN}: test_booking_export.test_book_112_fi_aland_standard_customs",
+        [reduce_product_matches(b.suite_exchange("20261006-111214", "001-product-matches-112-fi-22100")),
+         b.suite_exchange("20261006-111214", "003-booking-112")],
+        primary=1,
+    )
+
+
 @evidence("rejection-22001-103-se-access-point-id-only.json")
 def _(b: Builder) -> Json:
     return b.document(
