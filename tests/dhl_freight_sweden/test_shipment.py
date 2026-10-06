@@ -46,14 +46,6 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(serialize_request(request), ShipmentRequest102)
         self.assertEqual(request.ctx["print_options"], PrintOptions)
 
-    def test_create_shipment_request_232(self):
-        request = gateway.mapper.create_shipment_request(
-            models.ShipmentRequest(**ShipmentPayload232)
-        )
-
-        self.assertEqual(serialize_request(request), ShipmentRequest232)
-        self.assertEqual(request.ctx["print_options"], PrintOptions)
-
     def test_create_shipment_request_401_doorstep(self):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(**ShipmentPayload401)
@@ -715,20 +707,6 @@ class TestDHLFreightShipment(unittest.TestCase):
             [_expected_details("TI-102-0001", "102"), []],
         )
 
-    def test_parse_shipment_response_232(self):
-        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
-            mock.side_effect = [BookingResponse232, PrintResponse]
-            parsed_response = (
-                karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload232))
-                .from_(gateway)
-                .parse()
-            )
-
-        self.assertListEqual(
-            as_list(lib.to_dict(parsed_response)),
-            [_expected_details("TI-232-0001", "232"), []],
-        )
-
     def test_parse_shipment_response_without_print_body(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.side_effect = [BookingResponse102, "null"]
@@ -1246,11 +1224,6 @@ ShipmentPayload103MissingDetails = _payload(
 # International
 # International freight products list several Incoterms and no default, so
 # payloads without customs name the payer code explicitly.
-ShipmentPayload232 = _payload(
-    "dhl_freight_sweden_euroconnect_plus",
-    _recipient_de,
-    {"dhl_freight_sweden_payer_code": "DAP"},
-)
 ShipmentPayload202 = _payload(
     "dhl_freight_sweden_road_freight_standard",
     _recipient_de,
@@ -1646,56 +1619,7 @@ ShipmentRequest102 = {
     "totalWeight": 5.0,
 }
 
-ShipmentRequest232 = {
-    "additionalServices": {},
-    "parties": [
-        {
-            "address": {
-                "cityName": "Stockholm",
-                "countryCode": "SE",
-                "postalCode": "11143",
-                "street": "Kungsgatan 1",
-            },
-            "contactName": "Sven Svensson",
-            "email": "shipper@example.se",
-            "id": "1234567",
-            "name": "Test Shipper AB",
-            "phone": "+46 8 123 456",
-            "type": "Consignor",
-        },
-        {
-            "address": {
-                "cityName": "Berlin",
-                "countryCode": "DE",
-                "postalCode": "10115",
-                "street": "Storgatan 2",
-            },
-            "contactName": "Anna Andersson",
-            "email": "recipient@example.se",
-            "name": "Test Recipient AB",
-            "phone": "+46 31 987 654",
-            "type": "Consignee",
-        },
-    ],
-    "payerCode": {"code": "DAP"},
-    "pieces": [
-        {
-            "height": 15.0,
-            "length": 30.0,
-            "marksAndNumbers": "REF-001",
-            "numberOfPieces": 1,
-            "volume": 0.01,
-            "weight": 5.0,
-            "width": 20.0,
-        }
-    ],
-    "productCode": "232",
-    "totalNumberOfPieces": 1,
-    "totalWeight": 5.0,
-}
-
 BookingResponse102 = _booking("TI-102-0001", 102)
-BookingResponse232 = _booking("TI-232-0001", 232)
 BookingResponse118 = _booking("TI-118-0001", 118)
 
 # PostalCodes API route fixtures (GET /postalcodes/SE/{pc}/route).

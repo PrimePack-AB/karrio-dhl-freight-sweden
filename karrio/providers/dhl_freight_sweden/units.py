@@ -194,7 +194,6 @@ class ShippingService(lib.StrEnum):
 
     # International
     dhl_freight_sweden_road_freight_standard = "202"
-    dhl_freight_sweden_euroconnect_plus = "232"
     dhl_freight_sweden_road_freight_direct = "205"
     dhl_freight_sweden_road_freight_priority = "233"
     dhl_freight_sweden_home_delivery_international_b2c = "601"
@@ -278,8 +277,7 @@ EXPORT_INCOTERMS = ("EXW", "FCA", "CPT", "CIP", "DAP", "DPU", "DDP")
 IMPORT_INCOTERMS = ("EXW", "FCA")
 
 # Payer codes per product from the "Payer codes" tables of DHL Freight
-# Sweden product manual v5.26 (valid from 2026-11-01), section 5, unless
-# marked v5.23.
+# Sweden product manual v5.26 (valid from 2026-11-01), section 5.
 PAYER_CODES: typing.Dict[str, PayerCodes] = {
     ShippingService.dhl_freight_sweden_paket.value: PayerCodes(
         FREIGHT_PAYER_CODES  # §5.2 p15
@@ -308,9 +306,6 @@ PAYER_CODES: typing.Dict[str, PayerCodes] = {
     ),
     ShippingService.dhl_freight_sweden_road_freight_direct.value: PayerCodes(
         ("CPT", "CIP", "DAP", "DPU", "DDP"), IMPORT_INCOTERMS  # §5.9 p43
-    ),
-    ShippingService.dhl_freight_sweden_euroconnect_plus.value: PayerCodes(
-        ("DAP", "DDP")  # v5.23 §5.10 p42
     ),
     ShippingService.dhl_freight_sweden_road_freight_priority.value: PayerCodes(
         EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.10 p48
@@ -548,7 +543,7 @@ def shipping_options_initializer(
 #
 # Zone model (recipient-gated, account_country_code="SE"):
 # - Domestic products: domicile-only, Sweden zone.
-# - Outbound parcel family (109/112/232): both flags set so all lanes are
+# - Outbound parcel family (109/112): both flags set so all lanes are
 #   granted, Europe zone list from the product catalog gates the recipient.
 # - Parcel Return Connect (107): the reverse lane to Sweden; the zone matches
 #   the recipient, so Sweden.
@@ -596,34 +591,6 @@ PARCEL_CONNECT_PLUS_COUNTRIES = [
     "ES",
     "FI",
     "HR",
-    "HU",
-    "IE",
-    "IT",
-    "LT",
-    "LU",
-    "LV",
-    "NL",
-    "NO",
-    "PL",
-    "PT",
-    "RO",
-    "SI",
-    "SK",
-]
-EUROCONNECT_PLUS_COUNTRIES = [
-    "AT",
-    "BE",
-    "BG",
-    "CH",
-    "CZ",
-    "DE",
-    "DK",
-    "EE",
-    "ES",
-    "FI",
-    "FR",
-    "GB",
-    "GR",
     "HU",
     "IE",
     "IT",
@@ -747,21 +714,6 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         domicile=False,
         international=True,
         zones=[models.ServiceZone(label="International", rate=0.0)],
-    ),
-    models.ServiceLevel(
-        service_name="Euroconnect Plus",
-        service_code="dhl_freight_sweden_euroconnect_plus",
-        carrier_service_code="232",
-        currency="SEK",
-        domicile=True,
-        international=True,
-        zones=[
-            models.ServiceZone(
-                label="Europe",
-                rate=0.0,
-                country_codes=EUROCONNECT_PLUS_COUNTRIES,
-            )
-        ],
     ),
     models.ServiceLevel(
         service_name="Road Freight Direct",

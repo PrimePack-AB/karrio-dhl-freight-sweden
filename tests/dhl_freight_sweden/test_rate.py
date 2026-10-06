@@ -7,7 +7,7 @@ issues no carrier call; the rate=0.0 placeholders are overridden by the
 merchant's negotiated prices at runtime.
 
 Zone coverage follows the DHL Product API destination footprint: the
-outbound parcel family (109/112/232) rates to
+outbound parcel family (109/112) rates to
 its from-SE Europe country lists, and 107 — the reverse lane to Sweden —
 rates when the recipient is in Sweden.
 """
@@ -79,7 +79,7 @@ class TestDHLFreightRating(unittest.TestCase):
         # SE->SE: the 11 domestic products plus the return-lane product 107
         # rate (delivery in Sweden classifies as domicile via the account
         # country, and 107's Sweden zone matches the recipient); the outbound
-        # parcels 109/112/232 do not rate because their Europe zones
+        # parcels 109/112 do not rate because their Europe zones
         # exclude SE, and the international freight products require an
         # international lane.
         request = models.RateRequest(**FullCatalogRatePayload)
@@ -89,12 +89,11 @@ class TestDHLFreightRating(unittest.TestCase):
         self.assertEqual(offered, DomesticServices | {ReturnConnectService})
         self.assertNotIn(ParcelConnectService, offered)
         self.assertNotIn(ParcelConnectPlusService, offered)
-        self.assertNotIn(EuroconnectService, offered)
         self.assertEqual(messages, [])
 
     def test_parse_rate_response_international(self):
         # SE->DE: the unrestricted international freight products plus the
-        # three outbound parcels (DE is in every Europe footprint) rate; the
+        # two outbound parcels (DE is in both Europe footprints) rate; the
         # domestic products and the SE-only return lane find no match.
         request = models.RateRequest(**InternationalRatePayload)
         rates, messages = karrio.Rating.fetch(request).from_(gateway).parse()
@@ -104,7 +103,7 @@ class TestDHLFreightRating(unittest.TestCase):
         self.assertEqual(messages, [])
 
     def test_parse_rate_response_poland_offers_parcel_family(self):
-        # SE->PL: PL is in all three Europe footprints, so the parcel family
+        # SE->PL: PL is in both Europe footprints, so the parcel family
         # rates, while the domestic products (e.g. Paket 102) must not.
         request = models.RateRequest(**PolandRatePayload)
         rates, messages = karrio.Rating.fetch(request).from_(gateway).parse()
@@ -115,7 +114,7 @@ class TestDHLFreightRating(unittest.TestCase):
         self.assertEqual(messages, [])
 
     def test_parse_rate_response_denmark_regression(self):
-        # SE->DK: DK is in all three Europe footprints, so the parcel family
+        # SE->DK: DK is in both Europe footprints, so the parcel family
         # rates.
         request = models.RateRequest(**DenmarkRatePayload)
         rates, messages = karrio.Rating.fetch(request).from_(gateway).parse()
@@ -124,14 +123,14 @@ class TestDHLFreightRating(unittest.TestCase):
         self.assertEqual(offered, InternationalFreightServices | OutboundParcelServices)
         self.assertEqual(messages, [])
 
-    def test_parse_rate_response_switzerland_euroconnect_only(self):
-        # SE->CH: only 232 covers Switzerland (CH is absent from the
-        # Parcel Connect footprints), so 109/112 must not rate.
+    def test_parse_rate_response_switzerland_freight_only(self):
+        # SE->CH: CH is absent from the Parcel Connect footprints, so only the
+        # international freight products rate and no parcel product does.
         request = models.RateRequest(**SwitzerlandRatePayload)
         rates, messages = karrio.Rating.fetch(request).from_(gateway).parse()
 
         offered = {rate.service for rate in rates}
-        self.assertEqual(offered, InternationalFreightServices | {EuroconnectService})
+        self.assertEqual(offered, InternationalFreightServices)
         self.assertNotIn(ParcelConnectService, offered)
         self.assertNotIn(ParcelConnectPlusService, offered)
         self.assertEqual(messages, [])
@@ -272,12 +271,10 @@ DomesticPaketService = "dhl_freight_sweden_paket"
 OutboundParcelServices = {
     "dhl_freight_sweden_parcel_connect_b2c",
     "dhl_freight_sweden_parcel_connect_plus",
-    "dhl_freight_sweden_euroconnect_plus",
 }
 ReturnConnectService = "dhl_freight_sweden_parcel_return_connect_c2b"
 ParcelConnectService = "dhl_freight_sweden_parcel_connect_b2c"
 ParcelConnectPlusService = "dhl_freight_sweden_parcel_connect_plus"
-EuroconnectService = "dhl_freight_sweden_euroconnect_plus"
 InternationalFreightServices = {
     "dhl_freight_sweden_road_freight_standard",
     "dhl_freight_sweden_road_freight_direct",

@@ -162,11 +162,11 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
 
     def test_product_without_default_requires_explicit_payer_code(self):
         error = self._error(
-            _payload("dhl_freight_sweden_euroconnect_plus", _recipient_de)
+            _payload("dhl_freight_sweden_road_freight_standard", _recipient_de)
         )
 
         self.assertEqual(detail_keys(error), {"dhl_freight_sweden_payer_code"})
-        self.assertIn("DAP, DDP", str(error))
+        self.assertIn("EXW, FCA, CPT, CIP, DAP, DPU, DDP", str(error))
 
     def test_home_delivery_return_requires_explicit_payer_code(self):
         error = self._error(_payload("dhl_freight_sweden_home_delivery_c2b", _recipient_se))

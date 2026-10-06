@@ -73,13 +73,11 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
             "211",
         }
         # Recipient footprints mirrored from the DHL Product API catalog:
-        # 109 covers 24 from-SE countries, 112 the same list minus FR, 232 26
-        # countries adding CH/GB/GR and dropping HR; 107 is the reverse lane
-        # (EU -> SE), gated on the recipient, so Sweden only.
+        # 109 covers 24 from-SE countries, 112 the same list minus FR; 107 is
+        # the reverse lane (EU -> SE), gated on the recipient, so Sweden only.
         europe = {
             "109": ParcelConnectB2CCountries,
             "112": ParcelConnectPlusCountries,
-            "232": EuroconnectPlusCountries,
         }
         return_lane = {"107"}
         international = {"202", "205", "233", "601", "SPI"}
@@ -175,34 +173,6 @@ ParcelConnectPlusCountries = [
     "ES",
     "FI",
     "HR",
-    "HU",
-    "IE",
-    "IT",
-    "LT",
-    "LU",
-    "LV",
-    "NL",
-    "NO",
-    "PL",
-    "PT",
-    "RO",
-    "SI",
-    "SK",
-]
-EuroconnectPlusCountries = [
-    "AT",
-    "BE",
-    "BG",
-    "CH",
-    "CZ",
-    "DE",
-    "DK",
-    "EE",
-    "ES",
-    "FI",
-    "FR",
-    "GB",
-    "GR",
     "HU",
     "IE",
     "IT",
