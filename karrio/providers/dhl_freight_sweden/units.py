@@ -1013,8 +1013,9 @@ HOME_DELIVERY_INTERNATIONAL = (
 # than 202's UA range, the patterns are the Product API catalog's
 # postalCodeExcludes quoted verbatim from the product matches answers of
 # 2026-10-06 (tests/dhl_freight_sweden/fixtures/sandbox/
-# lookup-product-matches-se-fi-00100.json); 601's DK list reads 2142 where
-# the others read 2412.
+# lookup-product-matches-se-fi-00100.json). 601's DK list reads 2142 where
+# the others read 2412; it is applied as 2412 (Christiansø), the code the
+# other products list.
 POSTAL_CODE_PATTERN_EXCLUSIONS: typing.Tuple[PostalCodePatternExclusion, ...] = (
     *_patterns(
         PARCEL_CONNECT_PRODUCTS, "GB", "Jersey, Guernsey, and Northern Ireland", "JE*,GY*,BT*"
@@ -1037,7 +1038,7 @@ POSTAL_CODE_PATTERN_EXCLUSIONS: typing.Tuple[PostalCodePatternExclusion, ...] = 
     *_patterns(ROAD_FREIGHT_PRIORITY, "ES", CATALOG, "35*,38*,51*,52*"),
     *_patterns(ROAD_FREIGHT_PRIORITY, "NO", CATALOG, "917*,8099"),
     *_patterns(ROAD_FREIGHT_PRIORITY, "PT", CATALOG, "9*"),
-    *_patterns(HOME_DELIVERY_INTERNATIONAL, "DK", CATALOG, "39*,???,2142"),
+    *_patterns(HOME_DELIVERY_INTERNATIONAL, "DK", CATALOG, "39*,???,2412"),
     *_patterns(HOME_DELIVERY_INTERNATIONAL, "ES", CATALOG, "35*,38*,51*,52*"),
     *_patterns(HOME_DELIVERY_INTERNATIONAL, "FR", CATALOG, "97*"),
     *_patterns(HOME_DELIVERY_INTERNATIONAL, "GB", CATALOG, "GY*,JE*"),

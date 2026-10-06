@@ -284,8 +284,7 @@ For 202, 233, and 601, for which the manual lists no excluded areas other than 2
 | 112, 109 | GB | `JE*`, `GY*`, `BT*` | Jersey, Guernsey, Northern Ireland | §5.3 p18, §5.14 p63 |
 | 112, 109 | AW, BQ, CW, SX | `*` | Aruba, Bonaire, Curaçao, Saba, Sint Maarten, Sint Eustatius | §5.3 p18, §5.14 p63 |
 | 107 (shipper) | AW, BQ, CW, SX | `*` | Aruba, Bonaire, Curaçao, Saba, Sint Maarten, Sint Eustatius | §5.15 p66 |
-| 202, 233 | DK | `39*`, `???`, `2412` | catalog | catalog |
-| 601 | DK | `39*`, `???`, `2142` | catalog | catalog |
+| 202, 233, 601 | DK | `39*`, `???`, `2412` | catalog | catalog |
 | 202, 233, 601 | ES | `35*`, `38*`, `51*`, `52*` | catalog | catalog |
 | 202, 601 | FR | `97*` | catalog | catalog |
 | 202, 601 | GB | `GY*`, `JE*` | catalog | catalog |
@@ -294,7 +293,7 @@ For 202, 233, and 601, for which the manual lists no excluded areas other than 2
 
 The manual names the NL Caribbean islands without postal codes, so they are excluded under their own country codes AW, BQ, CW, and SX, which are sent to DHL unchanged, whatever the postal code; an address on the islands under NL is not recognised.
 A pattern list excludes a matching code; a missing code that no pattern matches is not checked in rating and rejected at booking, like a missing code under a range.
-601's DK list reads `2142` where the other products read `2412`; the connector applies each list as DHL returned it.
+601's DK list reads `2142` where the other products read `2412`, Christiansø; the connector treats it as a typo and excludes 2412 for 601 as well.
 The catalog lists different excludes for 109 and 112, which the connector does not apply because the manual covers both products; the [findings note](docs/notes/sandbox/sandbox-findings.md#special-territories-in-product-matches) compares them, including 109 to DK 3900, which product matches offered while the manual excludes DK 3800-3999 ([lookup-product-matches-se-dk-3900.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)).
 205 and SPI were not matched by any probe, so no catalog excludes are applied to them.
 The manual's 107 entry for FR outside mainland France and Corsica gives no postal codes and is not checked (§5.15 p66).

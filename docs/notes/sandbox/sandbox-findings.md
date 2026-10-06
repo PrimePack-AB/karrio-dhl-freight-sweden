@@ -129,7 +129,7 @@ The entries list no excludes for GB `BT` or `IM`, and 202 and 601 were matched t
 | 601 | `39*,???,2142` | `35*,38*,51*,52*` | `97*` | `GY*,JE*` | | `917*,8099` | `9*` | |
 
 The table quotes the `postalCodeExcludes` strings of the FI 00100 answer, the one that matched all five products ([se-fi-00100][l-t-fi-00100]); HDI carries none.
-For 601 DK the string ends in `2142` where 109, 112, 202, and 233 have `2412`.
+For 601 DK the string ends in `2142` where 109, 112, 202, and 233 have `2412` ([se-fi-00100][l-t-fi-00100]); the connector treats 601's `2142` as a typo for 2412, Christiansø, and excludes 2412 for 601 like the other products.
 
 The catalog differs from the manual's excluded areas for 109 and 112.
 The manual excludes DK 3800-3999 for both (§5.3 p18, §5.14 p63), while the 109 entry excludes `38*` and three-character codes only, and product matches offered 109 to DK 3900 ([se-dk-3900][l-t-dk]).
