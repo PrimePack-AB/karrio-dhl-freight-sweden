@@ -141,6 +141,8 @@ NON_EU_VAT_POSTAL_RANGES: typing.Tuple[typing.Tuple[str, int, int], ...] = (
     ("GR", 63086, 63086),  # Mount Athos
     ("IT", 23041, 23041),  # Livigno
     ("IT", 22061, 22061),  # Campione d'Italia
+    ("FR", 97000, 97999),  # French overseas departments and collectivities
+    ("DK", 3800, 3999),  # Faroe Islands and Greenland
 )
 EU_VAT_POSTAL_PREFIXES: typing.Tuple[typing.Tuple[str, str], ...] = (
     ("GB", "BT"),  # Northern Ireland
@@ -150,13 +152,23 @@ EU_VAT_POSTAL_PREFIXES: typing.Tuple[typing.Tuple[str, str], ...] = (
 CUSTOMS_OMITTED_INTRA_EU = "customs_omitted_intra_eu"
 
 
+def normalized_postal_code(
+    country_code: typing.Optional[str],
+    postal_code: typing.Optional[str],
+) -> str:
+    """A postal code without spaces, upper-cased, and without a ``<country>-`` prefix."""
+    postal = str(postal_code or "").replace(" ", "").upper()
+    prefix = f"{(country_code or '').upper()}-"
+    return postal[len(prefix):] if len(prefix) > 1 and postal.startswith(prefix) else postal
+
+
 def in_eu_vat_area(
     country_code: typing.Optional[str],
     postal_code: typing.Optional[str],
 ) -> bool:
     """Whether an address lies inside the EU VAT area for goods."""
     country = (country_code or "").upper()
-    postal = str(postal_code or "").replace(" ", "")
+    postal = normalized_postal_code(country, postal_code)
     postal_number = int(postal) if postal.isdigit() else None
 
     inside_member_state = country in EU_VAT_AREA_COUNTRIES and not any(
@@ -166,7 +178,7 @@ def in_eu_vat_area(
         for range_country, low, high in NON_EU_VAT_POSTAL_RANGES
     )
     return inside_member_state or any(
-        country == prefix_country and postal.upper().startswith(prefix)
+        country == prefix_country and postal.startswith(prefix)
         for prefix_country, prefix in EU_VAT_POSTAL_PREFIXES
     )
 
@@ -792,7 +804,7 @@ def postal_code_key(
     """The compared digits of a postal code, or None when it is malformed."""
     postal_format = POSTAL_CODE_FORMATS.get((country_code or "").upper())
     match = lib.identity(
-        re.fullmatch(postal_format.pattern, str(postal_code or "").replace(" ", ""))
+        re.fullmatch(postal_format.pattern, normalized_postal_code(country_code, postal_code))
         if postal_format
         else None
     )
