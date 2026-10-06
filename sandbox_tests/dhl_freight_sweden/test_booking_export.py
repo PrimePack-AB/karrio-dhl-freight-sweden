@@ -4,8 +4,10 @@ Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
 Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
 ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
 GB only according to a separate agreement. Åland (FI 22100) is booked with
-112 and customs and with 109 without customs data, and Northern Ireland
-(GB BT1 1AA) with 202 without customs data. The freight products 202, 205,
+109, customs data, and no customs handling service; the connector's refusals
+of 112 with a customs handling service and of 109 without customs data are
+asserted without booking. Northern Ireland (GB BT1 1AA), inside the EU VAT
+area for goods, is booked with 202 without customs data. The freight products 202, 205,
 and 233 book to DK inside the EU VAT area, and 202, 205, 233, and 601 to NO
 with customs handling full service, each with the explicit DAP payer code,
 and 112 and 109 book to NO with customs handling Standard and a made-up
@@ -56,6 +58,20 @@ CONSUMER_PARCEL = {**booking.PARCEL, "weight": 2.0, "height": 15.0}
 DECLARED_VALUE = {"duty": {"paid_by": "recipient", "currency": "SEK", "declared_value": 200}}
 
 
+# The Posti ParcelShop booking 2906761917 used in Mariehamn (tests/dhl_freight_sweden/
+# fixtures/sandbox/booking-2906761917-109-se-fi-aland.json); the refusal
+# case needs no live service point lookup.
+ALAND_PARCEL_SHOP = {
+    "dhl_freight_sweden_service_point": "8011-221003201",
+    "dhl_freight_sweden_service_point_type": "ParcelShop",
+    "dhl_freight_sweden_service_point_name": "c/o Posti",
+    "dhl_freight_sweden_service_point_street": "Nygatan 6",
+    "dhl_freight_sweden_service_point_city": "Mariehamn",
+    "dhl_freight_sweden_service_point_postal_code": "22100",
+    "dhl_freight_sweden_service_point_country_code": "FI",
+}
+
+
 # Customs handling - Standard requires the EORI number; the suite's is made up.
 SANDBOX_EORI = "SE0000000000"
 
@@ -90,6 +106,41 @@ def export_customs(
     )
 
 
+def export_payload(
+    product: str,
+    recipient: dict,
+    options: dict,
+    with_customs: bool = True,
+    customs_service: bool = True,
+    standard_customs: bool = False,
+    parcel: dict = booking.PARCEL,
+    extra_customs: typing.Optional[dict] = None,
+) -> dict:
+    """Shipment payload for ``product`` from ``booking.SHIPPER`` to ``recipient``.
+
+    ``options`` carries the service point and other per-case options;
+    ``customs_service`` False sends the customs data without a customs
+    handling service.
+    """
+    customs, customs_options = (
+        export_customs(product, recipient, standard_customs) if with_customs else ({}, {})
+    )
+    if customs and extra_customs:
+        customs["customs"].update(extra_customs)
+    return dict(
+        service=product,
+        shipper=booking.SHIPPER,
+        recipient=recipient,
+        parcels=[parcel],
+        options={
+            **options,
+            **(customs_options if customs_service else {}),
+            **booking.declaration_options(recipient),
+        },
+        **customs,
+    )
+
+
 class TestSandboxBookingExport(unittest.TestCase):
     session: harness.Session
 
@@ -109,6 +160,7 @@ class TestSandboxBookingExport(unittest.TestCase):
         require_product_match: bool = True,
         recipient: typing.Optional[dict] = None,
         with_customs: bool = True,
+        customs_service: bool = True,
         extra_options: typing.Optional[dict] = None,
         standard_customs: bool = False,
         parcel: dict = booking.PARCEL,
@@ -120,8 +172,9 @@ class TestSandboxBookingExport(unittest.TestCase):
         lookup but books even when it does not offer the product, so DHL's
         answer to the booking itself is captured. ``recipient`` replaces the
         country's default recipient, and ``with_customs`` False books
-        without customs data even outside the EU VAT area. ``extra_customs``
-        is merged into the customs payload when there is one.
+        without customs data, and ``customs_service`` False without a
+        customs handling service. ``extra_customs`` is merged into the
+        customs payload when there is one.
         """
         booking.require_booking(self, self.session, product, country)
         lane = f"{product}-{country.lower()}"
@@ -154,28 +207,20 @@ class TestSandboxBookingExport(unittest.TestCase):
                 )
             options.update(booking.service_point_options(point))
 
-        customs, customs_options = (
-            export_customs(product, recipient, standard_customs) if with_customs else ({}, {})
-        )
-        if customs and extra_customs:
-            customs["customs"].update(extra_customs)
         booking.book(
             self,
             self.session,
             self.gateway,
             product,
-            dict(
-                service=product,
-                shipper=booking.SHIPPER,
-                recipient=recipient,
-                parcels=[parcel],
-                options={
-                    **options,
-                    **customs_options,
-                    **booking.declaration_options(recipient),
-                    **(extra_options or {}),
-                },
-                **customs,
+            export_payload(
+                product,
+                recipient,
+                {**options, **(extra_options or {})},
+                with_customs=with_customs,
+                customs_service=customs_service,
+                standard_customs=standard_customs,
+                parcel=parcel,
+                extra_customs=extra_customs,
             ),
         )
 
@@ -298,7 +343,18 @@ class TestSandboxBookingExport(unittest.TestCase):
         self.refused_to_aland(standard=True)
 
     def test_book_109_fi_aland_without_customs(self):
-        self.export("109", "FI", recipient=booking.ALAND, with_customs=False)
+        # DHL booked this case before the connector required customs data
+        # outside the EU VAT area (tests/dhl_freight_sweden/fixtures/sandbox/
+        # booking-2906761917-109-se-fi-aland.json); it no longer spends a booking.
+        payload = export_payload("109", booking.ALAND, ALAND_PARCEL_SHOP, with_customs=False)
+        with self.assertRaises(create.CustomsInformationRequiredError):
+            self.gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
+
+    def test_book_109_fi_aland_customs_without_service(self):
+        # Product manual v5.26 makes customs proceedings mandatory for Åland
+        # (§7.4 p162), and the connector refuses both customs handling
+        # services there, so this sends the customs data alone.
+        self.export("109", "FI", recipient=booking.ALAND, customs_service=False)
 
     def test_book_202_gb_northern_ireland_without_customs(self):
         self.export(

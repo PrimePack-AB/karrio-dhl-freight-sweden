@@ -485,6 +485,8 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "112 SE to FR home delivery with payer code 023, then printed; the response adds Chronopost additionalInformation entries.",
      "112", "SE 11143 -> FR 75004", "20261006-101051", ("003-booking-112", "004-booking-112"),
      "test_booking_export", 0),
+    # Booked before the connector required customs data outside the EU VAT
+    # area; the named test now asserts that refusal without booking.
     ("booking-2906761917-109-se-fi-aland.json",
      "109 SE to FI 22100 (Åland) with payer code 022 to ParcelShop 8011-221003201 without customs data, then printed.",
      "109", "SE 11143 -> FI 22100", "20261006-110739",
