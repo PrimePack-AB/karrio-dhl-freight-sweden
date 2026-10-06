@@ -240,7 +240,7 @@ The booking-export 205 cases to DK 1620 and NO 0154 skipped without booking, bec
 109 with home addressing and no AccessPoint party is untested.
 112 to GB was not booked: product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233 but neither 109 nor 112 ([lookup-product-matches-se-gb.json][l-pm-gb]), and the 112 booking sent regardless was rejected with 22005 and 22026 ([rejection-22005-112-gb][r-22005-gb]); the manual lists GB for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200), and 109 to GB was not sent.
 Customs was tested only as Customs handling - Full service and Customs handling - Standard to NO, and to FI 22100, where both were rejected with 24003; the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
-No additional service other than `customsHandlingFullService` was sent, payer codes 3 and 4 with a freight payer party were not used, and 601 used only DAP.
+No additional service other than `customsHandlingFullService` and `customsHandlingStandard` was sent, payer codes 3 and 4 with a freight payer party were not used, and 601 used only DAP.
 Every booking had a single piece of 1 kg and 30 × 20 × 10 cm, so multi-piece shipments and bookings below the minimum piece dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17) are untested.
 The Print API was called only for labels, and the PickupRequest, TimeTable, PriceQuote, and HomeDeliveryLocator APIs were not called.
 
