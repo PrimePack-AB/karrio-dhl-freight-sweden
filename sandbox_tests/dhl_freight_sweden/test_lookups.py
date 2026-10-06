@@ -148,6 +148,60 @@ class TestSandboxLookups(unittest.TestCase):
         self.assertEqual(lib.to_dict(messages), [])
         self.assertIn("109", [product.get("code") for product in products])
 
+    def territory(self, country_code: str, postal_code: str):
+        """Record the products matched to a special territory, whatever they are.
+
+        The recipient is sent with the country code and postal code as given,
+        so the capture shows how DHL answers a territory code (AX, JE, GG,
+        FO) and a territory postal code under its parent country. An empty
+        match list is an answer, not a failure.
+        """
+        label = f"product-matches-se-{country_code.lower()}-{postal_code.lower().replace(' ', '')}"
+        _, messages = self.match(
+            label, dict(postal_code=postal_code, country_code=country_code)
+        )
+
+        self.assertEqual(lib.to_dict(messages), [])
+
+    def test_product_matches_territory_fi_22100(self):
+        self.territory("FI", "22100")
+
+    def test_product_matches_territory_ax_22100(self):
+        self.territory("AX", "22100")
+
+    def test_product_matches_territory_fi_00100(self):
+        self.territory("FI", "00100")
+
+    def test_product_matches_territory_gb_je2_3ab(self):
+        self.territory("GB", "JE2 3AB")
+
+    def test_product_matches_territory_gb_gy1_1aa(self):
+        self.territory("GB", "GY1 1AA")
+
+    def test_product_matches_territory_gb_bt1_1aa(self):
+        self.territory("GB", "BT1 1AA")
+
+    def test_product_matches_territory_gb_im1_1aa(self):
+        self.territory("GB", "IM1 1AA")
+
+    def test_product_matches_territory_gb_w1d_1an(self):
+        self.territory("GB", "W1D 1AN")
+
+    def test_product_matches_territory_je_je2_3ab(self):
+        self.territory("JE", "JE2 3AB")
+
+    def test_product_matches_territory_gg_gy1_1aa(self):
+        self.territory("GG", "GY1 1AA")
+
+    def test_product_matches_territory_dk_3900(self):
+        self.territory("DK", "3900")
+
+    def test_product_matches_territory_fo_100(self):
+        self.territory("FO", "100")
+
+    def test_product_matches_territory_es_35001(self):
+        self.territory("ES", "35001")
+
     def test_service_points_se(self):
         points, messages = self.nearest(
             "service-points-se", dict(address=SE_ADDRESS, max_items=5)
