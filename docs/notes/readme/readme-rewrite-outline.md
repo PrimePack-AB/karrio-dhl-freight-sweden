@@ -216,4 +216,6 @@ The user answered the open questions on 2026-10-06, and the coordinator supplied
 9. The nordic_conventions section ships and states its fork-branch prerequisite plainly (default).
 10. Hand-written pages use `docs/concepts/` and `docs/guides/` rather than `docs/reference/`, as explained under the new files (default).
 
+The README's relative links to `docs/`, `examples/`, and evidence files will not resolve on PyPI, and fixing them is deferred until the package is published (user decision, 2026-10-06).
+
 The README rewrite waits until the branches `label-type-validation` and `require-customs-outside-eu` land on main, and this branch is then rebased onto main.
