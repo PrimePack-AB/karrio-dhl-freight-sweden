@@ -254,10 +254,11 @@ git commit -m "test: add the 401 domestic sandbox booking case"
 
 **Files:**
 - Modify: `sandbox_tests/dhl_freight_sweden/harness.py:40`.
+- Modify: `tests/dhl_freight_sweden/test_sandbox_harness.py:33` (the `test_defaults` pin).
 - Modify: `README.md:652` and `README.md:671-672`.
 - Modify: `CLAUDE.md` (Commands section, sandbox bullet).
 
-- [ ] **Step 1: Raise the default**
+- [ ] **Step 1: Raise the default and move its pin**
 
 Replace in `harness.py`:
 
@@ -270,6 +271,8 @@ with:
 ```python
 DEFAULT_MAX_BOOKINGS = 30
 ```
+
+Update the pinning assertion in `tests/dhl_freight_sweden/test_sandbox_harness.py` (`test_defaults`) from `self.assertEqual(config.max_bookings, 10)` to `self.assertEqual(config.max_bookings, 30)` — keep the literal, so the defaults test still detects unintentional default changes.
 
 - [ ] **Step 2: Update the README env table**
 
@@ -325,7 +328,7 @@ Expected: 0 errors; OK.
 - [ ] **Step 6: Commit**
 
 ```bash
-git add sandbox_tests/dhl_freight_sweden/harness.py README.md CLAUDE.md
+git add sandbox_tests/dhl_freight_sweden/harness.py tests/dhl_freight_sweden/test_sandbox_harness.py README.md CLAUDE.md
 git commit -m "feat: raise the sandbox default booking budget to 30"
 ```
 
