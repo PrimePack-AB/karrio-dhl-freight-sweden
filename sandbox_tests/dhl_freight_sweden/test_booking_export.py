@@ -2,12 +2,14 @@
 
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
 Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
-ParcelShop, and 112 to FR, which product manual v5.26 adds for 112. Before spending a booking it checks for free that product
-matches offer the product for the lane and, for 109, that a service point
+ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
+GB only according to a separate agreement. Before spending a booking it
+checks for free that product matches offer the product for the lane and,
+for 109, that a service point
 near the recipient accepts it, and skips otherwise. Lanes to PL declare SENT
 free explicitly.
 
-NO is outside the EU VAT area, so its bookings carry one commodity, a
+NO and GB are outside the EU VAT area, so their bookings carry one commodity, a
 proforma invoice number, and DHL customs handling full service, the customs
 service that needs no registration identifier. The Incoterm sets the payer
 code through the Combiterm translation: DAP gives 022 for 109, which avoids
@@ -144,6 +146,9 @@ class TestSandboxBookingExport(unittest.TestCase):
 
     def test_book_112_fr(self):
         self.export("112", "FR")
+
+    def test_book_112_gb(self):
+        self.export("112", "GB")
 
     def test_book_109_dk_parcel_shop(self):
         self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))
