@@ -15,7 +15,7 @@ product for the lane and, for 109, that a service point near the recipient
 accepts it, and skips otherwise. Lanes to PL declare SENT free explicitly.
 
 NO and GB are outside the EU VAT area, so their bookings carry customs data
-when they carry any: one commodity, a proforma invoice number, and DHL
+when they carry any: one commodity, a commercial invoice number, and DHL
 customs handling full service, the customs service that needs no
 registration identifier. The Incoterm sets the payer
 code through the Combiterm translation: DAP gives 022 for 109, which avoids
@@ -70,6 +70,7 @@ def export_customs(
                 incoterm=INCOTERMS[product],
                 invoice="SANDBOX-INV-1",
                 content_type="merchandise",
+                commercial_invoice=True,
                 commodities=[COMMODITY],
                 **(dict(options=dict(eori_number=SANDBOX_EORI)) if standard else {}),
             )
