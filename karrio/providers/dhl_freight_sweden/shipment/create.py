@@ -71,6 +71,12 @@ class TransportDeclarationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class PartyTaxIdError(errors.ShippingSDKDetailedError):
+    """Raised when a party lacks the VAT number/TIN its product and lane require."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 def parse_shipment_response(
     _response: lib.Deserializable[typing.List[dict]],
     settings: provider_utils.Settings,
@@ -202,6 +208,7 @@ def shipment_request(
         initializer=provider_units.shipping_options_initializer,
     )
 
+    _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
     payer_code = _payer_code(
         service,
         options,
@@ -590,6 +597,34 @@ def _check_customs_service_identifiers(
             details={
                 field: dict(code="required", message=label)
                 for field, label in missing.items()
+            },
+        )
+
+
+def _check_party_tax_ids(
+    product_code: str,
+    parties: typing.Dict[str, typing.Any],
+) -> None:
+    country = provider_units.PARTY_TAX_ID_COUNTRY
+    applies = product_code in provider_units.PARTY_TAX_ID_PRODUCTS and any(
+        address.country_code == country for address in parties.values()
+    )
+    missing = [
+        f"{name}.federal_tax_id"
+        for name, address in parties.items()
+        if applies and not (address.tax_id or "").strip()
+    ]
+
+    if any(missing):
+        raise PartyTaxIdError(
+            f"Product {product_code} to or from {country} requires a VAT "
+            f"number/TIN for every party; missing {', '.join(missing)}",
+            details={
+                field: dict(
+                    code="required",
+                    message="VAT number/TIN (federal_tax_id or state_tax_id) is required",
+                )
+                for field in missing
             },
         )
 

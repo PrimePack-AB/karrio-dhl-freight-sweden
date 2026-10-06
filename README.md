@@ -76,7 +76,7 @@ The sandbox accepted 112 from SE to FR 75004 with payer code 023 and printed its
 
 ## Booking rules
 
-The connector checks payer codes, access points, and SENT, EKAER, and UIT entries before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
+The connector checks payer codes, access points, SENT, EKAER, and UIT entries, and the VAT numbers/TINs of lanes to or from GR before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
 The rules follow the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, which is cited here rather than vendored.
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 Section and page references below are to that version.
@@ -172,6 +172,14 @@ The connector does not declare a shipment EKAER or UIT free by itself: these are
 On other products the options are optional and sent when given.
 The sandbox accepted 109 and 112 bookings to HU and RO without these entries (2026-10-05: [booking-2906761263-109-se-ro.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761271-112-se-ro.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761271-112-se-ro.json), [booking-2906761289-109-se-hu.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json), [booking-2906761297-112-se-hu.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761297-112-se-hu.json)).
 601 to HU or RO without these entries has not been sent to the sandbox.
+
+### VAT number/TIN for GR
+
+Products 202 (§5.4 p22), SPI (§5.11 p51), and 601 (§5.19 p81) make a VAT number/TIN mandatory for all parties in the shipment information of shipments to or from Greece (GR).
+The connector transmits two parties, the shipper as Consignor and the recipient as Consignee, each with its `federal_tax_id`, else its `state_tax_id`, as `vatEoriSocialSecurityNumber`.
+On these products, a shipment with the shipper or the recipient in GR fails when either party has neither identifier, with `details` keyed by `shipper.federal_tax_id` or `recipient.federal_tax_id`.
+Other products and lanes send the identifiers when given and do not require them.
+No GR booking has been sent to the sandbox.
 
 ### Additional information pass-through
 
@@ -375,7 +383,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "requires the full service point details; missing ..." | connector field error | fix the option mapping |
 | "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
-| payer code, SENT, EKAER, or UIT field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
+| payer code, SENT, EKAER, UIT, or GR VAT number/TIN field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
 | linehaul failure without postalCode (22006) | DHL validation | reject the candidate |
