@@ -72,7 +72,7 @@ class TransportDeclarationError(errors.ShippingSDKDetailedError):
 
 
 class ExcludedDestinationError(errors.ShippingSDKDetailedError):
-    """Raised when the product does not deliver to the recipient postal code."""
+    """Raised when the product excludes the shipper or recipient postal code."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -220,7 +220,7 @@ def shipment_request(
         initializer=provider_units.shipping_options_initializer,
     )
 
-    _check_destination(service, recipient)
+    _check_destination(service, dict(shipper=shipper, recipient=recipient))
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
     payer_code = _payer_code(
         service,
@@ -645,37 +645,32 @@ def _qr_code(
     return True
 
 
-def _check_destination(product_code: str, recipient) -> None:
-    exclusion = provider_units.excluded_destination(
-        product_code, recipient.country_code, recipient.postal_code
+def _check_destination(product_code: str, addresses: typing.Dict[str, typing.Any]) -> None:
+    excluded = provider_units.excluded_party(
+        product_code,
+        {
+            party: dict(country_code=address.country_code, postal_code=address.postal_code)
+            for party, address in addresses.items()
+        },
     )
 
-    if exclusion is None:
+    if excluded is None:
         return
 
-    excluded_range = f"{exclusion.low}-{exclusion.high}"
-    well_formed = provider_units.postal_code_well_formed(
-        exclusion, recipient.postal_code
-    )
-    message = lib.identity(
-        f"Product {product_code} does not deliver to {exclusion.country} postal "
-        f"codes {excluded_range} ({exclusion.region}); got {recipient.postal_code}"
-        if well_formed
-        else f"Product {product_code} to {exclusion.country} requires a "
-        f"{exclusion.digits}-digit postal code to rule out the excluded postal "
-        f"codes {excluded_range} ({exclusion.region}); got {recipient.postal_code!r}"
-    )
-
+    postal_format = provider_units.POSTAL_CODE_FORMATS[excluded.exclusion.country]
     raise ExcludedDestinationError(
-        message,
+        provider_units.excluded_party_message(product_code, excluded),
         details={
-            "recipient.postal_code": dict(
-                code="invalid" if well_formed else "required",
-                message=lib.identity(
-                    f"excluded postal codes {excluded_range}"
-                    if well_formed
-                    else f"{exclusion.digits}-digit postal code required"
-                ),
+            f"{excluded.party}.postal_code": lib.identity(
+                dict(
+                    code="invalid",
+                    message=f"excluded postal codes {excluded.exclusion.describe()}",
+                )
+                if excluded.well_formed
+                else dict(
+                    code="required",
+                    message=f"{postal_format.description} postal code required",
+                )
             )
         },
     )
