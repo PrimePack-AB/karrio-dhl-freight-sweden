@@ -19,7 +19,7 @@ from karrio.providers.dhl_freight_sweden.shipment.create import (
 )
 
 from .fixture import detail_keys, gateway, members, proxy_of, serialize_request
-from .test_shipment import _payload, _recipient_se, _shipper
+from .test_shipment import Customs, _payload, _recipient_se, _shipper
 
 
 class TestDHLFreightPostalCodeExclusionTable(unittest.TestCase):
@@ -179,11 +179,14 @@ class TestDHLFreightExcludedDestinationBooking(unittest.TestCase):
     def test_products_without_fr_ranges_are_not_checked(self):
         request = gateway.mapper.create_shipment_request(
             models.ShipmentRequest(
-                **_payload(
-                    RoadFreightDirectService,
-                    _fr("97200"),
-                    {"dhl_freight_sweden_payer_code": "DAP"},
-                )
+                **{
+                    **_payload(
+                        RoadFreightDirectService,
+                        _fr("97200"),
+                        {"dhl_freight_sweden_payer_code": "DAP"},
+                    ),
+                    "customs": Customs,
+                }
             )
         )
 

@@ -18,6 +18,7 @@ from karrio.providers.dhl_freight_sweden.shipment.create import (
 
 from .fixture import detail_keys, gateway, serialize_request
 from .test_shipment import (
+    Customs,
     _payload,
     _recipient_de,
     _recipient_gb,
@@ -84,11 +85,14 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
         # Appendix C.3 p193: GB residential and Parcelshop addressing, no
         # Parcelstation.
         access_point = self._access_point(
-            _payload(
-                "dhl_freight_sweden_parcel_connect_b2c",
-                _recipient_gb,
-                _service_point("8009-GB-1", "ParcelShop", "GB"),
-            )
+            {
+                **_payload(
+                    "dhl_freight_sweden_parcel_connect_b2c",
+                    _recipient_gb,
+                    _service_point("8009-GB-1", "ParcelShop", "GB"),
+                ),
+                "customs": Customs,
+            }
         )
         error = self._error(
             _payload(
