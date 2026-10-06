@@ -381,7 +381,7 @@ ACCESS_POINT_SUB_TYPES: typing.Dict[str, typing.Dict[str, typing.FrozenSet[str]]
     ShippingService.dhl_freight_sweden_service_point_b2c.value: {
         "SE": PARCEL_SHOP_AND_STATION
     },
-    # Appendix C.3 §10.4.2 p192-194, except IT (v5.23 Appendix B.3 p197)
+    # Appendix C.3 §10.4.2 p192-194
     ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: {
         "AT": PARCEL_SHOP_AND_STATION,
         "BE": PARCEL_SHOP_AND_STATION,
@@ -396,7 +396,7 @@ ACCESS_POINT_SUB_TYPES: typing.Dict[str, typing.Dict[str, typing.FrozenSet[str]]
         "GB": PARCEL_SHOP,
         "HR": PARCEL_SHOP,
         "HU": PARCEL_SHOP_AND_STATION,
-        "IT": PARCEL_SHOP,
+        "IT": PARCEL_SHOP_AND_STATION,
         "LT": PARCEL_SHOP_AND_STATION,
         "LV": PARCEL_SHOP_AND_STATION,
         "NL": PARCEL_SHOP_AND_STATION,
