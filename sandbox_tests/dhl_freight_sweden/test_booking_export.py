@@ -49,6 +49,11 @@ COMMODITY = {
 }
 
 
+CONSUMER_PARCEL = {**booking.PARCEL, "weight": 2.0, "height": 15.0}
+# The connector sends the invoice amount only from the duty's declared value.
+DECLARED_VALUE = {"duty": {"paid_by": "recipient", "currency": "SEK", "declared_value": 200}}
+
+
 # Customs handling - Standard requires the EORI number; the suite's is made up.
 SANDBOX_EORI = "SE0000000000"
 
@@ -104,6 +109,8 @@ class TestSandboxBookingExport(unittest.TestCase):
         with_customs: bool = True,
         extra_options: typing.Optional[dict] = None,
         standard_customs: bool = False,
+        parcel: dict = booking.PARCEL,
+        extra_customs: typing.Optional[dict] = None,
     ):
         """Book ``product`` from SE to ``country``.
 
@@ -111,7 +118,8 @@ class TestSandboxBookingExport(unittest.TestCase):
         lookup but books even when it does not offer the product, so DHL's
         answer to the booking itself is captured. ``recipient`` replaces the
         country's default recipient, and ``with_customs`` False books
-        without customs data even outside the EU VAT area.
+        without customs data even outside the EU VAT area. ``extra_customs``
+        is merged into the customs payload when there is one.
         """
         booking.require_booking(self, self.session, product, country)
         lane = f"{product}-{country.lower()}"
@@ -147,6 +155,8 @@ class TestSandboxBookingExport(unittest.TestCase):
         customs, customs_options = (
             export_customs(product, recipient, standard_customs) if with_customs else ({}, {})
         )
+        if customs and extra_customs:
+            customs["customs"].update(extra_customs)
         booking.book(
             self,
             self.session,
@@ -156,7 +166,7 @@ class TestSandboxBookingExport(unittest.TestCase):
                 service=product,
                 shipper=booking.SHIPPER,
                 recipient=recipient,
-                parcels=[booking.PARCEL],
+                parcels=[parcel],
                 options={
                     **options,
                     **customs_options,
@@ -241,6 +251,17 @@ class TestSandboxBookingExport(unittest.TestCase):
     def test_book_601_no_customs_full(self):
         self.export(
             "601", "NO", extra_options={"dhl_freight_sweden_payer_code": "DAP"}
+        )
+
+    def test_book_601_ch_customs_full_commercial_invoice(self):
+        # A B2C sale to CH: product matches offered 601 but not 109 or 112
+        # (tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json).
+        self.export(
+            "601",
+            "CH",
+            extra_options={"dhl_freight_sweden_payer_code": "DAP"},
+            parcel=CONSUMER_PARCEL,
+            extra_customs=DECLARED_VALUE,
         )
 
     def test_book_109_dk_parcel_shop(self):

@@ -104,6 +104,16 @@ RECIPIENTS = {
         "email": "jean.dupont@example.fr",
         "residential": True,
     },
+    "CH": {
+        "person_name": "Lukas Müller",
+        "address_line1": "Bahnhofstrasse 10",
+        "city": "Zürich",
+        "postal_code": "8001",
+        "country_code": "CH",
+        "phone_number": "+41 79 123 45 67",
+        "email": "lukas.mueller@example.ch",
+        "residential": True,
+    },
     "GB": {
         "person_name": "John Smith",
         "address_line1": "10 Oxford Street",
