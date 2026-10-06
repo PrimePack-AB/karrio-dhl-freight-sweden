@@ -174,6 +174,7 @@ The response echoed `customsHandlingFullService` `true` and the `CommercialInvoi
 The print call for 2906762477 with page type `Label` returned one report of type `Label`, a PDF.
 No documents were e-mailed to DHL for this booking, so, as for the NO bookings, the evidence does not show what DHL does after booking with the commercial invoice it asks for.
 No booking was sent to LI, and no CH booking used 202, 233, HDI, or customs handling Standard, which the manual limits to NO and Åland (§6.6 p94).
+The CH product matches also list the joint declaration among 601's customs services, which the manual limits to NO (see [Joint declaration offered to CH](#joint-declaration-offered-to-ch)).
 
 ## Deviations from manual v5.26
 
@@ -226,6 +227,13 @@ It accepted 109 and 112 to NO with `customsHandlingStandard`, one commodity, a `
 No documents were e-mailed to DHL for these bookings, and the evidence does not show whether DHL would act on a missing commercial invoice.
 109 to NO returned routing code 2LNO0186+70530001, ending in 001, while 112 to NO returned 2LNO0154+000000 without it.
 The 202, 233, and 601 full-service bookings to NO returned 2LNO0154+11000001, 2LNO0154+00000001, and 2LNO0154+00000001, also ending in 001, as did the 109 Standard booking with 2LNO0186+70530001 again, while the 112 Standard booking returned 2LNO0154+000000.
+
+### Joint declaration offered to CH
+
+Product matches on account 116768 list `customsJointDeclaration` among the customs additional services of 601 on all five CH lookups, to CH 8001 with a 2 kg and a 20 kg piece, CH 1201, CH 3011, and CH 6900 ([se-ch-8001][l-ch-8001], [se-ch-8001-20kg][l-ch-8001-20kg], [se-ch-1201][l-ch-1201], [se-ch-3011][l-ch-3011], [se-ch-6900][l-ch-6900]).
+The manual's Customs, joint declaration section lists NO as its only valid country and allows the service only according to a separate agreement (§6.8 p98).
+No booking has sent `customsJointDeclaration` to CH or to any other country, so the evidence shows only that the catalog offers the service on the CH lanes, not that DHL would accept such a booking.
+No committed fixture records the additional services of 601 to NO, so the evidence cannot show whether the catalog lists the joint declaration there as well.
 
 ### Routing code reference and product codes
 
