@@ -608,6 +608,7 @@ _CUSTOMS = {
     ],
     "incoterm": "DAP",
     "invoice": "INV-2026-001",
+    "commercial_invoice": True,
 }
 
 

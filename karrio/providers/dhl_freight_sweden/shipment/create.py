@@ -95,6 +95,12 @@ class PartyTaxIdError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class CommercialInvoiceRequiredError(errors.ShippingSDKDetailedError):
+    """Raised when an export of goods for sale lacks a commercial invoice."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 def parse_shipment_response(
     _response: lib.Deserializable[typing.List[dict]],
     settings: provider_utils.Settings,
@@ -291,6 +297,10 @@ def shipment_request(
     )
     if not within_eu_vat_area:
         _check_customs_service_identifiers(options, customs_options)
+    if has_customs_data and not within_eu_vat_area:
+        _check_commercial_invoice(
+            payload.customs, shipper.country_code, recipient.country_code
+        )
     customs = lib.identity(
         _customs_information(
             payload.customs,
@@ -708,6 +718,36 @@ def _check_aland_customs_services(
         details={
             option: dict(code="invalid", message="not available to or from Åland (DHL 24003)")
             for option in requested
+        },
+    )
+
+
+def _check_commercial_invoice(
+    customs: typing.Optional[models.Customs],
+    origin_country: str,
+    destination_country: str,
+) -> None:
+    if customs is None or customs.commercial_invoice or not provider_units.sale_like(customs):
+        return
+
+    content_type = provider_units.content_type_of(customs)
+    content = lib.identity(
+        f"customs.content_type {content_type}"
+        if content_type
+        else "an unset customs.content_type"
+    )
+    non_sale = sorted(provider_units.NOT_SALE_LIKE_CONTENT)
+
+    raise CommercialInvoiceRequiredError(
+        f"An export of goods for sale ({origin_country} to {destination_country}) "
+        f"needs a commercial invoice, and {content} counts as a sale. "
+        "Set customs.commercial_invoice to true, or set customs.content_type to "
+        f"{', '.join(non_sale[:-1])} or {non_sale[-1]} to book a proforma invoice.",
+        details={
+            "customs.commercial_invoice": dict(
+                code="required",
+                message="commercial invoice required for goods for sale",
+            )
         },
     )
 

@@ -1475,6 +1475,7 @@ ShipmentPayload202Proforma = {
     "reference": "ORDER-2026-042",
     "customs": {
         "commodities": Customs["commodities"],
+        "content_type": "sample",
         "incoterm": "DAP",
     },
 }
@@ -1618,6 +1619,7 @@ ShipmentPayload202GapCurrency = {
         ],
         "incoterm": "DAP",
         "invoice": "INV-2026-001",
+        "commercial_invoice": True,
         "duty": {"paid_by": "sender", "currency": "EUR", "declared_value": 1250.0},
     },
 }
@@ -1635,6 +1637,7 @@ ShipmentPayload202MixedCurrency = {
             },
         ],
         "incoterm": "DAP",
+        "commercial_invoice": True,
     },
 }
 
