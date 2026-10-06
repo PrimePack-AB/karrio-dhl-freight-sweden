@@ -74,10 +74,7 @@ Product manual v5.26 lists FR among the valid countries of Parcel Connect Plus (
 The manual also lists GB for 112, only according to a separate agreement with DHL (§5.3 p18, Appendix G p200), so the rate sheet includes GB for 112 and the connector books it without checking the agreement, which the account must hold.
 GB is outside the EU VAT area, so 112 to GB carries customs information as 112 to NO does.
 The sandbox account was not offered 112 to GB: product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233, so the suite's 112 GB case skipped without booking (2026-10-06: [lookup-product-matches-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb.json)), and 112 to GB has not been booked.
-The manual limits 112 delivery in FR to mainland France and Corsica and excludes postal codes 97100-99999 (§5.3 p18).
-Rating does not offer 112 to a FR recipient whose postal code lies in that range or is not exactly five digits once spaces are removed, including a missing postal code, because such a code cannot be shown to lie outside the range; an explicitly requested 112 adds a `destination_not_supported` message instead of a rate.
-Booking 112 to such a FR postal code fails before the booking request with `details` keyed by `recipient.postal_code`.
-The other excluded regions the manual lists for 112 (§5.3 p18), 109 (§5.14 p63), 107 (§5.15 p66), and 202, 205, and SPI (§5.4 p23, §5.9 p43, §5.11 p52) are not checked, and the connector forwards those addresses as given.
+The manual limits 112 delivery in FR to mainland France and Corsica and excludes postal codes 97100-99999 (§5.3 p18), which the connector enforces with the other numeric excluded regions (see [Excluded postal codes](#excluded-postal-codes)).
 The sandbox accepted 112 from SE to FR 75004 with payer code 023 and printed its label, and the response added Chronopost `additionalInformation` entries the request did not send (2026-10-06: [booking-2906761867-112-se-fr.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761867-112-se-fr.json), [label-2906761867-112-se-fr.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json)).
 
 ## Booking rules
@@ -194,6 +191,26 @@ The `dhl_freight_sweden_qr_code` option `true` adds `qrCode` `true` to the print
 On other products or from other countries the option fails with `details` keyed by `dhl_freight_sweden_qr_code`, as access points do where the manual lists none, and `false` or no option requests no QR code.
 The vendored print spec 2.10.0 defines `qrCode` as a print option, but its `PrintResult` is a list of reports with `name`, `content`, `contentType`, and `type`, and it does not say how a QR code report is named, typed, or ordered.
 The connector returns the first report as the label and does not surface a QR code document; no 107 booking with `qrCode` has been sent to the sandbox.
+
+### Excluded postal codes
+
+The "Excluded regions/areas" of the manual's product sections list postal codes the product does not serve.
+The connector checks the numeric ones before the booking request and in rating, where an excluded product is not offered and an explicitly requested one adds a `destination_not_supported` message instead of a rate.
+A booking fails with `details` keyed by `recipient.postal_code` or `shipper.postal_code`.
+
+| Product | Country | Excluded postal codes | Region | Manual |
+|---------|---------|-----------------------|--------|--------|
+| 112 | DK | 3800-3999 | Greenland and the Faroe Islands | §5.3 p18 |
+| 112 | ES | 35000-35999, 38000-38999, 51080, 52080 | Canary Islands, Ceuta, Melilla | §5.3 p18 |
+| 112 | FR | 97100-99999 | outside mainland France and Corsica | §5.3 p18 |
+| 112 | IT | 04020, 04027, 22061, 23030, 23041, 25080, 28838, 47890-47899, 58012 | Ventotene, Ponza, Campione d'Italia, Trepalle, Livigno, Serle, Isola Bella, San Marino, Giglio | §5.3 p18 |
+| 112 | NO | 8099, 9170-9179 | Jan Mayen and Svalbard | §5.3 p18 |
+| 112 | PT | 9000-9999 (first four digits) | the Azores, Madeira, and other islands | §5.3 p18 |
+
+Each country's codes are compared in its own format once spaces are removed: four digits for DK and NO, five digits for ES, FR, and IT (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
+A code of another shape, including a missing code, cannot be shown to lie outside the excluded ranges, so it counts as excluded: rating without a recipient postal code does not offer a product with ranges for that country.
+The manual's non-numeric areas are not checked: for 112, GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT), and the NL Caribbean islands Aruba, Bonaire, Curaçao, Saba, Sint Maarten, and Sint Eustatius (§5.3 p18).
+The manual also points to the DHL Freight website for the present list of postal codes, which the connector does not consult.
 
 ### Additional information pass-through
 
