@@ -824,10 +824,13 @@ def excluded_party_message(product_code: str, excluded: "ExcludedParty") -> str:
 def excluded_party(
     product_code: str,
     addresses: typing.Mapping[str, typing.Mapping[str, typing.Any]],
+    skip_missing: bool = False,
 ) -> typing.Optional[ExcludedParty]:
     """The first party an exclusion bars the product from, if any.
 
     ``addresses`` maps party names to ``country_code``/``postal_code`` dicts.
+    ``skip_missing`` leaves a party without a postal code unchecked instead
+    of treating it as excluded.
     """
     return next(
         (
@@ -838,6 +841,7 @@ def excluded_party(
             for address in [addresses.get(party) or {}]
             if (address.get("country_code") or "").upper() == exclusion.country
             for postal_code in [address.get("postal_code")]
+            if not (skip_missing and not str(postal_code or "").strip())
             for key in [postal_code_key(exclusion.country, postal_code)]
             if key is None or exclusion.low <= key <= exclusion.high
         ),

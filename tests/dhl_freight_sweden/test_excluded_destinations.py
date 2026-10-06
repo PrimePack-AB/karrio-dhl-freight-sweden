@@ -63,11 +63,18 @@ class TestDHLFreightExcludedDestinationRating(unittest.TestCase):
                 self.assertIn(RoadFreightStandardService, offered)
 
     def test_112_does_not_rate_to_malformed_fr_postal_codes(self):
-        for postal_code in ["9720", "972000", "97 2A0", "ABCDE", None]:
+        for postal_code in ["9720", "972000", "97 2A0", "ABCDE"]:
             with self.subTest(postal_code=postal_code):
                 offered = self._offered(_fr(postal_code), [])
 
                 self.assertNotIn(ParcelConnectPlusService, offered)
+
+    def test_112_rates_to_fr_without_a_postal_code(self):
+        for postal_code in [None, "", "  "]:
+            with self.subTest(postal_code=postal_code):
+                offered = self._offered(_fr(postal_code), [])
+
+                self.assertIn(ParcelConnectPlusService, offered)
 
     def test_112_explicitly_requested_to_an_excluded_postal_code_reports_why(self):
         request = models.RateRequest(
@@ -119,7 +126,7 @@ class TestDHLFreightExcludedDestinationBooking(unittest.TestCase):
                 self.assertIn("97100-99999", str(error))
 
     def test_112_to_malformed_fr_postal_codes_fails(self):
-        for postal_code in ["9720", "ABCDE", None]:
+        for postal_code in ["9720", "ABCDE", None, ""]:
             with self.subTest(postal_code=postal_code):
                 error = self._error(_payload(ParcelConnectPlusService, _fr(postal_code)))
 
@@ -154,11 +161,13 @@ class ExclusionCases:
     party = "recipient"
     excluded: typing.List[typing.Tuple[str, str]] = []
     served: typing.List[typing.Tuple[str, str]] = []
-    malformed: typing.List[typing.Tuple[str, typing.Optional[str]]] = []
+    malformed: typing.List[typing.Tuple[str, str]] = []
+    # Booking rejects a missing postal code; rating still offers the product.
+    missing: typing.List[typing.Tuple[str, typing.Optional[str]]] = []
 
     def test_excluded_and_malformed_postal_codes_fail_at_booking(self):
         test = typing.cast(unittest.TestCase, self)
-        for country, postal_code in [*self.excluded, *self.malformed]:
+        for country, postal_code in [*self.excluded, *self.malformed, *self.missing]:
             with test.subTest(country=country, postal_code=postal_code):
                 with test.assertRaises(ExcludedDestinationError) as context:
                     _book(self.product, self.party, country, postal_code)
@@ -185,7 +194,7 @@ class ExclusionCases:
         service = units.ShippingService.map(self.product).name_or_key
         cases = [
             *((country, code, False) for country, code in [*self.excluded, *self.malformed]),
-            *((country, code, True) for country, code in self.served),
+            *((country, code, True) for country, code in [*self.served, *self.missing]),
         ]
 
         for country, postal_code, offered in cases:
@@ -245,8 +254,8 @@ class TestDHLFreightParcelConnectPlusExclusions(ExclusionCases, unittest.TestCas
         ("NO", "815"),
         ("PT", "10001"),
         ("PT", "1000-01"),
-        ("PT", None),
     ]
+    missing = [("PT", None), ("DK", "")]
 
 
 class TestDHLFreightParcelConnectExclusions(ExclusionCases, unittest.TestCase):
@@ -286,10 +295,10 @@ class TestDHLFreightParcelConnectExclusions(ExclusionCases, unittest.TestCase):
     ]
     malformed = [
         ("FR", "9720"),
-        ("FR", None),
         ("IT", "120"),
         ("DK", "16200"),
     ]
+    missing = [("FR", None), ("FR", "")]
 
 
 class TestDHLFreightParcelReturnConnectExclusions(ExclusionCases, unittest.TestCase):
@@ -321,8 +330,8 @@ class TestDHLFreightParcelReturnConnectExclusions(ExclusionCases, unittest.TestC
     ]
     malformed = [
         ("PT", "95001"),
-        ("IT", None),
     ]
+    missing = [("IT", None), ("NO", "")]
 
     def test_recipient_postal_code_is_not_checked(self):
         serialized = _book(self.product, "recipient", "SE", "11143")
@@ -338,7 +347,8 @@ class CrimeaExclusionCases(ExclusionCases):
 
     excluded = [("UA", "95000"), ("UA", "97500"), ("UA", "99999")]
     served = [("UA", "01001"), ("UA", "94999")]
-    malformed = [("UA", "9500"), ("UA", "950000"), ("UA", None)]
+    malformed = [("UA", "9500"), ("UA", "950000")]
+    missing = [("UA", None), ("UA", "")]
 
 
 class TestDHLFreightRoadFreightStandardToCrimea(CrimeaExclusionCases, unittest.TestCase):
