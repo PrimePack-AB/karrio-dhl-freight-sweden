@@ -39,11 +39,11 @@ Check the [Karrio Mutli-carrier SDK docs](https://docs.karrio.io) for Shipping A
 
 ## Connection settings
 
-Connection settings are passed through the gateway's `config` dict (e.g. `config={"label_type": "ZPL"}`).
+Connection settings are passed through the gateway's `config` dict (e.g. `config={"label_page_type": "LabelCompact"}`).
 
 | Setting | Default | Notes |
 |---------|---------|-------|
-| `label_type` | `PDF` | Tags the returned document format when the carrier response does not identify it. The Print API exposes no format parameter, so the emitted format is governed by the DHL account (the sandbox returned a one-page PDF of 105 × 210 mm, 297.638 × 595.276 pt, for page type `Label`, 2026-10-05: [label-2906761354-109-se-dk-parcelshop.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json)); the connector derives the tag from the decoded document's magic prefix (`%PDF-`, `^XA`) first, then the report `contentType`, and uses this setting as the last resort. |
+| `label_type` | `PDF` | Only `PDF` is supported, in any letter case. The Print API exposes no format parameter, and the sandbox returned a one-page PDF of 105 × 210 mm, 297.638 × 595.276 pt, for page type `Label` (2026-10-05: [label-2906761354-109-se-dk-parcelshop.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json)). The shipment request's `label_type` outranks this setting; when the resulting label type is anything else, such as `ZPL`, the connector fails before the booking request with a `SHIPPING_SDK_FIELD_ERROR` keyed `label_type` (or `config.label_type` when the value came from here). The returned shipment declares the format read from the decoded document's magic prefix (`%PDF-`, `^XA`), then the report `contentType`, and otherwise `PDF`. |
 | `label_page_type` | `Label` | Print page layout (`Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, `LabelCompact2x2PortraitA4`); the `dhl_freight_sweden_label_page_type` option overrides it per shipment. |
 | `address_validation` | `off` | Booking pre-flight against the postal-code route: `off`, `warn`, or `enforce` (see [Address validation](#address-validation)). |
 | `server_url` | | Overrides the API Farm host selected by `test_mode`. |
@@ -82,7 +82,7 @@ The sandbox accepted 112 from SE to FR 75004 with payer code 023 and printed its
 
 ## Booking rules
 
-The connector checks payer codes, access points, SENT, EKAER, and UIT entries, the VAT numbers/TINs of lanes to or from GR, excluded postal codes, and the QR code option before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
+The connector checks the label type, payer codes, access points, SENT, EKAER, and UIT entries, the VAT numbers/TINs of lanes to or from GR, excluded postal codes, and the QR code option before the booking request, and fails fast with a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by the option to fix.
 The rules follow the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, which is cited here rather than vendored.
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 Section and page references below are to that version.
@@ -512,6 +512,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "requires the full service point details; missing ..." | connector field error | fix the option mapping |
 | "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
+| "Label type ... is not supported; the DHL Freight Sweden Print API returns PDF labels only" | connector field error | request `label_type` `PDF` or leave it unset; see [Connection settings](#connection-settings) |
 | payer code, SENT, EKAER, UIT, or GR VAT number/TIN field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
 | "Customs requires a commercial invoice for an export of goods for sale ..." | connector field error | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
