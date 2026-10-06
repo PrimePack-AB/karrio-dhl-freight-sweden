@@ -36,8 +36,8 @@ The recon of 2026-10-06 found:
 | 6 | `test_book_233_dk` | booking-export | intra-EU | DAP; first 233 booking. |
 | 7 | `test_book_233_no_customs_full` | booking-export | extra-EU | Customs Full Service. |
 | 8 | `test_book_601_no_customs_full` | booking-export | extra-EU | Fills 601's only lane-class gap; DAP as in the existing DK booking. |
-| 9 | `test_book_112_no_customs_standard` | booking-export | extra-EU | Customs Standard with EORI; only Full Service is evidenced today (`test_booking_export.py:182-183`). |
-| 10 | `test_book_109_no_customs_standard` | booking-export | extra-EU | Customs Standard with EORI, only if the findings note's Untested list names it (`docs/notes/sandbox/sandbox-findings.md:226-235`). |
+| 9 | `test_book_112_no_customs_standard` | booking-export | extra-EU | Customs Standard with EORI; only Full Service is evidenced today (`test_booking_export.py:182-183`), and the findings note names "Customs handling - Standard elsewhere" untested (`sandbox-findings.md:232`). |
+| 10 | `test_book_109_no_customs_standard` | booking-export | extra-EU | Customs Standard with EORI; fills the same Untested item "Customs handling - Standard elsewhere" (`sandbox-findings.md:232`). |
 | 11 | `test_book_205_no_forced` | booking-export | extra-EU | Conditional: only if cases 4 and 5 both skip as unoffered; `require_product_match=False` with budget 1 records DHL's own answer, the 112 GB precedent (`test_booking_export.py:190-193`). |
 
 At most ten bookings run: cases 1 through 10 when the probes offer 205 (case 11 then never fires), or eight plus the forced case 11 when they do not.
