@@ -61,6 +61,15 @@ class TestDHLFreightEUVATArea(unittest.TestCase):
             ("FR", "FR-97200", False),
             ("GB", "GB-BT1 1AA", True),
             ("SE", "SE-111 43", True),
+            ("FI", "fi 22100", False),
+            ("FI", "FI22100", False),
+            ("FI", "FI 22 100", False),
+            ("FI", "AX-22100", False),
+            ("FI", " FI-22100 ", False),
+            ("DK", "DK 3800", False),
+            ("DK", "GL 3900", False),
+            ("GB", "JE2 3AB", False),
+            ("MT", "MTF 1234", True),
             ("GR", "630 86", False),
             ("CH", "8001", False),
             (None, None, False),
@@ -70,6 +79,44 @@ class TestDHLFreightEUVATArea(unittest.TestCase):
             with self.subTest(country_code=country_code, postal_code=postal_code):
                 self.assertEqual(
                     units.in_eu_vat_area(country_code, postal_code), expected
+                )
+
+
+class TestDHLFreightPostalCodeNormalisation(unittest.TestCase):
+    """The postcode rule shared with nordic_conventions territories.py."""
+
+    def test_normalized_postal_code(self):
+        cases = [
+            ("FI", "FI-22100", "22100"),
+            ("FI", "fi 22100", "22100"),
+            ("FI", "FI22100", "22100"),
+            ("FI", "FI 22 100", "22100"),
+            ("FI", "AX-22100", "22100"),
+            ("FI", "  22100 ", "22100"),
+            ("DK", "DK 3800", "3800"),
+            ("DK", "FO 100", "100"),
+            ("DK", "GL-3900", "3900"),
+            ("ES", "IC 35001", "35001"),
+            ("ES", "EA51001", "51001"),
+            ("PT", "PT-9000-001", "9000-001"),
+            ("SE", "SE-111 43", "11143"),
+            ("GB", "GB-BT1 1AA", "BT11AA"),
+            ("GB", "GB BT1 1AA", "BT11AA"),
+            ("GB", "BT1 1AA", "BT11AA"),
+            ("GB", "JE2 3AB", "JE23AB"),
+            ("GB", "GY1 1AA", "GY11AA"),
+            ("GB", "IM1 1AA", "IM11AA"),
+            ("GB", "GB1 2AB", "GB12AB"),
+            ("JE", "JE2 3AB", "JE23AB"),
+            ("MT", "MTF 1234", "MTF1234"),
+            ("SE", "AX-22100", "AX-22100"),
+            ("SE", None, ""),
+        ]
+
+        for country_code, postal_code, expected in cases:
+            with self.subTest(country_code=country_code, postal_code=postal_code):
+                self.assertEqual(
+                    units.normalized_postal_code(country_code, postal_code), expected
                 )
 
 

@@ -121,20 +121,25 @@ class CustomsOption(lib.Enum):
     voec_number = lib.OptionEnum("voec_number")
 
 
+NUMERIC_POSTAL_TERRITORY_PARENTS: typing.Dict[str, str] = {
+    "AX": "FI",  # Åland
+    "FO": "DK",  # Faroe Islands
+    "GL": "DK",  # Greenland
+    "IC": "ES",  # Canary Islands
+    "EA": "ES",  # Ceuta and Melilla
+}
+UK_POSTCODE_AREA_CODES: typing.FrozenSet[str] = frozenset({"JE", "GY", "IM", "BT"})
+
 # Territories with their own ISO or customs country code that DHL serves
 # under their parent country: product matches answered no product for AX
 # 22100, JE JE2 3AB, GG GY1 1AA, and FO 100, and matched products for FI
 # 22100 and GB JE2 3AB (tests/dhl_freight_sweden/fixtures/sandbox/
 # lookup-product-matches-se-ax-22100.json and the other territory probes).
 TERRITORY_PARENTS: typing.Dict[str, str] = {
-    "AX": "FI",  # Åland
+    **NUMERIC_POSTAL_TERRITORY_PARENTS,
     "JE": "GB",  # Jersey
     "GG": "GB",  # Guernsey
     "IM": "GB",  # Isle of Man
-    "FO": "DK",  # Faroe Islands
-    "GL": "DK",  # Greenland
-    "IC": "ES",  # Canary Islands
-    "EA": "ES",  # Ceuta and Melilla
     "XI": "GB",  # Northern Ireland
 }
 
@@ -188,26 +193,45 @@ EU_VAT_POSTAL_PREFIXES: typing.Tuple[typing.Tuple[str, str], ...] = (
 CUSTOMS_OMITTED_INTRA_EU = "customs_omitted_intra_eu"
 
 
+def postal_prefix_codes(country_code: str) -> typing.Tuple[str, ...]:
+    """Codes that may lead a postal code of ``country_code`` and are removed.
+
+    These are the country's own code and the codes of its territories with
+    numeric postal codes. ``JE``, ``GY``, ``IM``, and ``BT`` are never
+    removed, because they begin United Kingdom postcodes.
+    """
+    territories = (
+        territory
+        for territory, parent in NUMERIC_POSTAL_TERRITORY_PARENTS.items()
+        if parent == country_code
+    )
+    return tuple(
+        code
+        for code in (country_code, *territories)
+        if code and code not in UK_POSTCODE_AREA_CODES
+    )
+
+
 def normalized_postal_code(
     country_code: typing.Optional[str],
     postal_code: typing.Optional[str],
 ) -> str:
-    """A postal code without spaces, upper-cased, and without a ``<code>-`` prefix.
+    """A postal code upper-cased, trimmed, without a leading prefix code, and without spaces.
 
-    The prefix is the country code or the code of one of its territories,
-    so ``FI-22100`` and ``AX-22100`` both read as ``22100`` under FI.
+    A prefix code (``postal_prefix_codes``) is removed when a hyphen,
+    whitespace, or, except for ``GB``, a digit follows it, so ``FI-22100``,
+    ``FI 22 100``, ``FI22100``, and ``AX-22100`` all read as ``22100`` under
+    FI. The rule is shared with nordic_conventions' territories module.
     """
-    postal = str(postal_code or "").replace(" ", "").upper()
     country = (country_code or "").upper()
-    prefix = next(
-        (
-            f"{code}-"
-            for code in (country, *(t for t, p in TERRITORY_PARENTS.items() if p == country))
-            if code and postal.startswith(f"{code}-")
-        ),
-        "",
-    )
-    return postal[len(prefix):]
+    postal = str(postal_code or "").strip().upper()
+    for code in postal_prefix_codes(country):
+        separator = r"[\s-]+" if code == "GB" else r"[\s-]+|(?=\d)"
+        prefix = re.match(rf"{re.escape(code)}(?:{separator})", postal)
+        if prefix:
+            postal = postal[prefix.end():]
+            break
+    return postal.replace(" ", "")
 
 
 def in_eu_vat_area(
