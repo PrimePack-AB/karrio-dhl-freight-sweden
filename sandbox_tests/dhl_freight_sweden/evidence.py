@@ -526,6 +526,11 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
     ("booking-2906762303-401-se-se.json", "401 within SE with payer code 1, then printed.",
      "401", "SE 11143 -> SE 11151", "20261006-131222", ("001-booking-401", "002-booking-401"),
      "test_booking_approved.test_book_401_domestic", 0),
+    ("booking-2906762477-601-se-ch.json",
+     "601 SE to CH with payer code DAP, customsHandlingFullService, and a CommercialInvoice with "
+     "invoiceAmount 200 SEK, one 2 kg 30x20x15 cm piece, then printed.",
+     "601", "SE 11143 -> CH 8001", "20261006-144106-601-ch", ("003-booking-601", "004-booking-601"),
+     "test_booking_export.test_book_601_ch_customs_full_commercial_invoice", 0),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
