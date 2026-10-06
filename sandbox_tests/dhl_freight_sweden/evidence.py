@@ -455,6 +455,21 @@ for _name, _summary, _product, _stem, _code, _test in REJECTIONS:
 
 
 
+@evidence("rejection-22005-112-se-gb.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "112 SE to GB home delivery with payer code 023 and customs handling full service, booked although "
+        "product matches did not offer 112 to GB, was rejected with 22005 'No valid product was found for "
+        "given productcode and countries' and 22026 'Consignee CountryCode is not valid for this product'.",
+        "112", "SE 11143 -> GB W1D 1AN", None, "22005",
+        f"{SUITE_RUN}: test_booking_export.test_book_112_gb",
+        [reduce_product_matches(b.suite_exchange("20261006-103901", "001-product-matches-112-gb")),
+         b.suite_exchange("20261006-103901", "003-booking-112")],
+        primary=1,
+    )
+
+
 @evidence("rejection-22001-103-se-access-point-id-only.json")
 def _(b: Builder) -> Json:
     return b.document(
