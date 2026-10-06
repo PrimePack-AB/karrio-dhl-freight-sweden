@@ -17,7 +17,13 @@ from karrio.providers.dhl_freight_sweden.shipment.create import (
 )
 
 from .fixture import detail_keys, gateway, serialize_request
-from .test_shipment import _payload, _recipient_de, _recipient_pl, _recipient_se
+from .test_shipment import (
+    _payload,
+    _recipient_de,
+    _recipient_gb,
+    _recipient_pl,
+    _recipient_se,
+)
 
 
 class TestDHLFreightAccessPoints(unittest.TestCase):
@@ -73,6 +79,27 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
         )
 
         self.assertEqual(access_point["subType"], "ParcelShop")
+
+    def test_parcel_connect_to_gb_accepts_only_parcel_shop(self):
+        # Appendix C.3 p193: GB residential and Parcelshop addressing, no
+        # Parcelstation.
+        access_point = self._access_point(
+            _payload(
+                "dhl_freight_sweden_parcel_connect_b2c",
+                _recipient_gb,
+                _service_point("8009-GB-1", "ParcelShop", "GB"),
+            )
+        )
+        error = self._error(
+            _payload(
+                "dhl_freight_sweden_parcel_connect_b2c",
+                _recipient_gb,
+                _service_point("8009-GB-1", "ParcelStation", "GB"),
+            )
+        )
+
+        self.assertEqual(access_point["subType"], "ParcelShop")
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_service_point_type"})
 
     def test_parcel_connect_to_pl_accepts_parcel_station(self):
         access_point = self._access_point(

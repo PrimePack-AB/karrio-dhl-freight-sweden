@@ -155,24 +155,33 @@ class TestDHLFreightShipment(unittest.TestCase):
                 else:
                     self.assertNotIn("customsInformation", serialized)
 
-    def test_create_shipment_request_112_to_gb_keeps_customs(self):
-        # GB is outside the EU VAT area, so 112 to GB declares customs as
-        # 112 to NO does.
-        request = gateway.mapper.create_shipment_request(
-            models.ShipmentRequest(
-                **{
-                    **_payload("dhl_freight_sweden_parcel_connect_plus", _recipient_gb),
-                    "customs": {**Customs, "incoterm": "DDP"},
-                }
-            )
-        )
-        serialized = serialize_request(request)
+    def test_create_shipment_request_parcel_connect_to_gb_keeps_customs(self):
+        # GB is outside the EU VAT area, so 109 and 112 to GB declare
+        # customs as they do to NO.
+        cases = [
+            ("dhl_freight_sweden_parcel_connect_b2c", "DAP", "022"),
+            ("dhl_freight_sweden_parcel_connect_plus", "DDP", "023"),
+        ]
 
-        self.assertEqual(serialized["payerCode"], {"code": "023"})
-        self.assertEqual(
-            serialized["customsInformation"]["customsDocuments"][0]["transportMovement"],
-            "Export",
-        )
+        for service, incoterm, payer_code in cases:
+            with self.subTest(service=service):
+                request = gateway.mapper.create_shipment_request(
+                    models.ShipmentRequest(
+                        **{
+                            **_payload(service, _recipient_gb),
+                            "customs": {**Customs, "incoterm": incoterm},
+                        }
+                    )
+                )
+                serialized = serialize_request(request)
+
+                self.assertEqual(serialized["payerCode"], {"code": payer_code})
+                self.assertEqual(
+                    serialized["customsInformation"]["customsDocuments"][0][
+                        "transportMovement"
+                    ],
+                    "Export",
+                )
 
     def test_shipment_intra_eu_customs_omitted_with_warning(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
