@@ -1,0 +1,207 @@
+{
+ "kind": "rejection",
+ "summary": "205 SE to NO with payer code DAP and customs handling full service, booked although product matches did not offer 205, was rejected with 22020 'ChargeableWeight is lower than product min 2500.0'.",
+ "captured_at": "2026-10-06T11:26:02Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "205",
+ "route": "SE 11143 -> NO 0154",
+ "booking_id": null,
+ "error_code": "22020",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_booking_export.test_book_205_no_forced",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-06T11:26:01Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-132601/001-product-matches-205-no.request.json",
+    "sha256": "8d94eb24b94b71fa004a9afb19dfea149609fafd3dfc4950ca0157543e2f0d88"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-132601/001-product-matches-205-no.response.json",
+    "sha256": "f13e6c9ea0c49e6da44d5a0bd02ed07378ca6ca52ca20f35d15b0378a00d320c"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "NO",
+       "postalCode": "0154"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "109",
+      "name": "DHL Parcel Connect",
+      "shortName": null,
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "112",
+      "name": "DHL Parcel Connect Plus",
+      "shortName": null,
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "601",
+      "name": "DHL Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, and isDomestic; the full body is identified by response_source.sha256"
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-06T11:26:02Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-132601/003-booking-205.request.json",
+    "sha256": "7f4f390c0ba15b36d2c59673fca13050ea20c52064a8d902e40fa815dd003538"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-132601/003-booking-205.response.json",
+    "sha256": "d9db0bc71fa9f9b1c50098a00e4842c0c32ba55fc96353558f5cf4b6688d4075"
+   },
+   "request": {
+    "additionalServices": {
+     "customsHandlingFullService": true
+    },
+    "customsInformation": {
+     "customsCommodities": [
+      {
+       "commodityDescription": "Cotton T-shirt",
+       "countryCodeOfOrigin": "SE",
+       "customsValue": 200.0,
+       "customsValueCurrency": "SEK",
+       "hsItemId": "610910",
+       "netWeight": 0.5,
+       "numberOfUnits": 1,
+       "procedureCode": "1042"
+      }
+     ],
+     "customsDocuments": [
+      {
+       "id": "SANDBOX-INV-1",
+       "invoiceCurrency": "SEK",
+       "invoiceDate": "2026-10-06",
+       "transportMovement": "Export",
+       "type": "ProformaInvoice"
+      }
+     ]
+    },
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Oslo",
+       "countryCode": "NO",
+       "postalCode": "0154",
+       "street": "Karl Johans gate 10"
+      },
+      "contactName": "Ola Nordmann",
+      "email": "ola.nordmann@example.no",
+      "name": "Ola Nordmann",
+      "phone": "+47 400 00 000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "205",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22020,
+      "field": "ChargeableWeight",
+      "message": "ChargeableWeight is lower than product min 2500.0"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -618,6 +618,20 @@ def _(b: Builder) -> Json:
     )
 
 
+@evidence("rejection-22020-205-se-no.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "205 SE to NO with payer code DAP and customs handling full service, booked although product matches "
+        "did not offer 205, was rejected with 22020 'ChargeableWeight is lower than product min 2500.0'.",
+        "205", "SE 11143 -> NO 0154", None, "22020",
+        f"{SUITE_RUN}: test_booking_export.test_book_205_no_forced",
+        [reduce_product_matches(b.suite_exchange("20261006-132601", "001-product-matches-205-no")),
+         b.suite_exchange("20261006-132601", "003-booking-205")],
+        primary=1,
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 
