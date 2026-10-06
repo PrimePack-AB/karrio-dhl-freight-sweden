@@ -47,7 +47,11 @@ class Proxy(proxy.Proxy):
         """
         # RatingMixinProxy.get_rates reads only self.settings, which this
         # proxy's RatingMixinSettings-derived settings satisfy.
-        return RatingMixinProxy.get_rates(typing.cast(RatingMixinProxy, self), request)
+        response = RatingMixinProxy.get_rates(
+            typing.cast(RatingMixinProxy, self), request
+        )
+
+        return lib.Deserializable(response.deserialize(), lib.identity, request.ctx)
 
     def create_shipment(
         self, request: lib.Serializable

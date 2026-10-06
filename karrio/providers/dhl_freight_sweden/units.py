@@ -621,6 +621,66 @@ PARCEL_CONNECT_PLUS_COUNTRIES = [
     "SK",
 ]
 
+
+class PostalCodeExclusion(typing.NamedTuple):
+    """A recipient postal-code range a product does not deliver to.
+
+    ``digits`` is the country's postal-code length: a code of another
+    shape cannot be shown to lie outside the range, so it counts as
+    excluded.
+    """
+
+    product: str
+    country: str
+    low: int
+    high: int
+    digits: int
+    region: str
+
+
+# "Excluded regions/areas" of product manual v5.26 that are numeric ranges.
+POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
+    PostalCodeExclusion(
+        product=ShippingService.dhl_freight_sweden_parcel_connect_plus.value,
+        country="FR",
+        low=97100,
+        high=99999,
+        digits=5,
+        region="outside mainland France and Corsica",  # §5.3 p18
+    ),
+)
+
+
+def postal_code_well_formed(
+    exclusion: PostalCodeExclusion, postal_code: typing.Optional[str]
+) -> bool:
+    postal = str(postal_code or "").replace(" ", "")
+    return postal.isdigit() and len(postal) == exclusion.digits
+
+
+def excluded_destination(
+    product_code: str,
+    country_code: typing.Optional[str],
+    postal_code: typing.Optional[str],
+) -> typing.Optional[PostalCodeExclusion]:
+    """The exclusion that bars the product from the recipient, if any."""
+    postal = str(postal_code or "").replace(" ", "")
+
+    return next(
+        (
+            exclusion
+            for exclusion in POSTAL_CODE_EXCLUSIONS
+            if exclusion.product == product_code
+            and exclusion.country == (country_code or "").upper()
+            and (
+                not postal_code_well_formed(exclusion, postal)
+                or exclusion.low <= int(postal) <= exclusion.high
+            )
+        ),
+        None,
+    )
+
+
 DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
     models.ServiceLevel(
         service_name="Hemleverans Paket B2C",
