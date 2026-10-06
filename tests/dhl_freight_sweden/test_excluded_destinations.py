@@ -530,12 +530,12 @@ class TestDHLFreightHomeDeliveryInternationalCatalogExclusions(CatalogExclusionC
     product = "601"
     excluded = [
         *CatalogExclusionCases.excluded,
-        ("DK", "2142"),
+        ("DK", "2412"),
         ("FR", "97400"),
         ("GB", "JE2 3AB"),
         ("GB", "GY1 1AA"),
     ]
-    served = [*CatalogExclusionCases.served, ("DK", "2412"), ("FR", "75004")]
+    served = [*CatalogExclusionCases.served, ("DK", "2142"), ("FR", "75004")]
 
 
 def _address(country: str, postal_code: typing.Optional[str]) -> dict:
