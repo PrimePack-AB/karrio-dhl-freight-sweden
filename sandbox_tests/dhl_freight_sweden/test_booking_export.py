@@ -1,15 +1,17 @@
-"""Sandbox segment ``booking-export``: Parcel Connect from SE to a destination matrix.
+"""Sandbox segment ``booking-export``: export products from SE to a destination matrix.
 
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
 Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
 ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
 GB only according to a separate agreement. Åland (FI 22100) is booked with
 112 and customs and with 109 without customs data, and Northern Ireland
-(GB BT1 1AA) with 202 without customs data. Before spending a booking it
-checks for free that product matches offer the product for the lane and,
-for 109, that a service point
-near the recipient accepts it, and skips otherwise. Lanes to PL declare SENT
-free explicitly.
+(GB BT1 1AA) with 202 without customs data. The freight products 202, 205,
+233, and 601 book to DK inside the EU VAT area and to NO with customs
+handling full service, each with the explicit DAP payer code, and 112 and
+109 book to NO with customs handling Standard and a made-up EORI number.
+Before spending a booking it checks for free that product matches offer the
+product for the lane and, for 109, that a service point near the recipient
+accepts it, and skips otherwise. Lanes to PL declare SENT free explicitly.
 
 NO and GB are outside the EU VAT area, so their bookings carry one commodity, a
 proforma invoice number, and DHL customs handling full service, the customs
@@ -194,6 +196,50 @@ class TestSandboxBookingExport(unittest.TestCase):
         # lookup-product-matches-se-gb.json); the booking records DHL's answer.
         self.export("112", "GB", require_product_match=False)
 
+    def test_book_112_no_customs_standard(self):
+        self.export("112", "NO", standard_customs=True)
+
+    def test_book_109_no_customs_standard(self):
+        self.export("109", "NO", standard_customs=True)
+
+    def test_book_202_dk(self):
+        self.export(
+            "202", "DK", with_customs=False,
+            extra_options={"dhl_freight_sweden_payer_code": "DAP"},
+        )
+
+    def test_book_202_no_customs_full(self):
+        self.export(
+            "202", "NO", extra_options={"dhl_freight_sweden_payer_code": "DAP"}
+        )
+
+    def test_book_205_dk(self):
+        self.export(
+            "205", "DK", with_customs=False,
+            extra_options={"dhl_freight_sweden_payer_code": "DAP"},
+        )
+
+    def test_book_205_no_customs_full(self):
+        self.export(
+            "205", "NO", extra_options={"dhl_freight_sweden_payer_code": "DAP"}
+        )
+
+    def test_book_233_dk(self):
+        self.export(
+            "233", "DK", with_customs=False,
+            extra_options={"dhl_freight_sweden_payer_code": "DAP"},
+        )
+
+    def test_book_233_no_customs_full(self):
+        self.export(
+            "233", "NO", extra_options={"dhl_freight_sweden_payer_code": "DAP"}
+        )
+
+    def test_book_601_no_customs_full(self):
+        self.export(
+            "601", "NO", extra_options={"dhl_freight_sweden_payer_code": "DAP"}
+        )
+
     def test_book_109_dk_parcel_shop(self):
         self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))
 
@@ -234,5 +280,16 @@ class TestSandboxBookingExport(unittest.TestCase):
             "GB",
             recipient=booking.BELFAST,
             with_customs=False,
+            extra_options={"dhl_freight_sweden_payer_code": "DAP"},
+        )
+
+    def test_book_205_no_forced(self):
+        # No probe has ever matched 205 (README.md, excluded postal codes);
+        # like the 112 GB case, this books past the matches check to record
+        # DHL's answer.
+        self.export(
+            "205",
+            "NO",
+            require_product_match=False,
             extra_options={"dhl_freight_sweden_payer_code": "DAP"},
         )
