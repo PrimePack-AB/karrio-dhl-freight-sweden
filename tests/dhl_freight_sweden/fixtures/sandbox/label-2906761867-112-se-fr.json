@@ -1,0 +1,213 @@
+{
+ "kind": "label",
+ "summary": "112 SE to FR home delivery booked with consignor phone +46 8 123 456, Consignee Jean Dupont, 10 Rue de Rivoli, 75004 Paris, and consignee phone +33 6 12 34 56 78, printed with page type Label as one 283.46 x 425.2 pt (100 x 150 mm) PDF page; the label text shows the Chronopost reference XY22 2000 028 and the routing code 25075004+74000000, and no Phn. line and no phone number.",
+ "captured_at": "2026-10-06T08:10:52Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "112",
+ "route": "SE 11143 -> FR 75004",
+ "booking_id": "2906761867",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export; label PDF decoded from the print response into agent-logs/karrio-dhl-freight-sweden/suite-labels-20261006",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-06T08:10:52Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-101051/003-booking-112.request.json",
+    "sha256": "31f48e65b39fa610e68ad6fb0e67b7a6dd07094625fc72ab031fa5fc1eb4e2b4"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-101051/003-booking-112.response.json",
+    "sha256": "f8284f34c879a25e1da97a1c28c8fee4802a3393dd97a0279ba0db031f1acf09"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Paris",
+       "countryCode": "FR",
+       "postalCode": "75004",
+       "street": "10 Rue de Rivoli"
+      },
+      "contactName": "Jean Dupont",
+      "email": "jean.dupont@example.fr",
+      "name": "Jean Dupont",
+      "phone": "+33 6 12 34 56 78",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "023"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "112",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761867",
+     "productCode": "112",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "023"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Jean Dupont",
+       "contactName": "Jean Dupont",
+       "address": {
+        "street": "10 Rue de Rivoli",
+        "cityName": "Paris",
+        "postalCode": "75004",
+        "countryCode": "FR"
+       },
+       "phone": "+33 6 12 34 56 78",
+       "email": "jean.dupont@example.fr"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025759"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LFR75004+74000000",
+     "additionalInformation": [
+      {
+       "code": "ChronoPostReference",
+       "stringValue": "XY222000028",
+       "numericValue": 0.0
+      },
+      {
+       "code": "ChronopostLicencePlate",
+       "stringValue": "0075004XY222000028336835250C",
+       "numericValue": 0.0
+      },
+      {
+       "code": "CHRONOPOST",
+       "stringValue": "true",
+       "numericValue": 0.0
+      }
+     ]
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-06T08:10:52Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-101051/004-booking-112.request.json",
+    "sha256": "10f2395aeec929c0be4d608b9487a6a9e497315966f962e8d62a4539424eaa14"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-101051/004-booking-112.response.json",
+    "sha256": "0651d9cb963c8e70e4964fccfa32050827722d814b0bc1679203de72d07c96ec"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761867"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761867.PDF",
+      "content": "<base64 omitted: 48944 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261006/label_2906761867.pdf",
+     "sha256": "6700cc4e6fe9d0336f82b81f728a277023bce8c2e1b84755332307496a2d008c"
+    },
+    "page_size_pt": [
+     283.46,
+     425.2
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261006/label_2906761867.txt",
+     "sha256": "cfa7f51cab39b55f0d8f9bd78621158f7fd0a571541265155ff5bd3f4a8db5fc"
+    },
+    "text": "  CMR            CONNECT PLUS\n\n\n\n es\n  Test Shipper AB, Kungsgatan 1\n  11143, Stockholm, SWEDEN\n\n       Jean Dupont\n       10 Rue de Rivoli\n       75004 Paris\n\n\n\n\n   tLa\n       FRANCE\n\n\n  REFERENCE NBR:       2906761867                          WEIGHT:   1.0 kg\n                                                           DATE:     2026-10-06\n\n\n       XY22 2000 028 JB                                          18H\n\n\nstL be\n         Track\n\n\n\n                                                                             Maia 8.0\n             FR- -0445-BCY0\n\n\n   ab l Te\n                                    835-FR-75004\n        IDF                                                 75S20\n\n\n\n\n     el     s\n        Te tLa\n                     0075 004X Y222 0000 2833 6835 250C\n\n\n\n\n          stL b\n                                  (403)25075004+74000000\n\n\n\n\n                                  (00)373221512525025759\n\f"
+   }
+  }
+ ]
+}
