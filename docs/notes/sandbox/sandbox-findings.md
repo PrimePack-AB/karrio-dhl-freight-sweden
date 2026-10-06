@@ -4,7 +4,7 @@ title: "DHL Freight SE sandbox findings, 2026-10-05 and 2026-10-06"
 
 ## Environment and method
 
-All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, except one booking, one rejected booking, and two product matches lookups on 2026-10-06, and all times below are UTC.
+All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, except one booking, one rejected booking, and fifteen product matches lookups on 2026-10-06, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
 The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10 and its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, and its thirteen special-territory product matches probes at 08:52.
 A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
@@ -88,6 +88,51 @@ No booking was created by any of them.
 
 The PostalCode API rejected the unknown SE postal code 99999 with HTTP 400 and the PascalCase ErrorResult `{"ErrorCode": 16010, "Status": 400, "UserMessage": "Post code '99999' not found."}` ([lookup-postal-code-se-99999-16010.json][l-pc-99999]).
 Its route lookup for PL 30-079 answered HTTP 400 with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), which matches the manual listing the route service only for domestic products (§10.14.1 p230).
+
+## Special territories in product matches
+
+The lookup segment asked product matches which products ship a 2.5 kg piece of 40 × 30 × 15 cm from SE 11143 to thirteen recipients, each sent with the country code and postal code as given.
+Every call answered HTTP 200 without an error message.
+
+| Recipient | Area | Products matched | Evidence |
+|-----------|------|------------------|----------|
+| FI 00100 | mainland Finland (control) | HDI, 109, 202, 112, 601, 233 | [se-fi-00100][l-t-fi-00100] |
+| FI 22100 | Åland under FI | HDI, 109, 202, 112, 601, 233 | [se-fi-22100][l-t-fi-22100] |
+| AX 22100 | Åland under AX | none | [se-ax-22100][l-t-ax] |
+| GB W1D 1AN | London (control) | HDI, 202, 601, 233 | [se-gb-w1d1an][l-t-gb-w1d] |
+| GB BT1 1AA | Northern Ireland under GB | HDI, 202, 601, 233 | [se-gb-bt11aa][l-t-gb-bt] |
+| GB IM1 1AA | Isle of Man under GB | HDI, 202, 601, 233 | [se-gb-im11aa][l-t-gb-im] |
+| GB JE2 3AB | Jersey under GB | HDI, 233 | [se-gb-je23ab][l-t-gb-je] |
+| GB GY1 1AA | Guernsey under GB | HDI, 233 | [se-gb-gy11aa][l-t-gb-gy] |
+| JE JE2 3AB | Jersey under JE | none | [se-je-je23ab][l-t-je] |
+| GG GY1 1AA | Guernsey under GG | none | [se-gg-gy11aa][l-t-gg] |
+| DK 3900 | Greenland under DK | HDI, 109 | [se-dk-3900][l-t-dk] |
+| FO 100 | Faroe Islands under FO | none | [se-fo-100][l-t-fo] |
+| ES 35001 | Canary Islands under ES | HDI | [se-es-35001][l-t-es] |
+
+The territory codes AX, JE, GG, and FO matched no product, while the same postal codes under FI and GB did.
+Product matches treated FI 22100 like mainland Finland, offering 109 and 112 to Åland.
+The evidence files keep each matched product's `toCountries` entries with a `postalCodeExcludes` value and the entry of the recipient country.
+The excludes the matches applied agree with these entries: 202 and 601 list GB `GY*,JE*`, while 233 lists no GB excludes and was matched to GB JE2 3AB and GY1 1AA ([se-gb-je23ab][l-t-gb-je], [se-gb-w1d1an][l-t-gb-w1d]); 202, 601, and 233 list DK `39*`, ES `35*`, and were not matched to DK 3900 or ES 35001 ([se-dk-3900][l-t-dk], [se-es-35001][l-t-es]).
+The entries list no excludes for GB `BT` or `IM`, and 202 and 601 were matched to GB BT1 1AA and IM1 1AA.
+
+| Product | DK | ES | FR | GB | IT | NO | PT | UA |
+|---------|----|----|----|----|----|----|----|----|
+| 109 | `38*,???,2412` | `35*,38*,51*,52*` | `97*,98*,99*` | | `00120,22061,23041,4789?` | `917*,8099` | `9*` | |
+| 112 | `39*, ???,2412` | `35*,38*,51080,52080` | | | `22061,23041,23030,4789*,04020,04027,25050,25080,28898,58012` | `917*,8099` | `9*` | |
+| 202 | `39*, ???,2412` | `35*,38*,51*,52*` | `97*` | `GY*,JE*` | | `917*,8099` | `9*` | `95*, 96*,97*,98*,99*` |
+| 233 | `39*, ???,2412` | `35*,38*,51*,52*` | | | | `917*,8099` | `9*` | |
+| 601 | `39*,???,2142` | `35*,38*,51*,52*` | `97*` | `GY*,JE*` | | `917*,8099` | `9*` | |
+
+The table quotes the `postalCodeExcludes` strings of the FI 00100 answer, the one that matched all five products ([se-fi-00100][l-t-fi-00100]); HDI carries none.
+For 601 DK the string ends in `2142` where 109, 112, 202, and 233 have `2412`.
+
+The catalog differs from the manual's excluded areas for 109 and 112.
+The manual excludes DK 3800-3999 for both (§5.3 p18, §5.14 p63), while the 109 entry excludes `38*` and three-character codes only, and product matches offered 109 to DK 3900 ([se-dk-3900][l-t-dk]).
+The manual excludes FR 97100-99999 for both, while the 109 entry excludes `97*,98*,99*`, which adds 97000-97099, and the 112 entry lists no FR excludes.
+The manual excludes ES Ceuta (51080) and Melilla (52080) for both, while the 109 entry excludes `51*,52*`.
+For 112 to IT the manual lists Serle (25080) and Bella Island (28838), while the 112 entry lists 25050, 25080, and 28898.
+The manual excludes GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT) and the NL Caribbean islands for both, while neither entry lists GB or NL excludes, and product matches offered neither 109 nor 112 to any GB postal code.
 
 ## Deviations from manual v5.26
 
@@ -215,3 +260,16 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [lb-305]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761305-109-se-no-parcelshop.json
 [lb-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json
 [lb-867]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json
+[l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
+[l-t-fi-22100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json
+[l-t-ax]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json
+[l-t-gb-w1d]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-w1d1an.json
+[l-t-gb-bt]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-bt11aa.json
+[l-t-gb-im]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-im11aa.json
+[l-t-gb-je]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json
+[l-t-gb-gy]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-gy11aa.json
+[l-t-je]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-je-je23ab.json
+[l-t-gg]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gg-gy11aa.json
+[l-t-dk]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json
+[l-t-fo]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fo-100.json
+[l-t-es]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-es-35001.json
