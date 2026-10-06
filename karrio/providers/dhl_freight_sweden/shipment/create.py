@@ -17,6 +17,31 @@ import karrio.providers.dhl_freight_sweden.utils as provider_utils
 import karrio.providers.dhl_freight_sweden.units as provider_units
 
 
+class OptionValueError(errors.ShippingSDKDetailedError):
+    """Raised when a bool-typed option spells neither true, false, nor unset."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
+def _check_flag_options(payload: models.ShipmentRequest) -> None:
+    invalid = provider_units.invalid_flags(payload.options or {})
+
+    if not any(invalid):
+        return
+
+    raise OptionValueError(
+        f"Options {', '.join(invalid)} must be true or false "
+        "(true, 1, yes or false, 0, no)",
+        details={
+            option: dict(
+                code="invalid",
+                message=f"expected true or false, got {value!r}",
+            )
+            for option, value in invalid.items()
+        },
+    )
+
+
 class DeclarationCurrencyError(errors.ShippingSDKDetailedError):
     """Raised when commodity value currencies conflict with the declaration."""
 
@@ -269,6 +294,7 @@ def shipment_request(
     settings: provider_utils.Settings,
 ) -> lib.Serializable:
     _check_label_type(payload, settings)
+    _check_flag_options(payload)
     shipper = lib.to_address(provider_units.with_parent_country(payload.shipper))
     recipient = lib.to_address(provider_units.with_parent_country(payload.recipient))
     packages = lib.to_packages(payload.parcels)
