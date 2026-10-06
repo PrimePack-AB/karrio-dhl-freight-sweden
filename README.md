@@ -84,7 +84,8 @@ Section and page references below are to that version unless marked v5.23.
 
 | Product | Valid codes | Default | Manual |
 |---------|-------------|---------|--------|
-| 102, 209, 210, 211, 212 | 1, 3, 4 | 1 | §5.2 p15, v5.23 §5.5 p23, §5.6 p30, §5.7 p35, §5.8 p39 |
+| 102, 210, 211, 212 | 1, 3, 4 | 1 | §5.2 p15, §5.6 p30, §5.7 p35, §5.8 p39 |
+| 209 | 1, 3, 4, 8 (manual invoicing, separate agreement needed) | 1 | §5.5 p27 |
 | 103, 118, 401 | 1, 4 | 1 | §5.12 p57, §5.16 p69, §5.17 p73 |
 | 104 | 3 | 3 | §5.13 p60 |
 | 402, 502 | 3, 4 | none | §5.18 p77 |
