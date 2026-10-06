@@ -1,6 +1,8 @@
 import re
 import typing
 
+import attr
+
 import karrio.lib as lib
 import karrio.core.models as models
 import karrio.core.units as units
@@ -118,6 +120,39 @@ class CustomsOption(lib.Enum):
     voec_number = lib.OptionEnum("voec_number")
 
 
+# Territories with their own ISO or customs country code that DHL serves
+# under their parent country: product matches answered no product for AX
+# 22100, JE JE2 3AB, GG GY1 1AA, and FO 100, and matched products for FI
+# 22100 and GB JE2 3AB (tests/dhl_freight_sweden/fixtures/sandbox/
+# lookup-product-matches-se-ax-22100.json and the other territory probes).
+TERRITORY_PARENTS: typing.Dict[str, str] = {
+    "AX": "FI",  # Åland
+    "JE": "GB",  # Jersey
+    "GG": "GB",  # Guernsey
+    "IM": "GB",  # Isle of Man
+    "FO": "DK",  # Faroe Islands
+    "GL": "DK",  # Greenland
+    "IC": "ES",  # Canary Islands
+    "EA": "ES",  # Ceuta and Melilla
+    "XI": "GB",  # Northern Ireland
+}
+
+
+def parent_country(country_code: typing.Optional[str]) -> typing.Optional[str]:
+    """The country DHL serves a territory code under; other codes unchanged."""
+    return TERRITORY_PARENTS.get((country_code or "").upper(), country_code)
+
+
+def with_parent_country(address: models.Address) -> models.Address:
+    """``address`` with a territory country code replaced by its parent's."""
+    country_code = parent_country(address.country_code)
+    return lib.identity(
+        attr.evolve(address, country_code=country_code)
+        if country_code != address.country_code
+        else address
+    )
+
+
 # The SDK EUCountry enum lists Greece under its VAT prefix EL, so the ISO
 # code GR is added, and Monaco, which Tullverket treats as EU, is likewise
 # appended. Special fiscal territories outside the EU VAT area (Tullverket,
@@ -156,10 +191,22 @@ def normalized_postal_code(
     country_code: typing.Optional[str],
     postal_code: typing.Optional[str],
 ) -> str:
-    """A postal code without spaces, upper-cased, and without a ``<country>-`` prefix."""
+    """A postal code without spaces, upper-cased, and without a ``<code>-`` prefix.
+
+    The prefix is the country code or the code of one of its territories,
+    so ``FI-22100`` and ``AX-22100`` both read as ``22100`` under FI.
+    """
     postal = str(postal_code or "").replace(" ", "").upper()
-    prefix = f"{(country_code or '').upper()}-"
-    return postal[len(prefix):] if len(prefix) > 1 and postal.startswith(prefix) else postal
+    country = (country_code or "").upper()
+    prefix = next(
+        (
+            f"{code}-"
+            for code in (country, *(t for t, p in TERRITORY_PARENTS.items() if p == country))
+            if code and postal.startswith(f"{code}-")
+        ),
+        "",
+    )
+    return postal[len(prefix):]
 
 
 def in_eu_vat_area(

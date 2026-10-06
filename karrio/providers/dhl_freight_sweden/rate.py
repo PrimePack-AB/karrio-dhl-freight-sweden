@@ -5,13 +5,16 @@ is served from Karrio's static-rate mechanism: per-merchant contract prices
 live in the server-side RateSheet and are resolved against the connection's
 service levels by the universal rating mixin. No carrier call is made.
 
-Rate-sheet zones match whole countries, so rates of products that exclude
+Territory country codes are rated as their parent country
+(``units.TERRITORY_PARENTS``). Rate-sheet zones match whole countries, so rates of products that exclude
 a party's postal code (``units.POSTAL_CODE_EXCLUSIONS``) are removed after
 the universal resolution. A party without a postal code is not checked in
 rating; booking requires one.
 """
 
 import typing
+
+import attr
 import karrio.lib as lib
 import karrio.core.models as models
 import karrio.providers.dhl_freight_sweden.units as provider_units
@@ -27,13 +30,16 @@ def rate_request(
     payload: models.RateRequest,
     settings: provider_utils.Settings,
 ) -> lib.Serializable:
+    shipper = provider_units.with_parent_country(payload.shipper)
+    recipient = provider_units.with_parent_country(payload.recipient)
+
     return lib.Serializable(
-        payload,
+        attr.evolve(payload, shipper=shipper, recipient=recipient),
         lib.identity,
         dict(
             addresses=dict(
-                shipper=_address(payload.shipper),
-                recipient=_address(payload.recipient),
+                shipper=_address(shipper),
+                recipient=_address(recipient),
             ),
             services=list(payload.services or []),
         ),

@@ -14,6 +14,7 @@ import karrio.core.models as models
 import karrio.core.errors as errors
 import karrio.providers.dhl_freight_sweden.error as error
 import karrio.providers.dhl_freight_sweden.lookup as lookup
+import karrio.providers.dhl_freight_sweden.units as provider_units
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
 
@@ -132,7 +133,7 @@ def parse_product_matches_response(
 
 def _address_match_criteria(party: dict) -> dict:
     return dict(
-        countryCode=party.get("country_code"),
+        countryCode=provider_units.parent_country(party.get("country_code")),
         postalCode=party.get("postal_code"),
     )
 

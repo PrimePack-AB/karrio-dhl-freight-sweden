@@ -214,6 +214,27 @@ An address lies inside the area when its country is an EU member state, GR, or M
 Postal codes are compared once spaces are removed and a leading country code of the address with a hyphen is dropped, so `FI-22100` reads as `22100` and `DK-3900` as `3900`; the excluded postal codes below are normalised the same way.
 The code sent to DHL is not changed.
 
+### Special territories
+
+Product matches answered no product for the territory codes AX, JE, GG, and FO, while the same postal codes under FI and GB matched products (2026-10-06: [AX 22100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json), [FI 22100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json), [JE JE2 3AB](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-je-je23ab.json), [GB JE2 3AB](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json), [GG GY1 1AA](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gg-gy11aa.json), [FO 100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fo-100.json)).
+The connector therefore rates, books, and looks up product matches for an address with a territory code under its parent country, sending the parent country code with the postal code as given, before the customs area and excluded postal code checks.
+Service point lookups send the country code as given.
+
+| Territory | Code | Sent as | Customs | Product matches (2026-10-06) |
+|-----------|------|---------|---------|------------------------------|
+| Åland | AX | FI | yes, FI 22000-22999 | FI 22100: HDI, 109, 202, 112, 601, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json)); AX 22100: none |
+| Jersey | JE | GB | yes | GB JE2 3AB: HDI, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json)); JE JE2 3AB: none |
+| Guernsey | GG | GB | yes | GB GY1 1AA: HDI, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-gy11aa.json)); GG GY1 1AA: none |
+| Isle of Man | IM | GB | yes | GB IM1 1AA: HDI, 202, 601, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-im11aa.json)) |
+| Northern Ireland | XI | GB | no, GB `BT` postcodes are inside for goods | GB BT1 1AA: HDI, 202, 601, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-bt11aa.json)) |
+| Faroe Islands | FO | DK | only for DK 3800-3999; the three-digit FO codes are not recognised | FO 100: none ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fo-100.json)) |
+| Greenland | GL | DK | yes, DK 3800-3999 | DK 3900: HDI, 109 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)) |
+| Canary Islands | IC | ES | yes, ES 35000-35999, 38000-38999 | ES 35001: HDI ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-es-35001.json)) |
+| Ceuta, Melilla | EA | ES | yes, ES 51000-52999 | not probed |
+
+The Customs column applies the [EU VAT area](#customs-and-the-eu-vat-area) check to the parent country and postal code.
+The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given.
+
 ### Excluded postal codes
 
 The "Excluded regions/areas" of the manual's product sections list postal codes the product does not serve.
