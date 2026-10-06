@@ -22,6 +22,8 @@ default 023.
 import typing
 import unittest
 
+import karrio.lib as lib
+
 import karrio.providers.dhl_freight_sweden.units as provider_units
 from . import booking, harness
 
@@ -39,8 +41,18 @@ COMMODITY = {
 }
 
 
-def export_customs(product: str, recipient: dict) -> typing.Tuple[dict, dict]:
-    """Customs payload and options for a lane, both empty within the EU VAT area."""
+# Customs handling - Standard requires the EORI number; the suite's is made up.
+SANDBOX_EORI = "SE0000000000"
+
+
+def export_customs(
+    product: str, recipient: dict, standard: bool = False
+) -> typing.Tuple[dict, dict]:
+    """Customs payload and options for a lane, both empty within the EU VAT area.
+
+    The customs service is full service, or with ``standard`` Customs
+    handling - Standard with ``SANDBOX_EORI``.
+    """
     if provider_units.in_eu_vat_area(recipient["country_code"], recipient["postal_code"]):
         return {}, {}
 
@@ -51,9 +63,14 @@ def export_customs(product: str, recipient: dict) -> typing.Tuple[dict, dict]:
                 invoice="SANDBOX-INV-1",
                 content_type="merchandise",
                 commodities=[COMMODITY],
+                **(dict(options=dict(eori_number=SANDBOX_EORI)) if standard else {}),
             )
         ),
-        dict(dhl_freight_sweden_customs_handling_full_service=True),
+        lib.identity(
+            dict(dhl_freight_sweden_customs_handling_standard=True)
+            if standard
+            else dict(dhl_freight_sweden_customs_handling_full_service=True)
+        ),
     )
 
 
@@ -77,6 +94,7 @@ class TestSandboxBookingExport(unittest.TestCase):
         recipient: typing.Optional[dict] = None,
         with_customs: bool = True,
         extra_options: typing.Optional[dict] = None,
+        standard_customs: bool = False,
     ):
         """Book ``product`` from SE to ``country``.
 
@@ -118,7 +136,7 @@ class TestSandboxBookingExport(unittest.TestCase):
             options.update(booking.service_point_options(point))
 
         customs, customs_options = (
-            export_customs(product, recipient) if with_customs else ({}, {})
+            export_customs(product, recipient, standard_customs) if with_customs else ({}, {})
         )
         booking.book(
             self,
@@ -177,6 +195,11 @@ class TestSandboxBookingExport(unittest.TestCase):
 
     def test_book_112_fi_aland(self):
         self.export("112", "FI", recipient=booking.ALAND)
+
+    def test_book_112_fi_aland_standard_customs(self):
+        # Product manual v5.26 lists "NO and Åland Islands (FI 22)" as the
+        # valid countries of Customs handling - Standard (§6.6 p94).
+        self.export("112", "FI", recipient=booking.ALAND, standard_customs=True)
 
     def test_book_109_fi_aland_without_customs(self):
         self.export("109", "FI", recipient=booking.ALAND, with_customs=False)
