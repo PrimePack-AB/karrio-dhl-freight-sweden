@@ -2,9 +2,8 @@
 
 AccessPoint parties are checked per product and destination country against
 DHL Freight Sweden product manual v5.26: 103 to SE accepts parcelshops and
-parcelstations (§5.12 p55-56), 109 follows Appendix C.3 (§10.4.2 p192-194)
-except IT, which follows v5.23 Appendix B.3 (p197), and 112 has no
-accessPoint party (§5.3 p19). The sandbox rejection 22015
+parcelstations (§5.12 p55-56), 109 follows Appendix C.3 (§10.4.2
+p192-194), and 112 has no accessPoint party (§5.3 p19). The sandbox rejection 22015
 "AccessPoint Party is not allowed for this product"
 (fixtures/sandbox/rejection-22015-112-se-pl-access-point.json) is the
 carrier-side failure these checks pre-empt.
@@ -84,6 +83,17 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
                     **_service_point("8005-PL-4507446", "ParcelStation", "PL"),
                     "dhl_freight_sweden_sent_free": True,
                 },
+            )
+        )
+
+        self.assertEqual(access_point["subType"], "ParcelStation")
+
+    def test_parcel_connect_to_it_accepts_parcel_station(self):
+        access_point = self._access_point(
+            _payload(
+                "dhl_freight_sweden_parcel_connect_b2c",
+                _recipient_it,
+                _service_point("8007-IT-1", "ParcelStation", "IT"),
             )
         )
 
@@ -172,6 +182,13 @@ _recipient_ie = {
     "city": "Dublin",
     "postal_code": "D02 X285",
     "country_code": "IE",
+}
+
+_recipient_it = {
+    **_recipient_se,
+    "city": "Roma",
+    "postal_code": "00184",
+    "country_code": "IT",
 }
 
 

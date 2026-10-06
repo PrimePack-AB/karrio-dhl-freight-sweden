@@ -113,8 +113,8 @@ The `dhl_freight_sweden_service_point` options produce an AccessPoint party only
 | Product | Country | Sub types | Manual |
 |---------|---------|-----------|--------|
 | 103 | SE | ParcelShop, ParcelStation | §5.12 p55-56 |
-| 109 | AT, BE, BG, CZ, DK, EE, FI, HU, LT, LV, NL, PL, SK | ParcelShop, ParcelStation | Appendix C.3, §10.4.2 p192-194 |
-| 109 | DE, ES, FR, GB, HR, IT, NO, PT, RO, SI | ParcelShop | v5.23 Appendix B.3, §10.3.2 p196-197 |
+| 109 | AT, BE, BG, CZ, DK, EE, FI, HU, IT, LT, LV, NL, PL, SK | ParcelShop, ParcelStation | Appendix C.3, §10.4.2 p192-194 |
+| 109 | DE, ES, FR, GB, HR, NO, PT, RO, SI | ParcelShop | Appendix C.3, §10.4.2 p192-193 |
 
 Every other product and country accepts no AccessPoint party, including 109 to IE and LU and all of 112 (§5.3 p19), for which DHL answers 22015 "AccessPoint Party is not allowed for this product" (sandbox, 2026-10-05: [rejection-22015-112-se-pl-access-point.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json)).
 A `dhl_freight_sweden_service_point` value that is a sub type or location type name (`ParcelShop`, `ParcelStation`, `servicepoint`, `locker`, `postoffice`, `postbank`, in any case) is rejected: the option takes the service point id, and the sub type goes in `dhl_freight_sweden_service_point_type`.
