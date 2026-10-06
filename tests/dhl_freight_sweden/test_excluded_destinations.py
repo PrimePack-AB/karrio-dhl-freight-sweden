@@ -234,6 +234,8 @@ class TestDHLFreightParcelConnectPlusExclusions(ExclusionCases, unittest.TestCas
         ("PT", "9999-999"),
         ("PT", "9500100"),
         ("PT", "9500"),
+        ("DK", "DK-3900"),
+        ("PT", "PT-9000-001"),
     ]
     served = [
         ("DK", "3799"),
@@ -246,6 +248,8 @@ class TestDHLFreightParcelConnectPlusExclusions(ExclusionCases, unittest.TestCas
         ("NO", "9180"),
         ("PT", "1000-001"),
         ("PT", "8999-999"),
+        ("DK", "DK-4000"),
+        ("NO", "no-0154"),
     ]
     malformed = [
         ("DK", "38000"),

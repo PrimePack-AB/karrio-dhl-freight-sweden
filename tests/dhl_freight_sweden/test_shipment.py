@@ -155,6 +155,38 @@ class TestDHLFreightShipment(unittest.TestCase):
                 else:
                     self.assertNotIn("customsInformation", serialized)
 
+    def test_create_shipment_request_customs_to_special_territories(self):
+        cases = [
+            ("FR", "97400", True),
+            ("FR", "75004", False),
+            ("DK", "3900", True),
+            ("DK", "1620", False),
+            ("FI", "FI-22100", True),
+            ("DK", "DK-3900", True),
+            ("FI", "FI-00100", False),
+        ]
+
+        for country_code, postal_code, keeps_customs in cases:
+            with self.subTest(country_code=country_code, postal_code=postal_code):
+                payload = {
+                    **ShipmentPayload202Customs,
+                    "service": "dhl_freight_sweden_road_freight_direct",
+                    "recipient": {
+                        **_recipient_se,
+                        "country_code": country_code,
+                        "postal_code": postal_code,
+                    },
+                }
+                serialized = serialize_request(
+                    gateway.mapper.create_shipment_request(
+                        models.ShipmentRequest(**payload)
+                    )
+                )
+
+                self.assertEqual(
+                    "customsInformation" in serialized, keeps_customs
+                )
+
     def test_create_shipment_request_parcel_connect_to_gb_keeps_customs(self):
         # GB is outside the EU VAT area, so 109 and 112 to GB declare
         # customs as they do to NO.

@@ -194,6 +194,26 @@ On other products or from other countries the option fails with `details` keyed 
 The vendored print spec 2.10.0 defines `qrCode` as a print option, but its `PrintResult` is a list of reports with `name`, `content`, `contentType`, and `type`, and it does not say how a QR code report is named, typed, or ordered.
 The connector returns the first report as the label and does not surface a QR code document; no 107 booking with `qrCode` has been sent to the sandbox.
 
+### Customs and the EU VAT area
+
+The connector sends customs information and the requested customs services only when the shipper or the recipient lies outside the EU VAT area for goods; within it, customs data and customs services are dropped with a `customs_omitted_intra_eu` warning.
+The manual makes customs proceedings mandatory for deliveries outside the European Union or the tax area and names Åland (FI 22) and the Canary Islands as areas outside the tax area (§7.4 p162).
+An address lies inside the area when its country is an EU member state, GR, or MC, and its postal code is not in one of the ranges below, or when it is a GB postcode starting with `BT` (Northern Ireland), which is inside the area for goods.
+
+| Country | Postal codes | Territory |
+|---------|--------------|-----------|
+| FI | 22000-22999 | Åland |
+| ES | 35000-35999, 38000-38999 | Canary Islands |
+| ES | 51000-51999, 52000-52999 | Ceuta, Melilla |
+| DE | 78266, 27498 | Büsingen, Heligoland |
+| GR | 63086 | Mount Athos |
+| IT | 23041, 22061 | Livigno, Campione d'Italia |
+| FR | 97000-97999 | French overseas departments and collectivities |
+| DK | 3800-3999 | Faroe Islands and Greenland |
+
+Postal codes are compared once spaces are removed and a leading country code of the address with a hyphen is dropped, so `FI-22100` reads as `22100` and `DK-3900` as `3900`; the excluded postal codes below are normalised the same way.
+The code sent to DHL is not changed.
+
 ### Excluded postal codes
 
 The "Excluded regions/areas" of the manual's product sections list postal codes the product does not serve.
@@ -221,7 +241,7 @@ A booking fails with `details` keyed by `recipient.postal_code` or `shipper.post
 | 107 (shipper) | PT | 9000-9999 (first four digits) | the Azores, Madeira, and other islands | §5.15 p66 |
 | 202, 205, SPI (shipper and recipient) | UA | 95000-99999 | Crimea/Sebastopol region | §5.4 p23, §5.9 p43, §5.11 p52 |
 
-Each country's codes are compared in its own format once spaces are removed: four digits for DK and NO, five digits for ES, FR, IT, and UA (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
+Each country's codes are compared in its own format once spaces and a leading `<country>-` prefix are removed: four digits for DK and NO, five digits for ES, FR, IT, and UA (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
 A code of another shape cannot be shown to lie outside the excluded ranges, so it counts as excluded in rating and booking.
 A missing or blank code is not checked in rating, so the product is still offered, while booking rejects it with `details` keyed by the party's `postal_code`.
 The ranges apply to the recipient, except for the UA range of 202, 205, and SPI, products used to and from SE, which applies to both parties, and for 107, a return sent from the listed countries to the original sender, whose ranges apply to the shipper, as the manual's 107 entry for FR reads "Delivery only from France mainland and Corsica" (§5.15 p66).
