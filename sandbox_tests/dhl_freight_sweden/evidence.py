@@ -690,6 +690,28 @@ def _(b: Builder) -> Json:
     )
 
 
+@evidence("lookup-product-matches-se-dk-1620.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Product matches for SE 11143 to DK 1620 returned HDI, 109, 202, 112, 601, and 233, without 205, "
+        "so the booking-export case 205 to DK skipped without booking.",
+        None, "SE 11143 -> DK 1620", None, None, f"{SUITE_RUN}: test_booking_export",
+        [reduce_product_matches(b.suite_exchange("20261006-123912", "023-product-matches-205-dk"))],
+    )
+
+
+@evidence("lookup-product-matches-se-no-0154.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Product matches for SE 11143 to NO 0154 returned HDI, 109, 202, 112, 601, and 233, without 205, "
+        "so the booking-export case 205 to NO skipped without booking.",
+        None, "SE 11143 -> NO 0154", None, None, f"{SUITE_RUN}: test_booking_export",
+        [reduce_product_matches(b.suite_exchange("20261006-123912", "025-product-matches-205-no"))],
+    )
+
+
 TERRITORIES_RUN = "20261006-105223"
 TERRITORY_PROBES: typing.Tuple[typing.Tuple[str, str, str, str], ...] = (
     ("se-fi-22100", "009", "FI 22100", "Åland under FI"),
