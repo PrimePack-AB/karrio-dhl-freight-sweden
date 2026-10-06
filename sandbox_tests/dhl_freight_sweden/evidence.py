@@ -785,27 +785,38 @@ SWISS_PROBES: typing.Tuple[typing.Tuple[str, str, str, str], ...] = (
 )
 
 
-def reduce_product_matches_with_payer_codes(exchange: Exchange) -> Exchange:
-    """Like ``reduce_product_matches_with_destinations``, keeping each match's payer codes.
+def reduce_product_matches_with_customs(exchange: Exchange) -> Exchange:
+    """Like ``reduce_product_matches_with_destinations``, keeping each match's customs terms.
 
-    Each match also keeps its payer codes reduced to code and customs flag.
+    Each match also keeps its payer codes reduced to code and customs flag,
+    and the codes of its additional services whose code contains customs.
     """
-    payer_codes = [
-        [
-            {key: payer.get(key) for key in ("code", "customs")}
-            for payer in match["product"].get("payerCodes") or []
-        ]
+    customs = [
+        dict(
+            payerCodes=[
+                {key: payer.get(key) for key in ("code", "customs")}
+                for payer in match["product"].get("payerCodes") or []
+            ],
+            customsAdditionalServices=[
+                service.get("code")
+                for service in match["product"].get("additionalServices") or []
+                if "customs" in str(service.get("code")).lower()
+            ],
+        )
         for match in exchange["response"]
     ]
     exchange = reduce_product_matches_with_destinations(exchange)
-    for match, codes in zip(exchange["response"], payer_codes):
-        match["product"]["payerCodes"] = codes
-    exchange["response_reduced"] += "; each match also keeps payerCodes reduced to code and customs"
+    for match, terms in zip(exchange["response"], customs):
+        match["product"].update(terms)
+    exchange["response_reduced"] += (
+        "; each match also keeps payerCodes reduced to code and customs, and the codes of "
+        "the additionalServices whose code contains customs"
+    )
     return exchange
 
 
 def swiss_probe(b: Builder, lane: str, sequence: str, destination: str, area: str) -> Json:
-    exchange = reduce_product_matches_with_payer_codes(
+    exchange = reduce_product_matches_with_customs(
         b.suite_exchange(SWISS_RUN, f"{sequence}-product-matches-{lane}")
     )
     codes = [match["product"]["code"] for match in exchange["response"]]

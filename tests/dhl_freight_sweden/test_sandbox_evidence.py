@@ -64,10 +64,21 @@ CAPTURED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 TOKEN = re.compile(r"^[A-Za-z0-9_\-+/=]{30,}$")
 OMITTED = re.compile(r"^<base64 omitted: \d+ characters>$")
+# DHL additional-service codes that match TOKEN, exempt only as exact values
+# under the key the evidence reducer stores them in.
+SERVICE_CODES_KEY = "customsAdditionalServices"
+LONG_SERVICE_CODES = frozenset({"customsCustomersOwnDeclaration"})
 
 
 def load(path: pathlib.Path) -> dict:
     return json.loads(path.read_text())
+
+
+def token_like(key: str, value: str) -> bool:
+    """Whether ``value`` under ``key`` looks like a secret token."""
+    if key == SERVICE_CODES_KEY and value in LONG_SERVICE_CODES:
+        return False
+    return TOKEN.match(value) is not None
 
 
 def walk(value: typing.Any, key: str = "") -> typing.Iterator[typing.Tuple[str, typing.Any]]:
@@ -137,9 +148,19 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
                     self.assertNotIn(key.lower(), ("client-key", "request_headers"))
                     if not isinstance(value, str) or key == "sha256":
                         continue
-                    self.assertNotRegex(value, TOKEN, f"{key} carries a token-like value")
+                    self.assertFalse(token_like(key, value), f"{key} carries a token-like value {value!r}")
                     if key == "content":
                         self.assertRegex(value, OMITTED)
+
+    def test_token_check_exempts_only_listed_service_codes(self):
+        token = "AbCdEf0123456789GhIjKl0123456789MnOp"
+
+        self.assertTrue(token_like("customsAdditionalServices", token))
+        self.assertFalse(
+            token_like("customsAdditionalServices", "customsCustomersOwnDeclaration")
+        )
+        self.assertTrue(token_like("code", "customsCustomersOwnDeclaration"))
+        self.assertFalse(token_like("customsAdditionalServices", "customsJointDeclaration"))
 
     def test_consignor_carries_the_account_number(self):
         for path in EVIDENCE_FILES:

@@ -146,11 +146,12 @@
         "code": "DDP",
         "customs": true
        }
-      ]
+      ],
+      "customsAdditionalServices": []
      }
     }
    ],
-   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256; each match also keeps payerCodes reduced to code and customs"
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the toCountries entries with a non-empty postalCodeExcludes or of the Consignee country, each reduced to countryCode, customs, and postalCodeExcludes; the full body is identified by response_source.sha256; each match also keeps payerCodes reduced to code and customs, and the codes of the additionalServices whose code contains customs"
   }
  ]
 }
