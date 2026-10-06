@@ -9,7 +9,8 @@ GB only according to a separate agreement. Åland (FI 22100) is booked with
 and 233 book to DK inside the EU VAT area, and 202, 205, 233, and 601 to NO
 with customs handling full service, each with the explicit DAP payer code,
 and 112 and 109 book to NO with customs handling Standard and a made-up
-EORI number.
+EORI number. 601 books to CH with customs handling full service and a
+commercial invoice carrying a declared value.
 Before spending a booking it checks for free that product matches offer the
 product for the lane and, for 109, that a service point near the recipient
 accepts it, and skips otherwise. Lanes to PL declare SENT free explicitly.
