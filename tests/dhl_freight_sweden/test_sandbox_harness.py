@@ -185,6 +185,13 @@ class TestSandboxHarnessRedaction(unittest.TestCase):
             },
         )
 
+    def test_decoded_body_keeps_empty_json_values(self):
+        self.assertEqual(harness.decoded_body("[]"), [])
+        self.assertEqual(harness.decoded_body("{}"), {})
+        self.assertEqual(harness.decoded_body('{"a": 1}'), {"a": 1})
+        self.assertEqual(harness.decoded_body("not json"), "not json")
+        self.assertEqual(harness.decoded_body({"a": 1}), {"a": 1})
+
 
 SERVICE_POINT = {
     "service_point_id": "PL-1234",
