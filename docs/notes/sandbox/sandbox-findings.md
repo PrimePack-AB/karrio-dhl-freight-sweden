@@ -1,10 +1,10 @@
 ---
-title: "DHL Freight SE sandbox findings, 2026-10-05"
+title: "DHL Freight SE sandbox findings, 2026-10-05 and 2026-10-06"
 ---
 
 ## Environment and method
 
-All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, and all times below are UTC.
+All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, except one booking on 2026-10-06, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
 The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10.
 A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
@@ -22,13 +22,13 @@ The committed copies drop the `client-key` header and the response headers, and 
 The original captures masked the customer number in the Consignor party id; the evidence files restore it and record the restored placeholder under `account_number_restored`.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
 A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
-The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, and 2906761354.
+The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, and 2906761867.
 `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
 `sandbox_tests/dhl_freight_sweden/evidence.py` builds the files from the captures, and rebuilding over the same captures reproduces them byte for byte.
 
 ## Bookings
 
-All 18 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 19 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg, and only those marked in the table carried customs data.
 None was cancelled, because the API Farm has no cancellation operation.
 
@@ -52,15 +52,18 @@ None was cancelled, because the API Farm has no cancellation operation.
 | 2906761339 | 16:53:40 | 601 | SE → HU 1052 | DAP | none | none | 2LHU1052+00000000 | [booking-2906761339][b-339] |
 | 2906761347 | 16:53:52 | 601 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906761347][b-347] |
 | 2906761354 | 17:14:34 | 109 | SE → DK 1620 | 022 | none | 8009-115191 ParcelShop | 2LDK1620+70530000 | [booking-2906761354][b-354] |
+| 2906761867 | 2026-10-06 08:10:52 | 112 | SE → FR 75004 | 023 | none | none | 2LFR75004+74000000 | [booking-2906761867][b-867] |
 
 The time is the response `Date` header, except for the three direct bookings whose captures carry no header, where it is the capture file's modification time.
 The 109 and 112 bookings to PL declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, and 2906761347 sent `UIT_FREE` `"false"` without a number, and DHL echoed these entries in the responses.
 No other booking sent additional information entries.
+The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
 Every booking except 2906761073, 2906761081, and 2906761149 was followed by a Print API call that returned a PDF label (`label_<id>.pdf`).
 The label of 2906761354, printed with page type `Label`, is one PDF page of 297.638 × 595.276 pt (105 × 210 mm) ([label-2906761354][lb-354]).
 Its text shows the Consignee name below the sender block and the Consignee name and address at the bottom, and its only `Phn.` line carries the sender's +46 8 123 456, although the booking sent the consignee phone +45 20 12 34 56.
 The 109 NO label of 2906761305 shows the Consignee name and address, Karl Johans gate 10, 0154 Oslo, at the bottom, apart from the shop's CHRISTIAN KROHGS GATE 1, 0186 OSLO, and likewise prints only the sender's phone ([label-2906761305][lb-305]).
-The home-delivery labels of 102, 112, 118, and 601 and the 103 service-point label print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761297][lb-297], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]); the section [Phone numbers on labels](#phone-numbers-on-labels) compares these labels with the manual.
+The home-delivery labels of 102, 118, and 601, the 112 label to HU, and the 103 service-point label print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761297][lb-297], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]); the section [Phone numbers on labels](#phone-numbers-on-labels) compares these labels with the manual.
+The 112 FR label of 2906761867, printed with page type `Label`, is one PDF page of 283.46 × 425.2 pt (100 × 150 mm) in a different layout from the other labels: it shows the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000, and no `Phn.` line ([label-2906761867][lb-867]).
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (§10.14.7 p235).
 The 103 and 109 bookings to RO, HU, NO, and DK were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
@@ -148,6 +151,7 @@ It does not allow printing the receiver phone for 109 and 112 to AT, BE, BG, CZ,
 It makes the receiver's mobile phone number mandatory in the shipment data for 118 (§5.16 p68) and the consignee phone number and e-mail address mandatory for 601 (§5.19 p81).
 Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone, and the 103 booking sent no AccessPoint phone.
 The 109 labels to DK and NO print the sender phone and no consignee phone, although the bookings sent +45 20 12 34 56 and +47 400 00 000 ([label-2906761354][lb-354], [label-2906761305][lb-305]), which matches the field 9 rule for 109 to DK and NO.
+The 112 label to FR prints neither the sender phone nor the consignee phone +33 6 12 34 56 78 and has no `Phn.` line ([label-2906761867][lb-867]), which matches the field 9 rule for 112 to FR and the conditional field 6.
 The 112 label to HU prints a `Phn.` line with neither the sender phone nor the consignee phone +36 30 000 0000 ([label-2906761297][lb-297]), and the 118 label prints a `Phn.` line with no number ([label-2906761255][lb-255]); both match the field 9 rules for 112 to HU and for 118, and the missing sender phone matches the conditional field 6.
 The 102 and 601 labels print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761248][lb-248]), where fields 6 and 9 are conditional.
 The 103 service-point label prints a `Phn.` line with no number ([label-2906761230][lb-230]), while the manual makes the receiving parcelshop's phone number mandatory for 103; this remains a deviation.
@@ -184,6 +188,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [b-339]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761339-601-se-hu.json
 [b-347]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761347-601-se-ro.json
 [b-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json
+[b-867]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761867-112-se-fr.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json
 [r-22015]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json
@@ -203,3 +208,4 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [lb-297]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761297-112-se-hu.json
 [lb-305]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761305-109-se-no-parcelshop.json
 [lb-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json
+[lb-867]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json
