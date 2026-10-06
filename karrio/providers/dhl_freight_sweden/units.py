@@ -705,6 +705,7 @@ def _excluded(
 
 
 PARCEL_CONNECT_PLUS = (ShippingService.dhl_freight_sweden_parcel_connect_plus,)
+PARCEL_CONNECT = (ShippingService.dhl_freight_sweden_parcel_connect_b2c,)
 
 # The numeric "Excluded regions/areas" of product manual v5.26. Non-numeric
 # areas (GB JE/GY/BT, the NL Caribbean islands) are not checked.
@@ -723,6 +724,19 @@ POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     ),
     *_excluded(PARCEL_CONNECT_PLUS, "NO", "Jan Mayen and Svalbard", 8099, (9170, 9179)),
     *_excluded(PARCEL_CONNECT_PLUS, "PT", "the Azores, Madeira, and other islands", (9000, 9999)),
+    # 109, §5.14 p63
+    *_excluded(PARCEL_CONNECT, "DK", "Greenland and the Faroe Islands", (3800, 3999)),
+    *_excluded(PARCEL_CONNECT, "ES", "Canary Islands", (35000, 35999), (38000, 38999)),
+    *_excluded(PARCEL_CONNECT, "ES", "Ceuta and Melilla", 51080, 52080),
+    *_excluded(PARCEL_CONNECT, "FR", "outside mainland France and Corsica", (97100, 99999)),
+    *_excluded(
+        PARCEL_CONNECT,
+        "IT",
+        "Vatican, Campione d'Italia, Livigno-Trepalle, and San Marino",
+        120, 22061, 23041, (47890, 47899),
+    ),
+    *_excluded(PARCEL_CONNECT, "NO", "Jan Mayen and Svalbard", 8099, (9170, 9179)),
+    *_excluded(PARCEL_CONNECT, "PT", "the Azores, Madeira, and other islands", (9000, 9999)),
 )
 
 

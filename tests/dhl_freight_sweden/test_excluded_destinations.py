@@ -60,7 +60,7 @@ class TestDHLFreightExcludedDestinationRating(unittest.TestCase):
                 offered = self._offered(_fr(postal_code), [])
 
                 self.assertNotIn(ParcelConnectPlusService, offered)
-                self.assertIn(ParcelConnectService, offered)
+                self.assertIn(RoadFreightStandardService, offered)
 
     def test_112_does_not_rate_to_malformed_fr_postal_codes(self):
         for postal_code in ["9720", "972000", "97 2A0", "ABCDE", None]:
@@ -133,12 +133,18 @@ class TestDHLFreightExcludedDestinationBooking(unittest.TestCase):
 
         self.assertEqual(serialize_request(request)["productCode"], "112")
 
-    def test_other_products_to_excluded_fr_postal_codes_are_not_checked(self):
+    def test_products_without_fr_ranges_are_not_checked(self):
         request = gateway.mapper.create_shipment_request(
-            models.ShipmentRequest(**_payload(ParcelConnectService, _fr("97200")))
+            models.ShipmentRequest(
+                **_payload(
+                    RoadFreightStandardService,
+                    _fr("97200"),
+                    {"dhl_freight_sweden_payer_code": "DAP"},
+                )
+            )
         )
 
-        self.assertEqual(serialize_request(request)["productCode"], "109")
+        self.assertEqual(serialize_request(request)["productCode"], "202")
 
 
 class ExclusionCases:
@@ -238,6 +244,49 @@ class TestDHLFreightParcelConnectPlusExclusions(ExclusionCases, unittest.TestCas
     ]
 
 
+class TestDHLFreightParcelConnectExclusions(ExclusionCases, unittest.TestCase):
+    """109 excluded regions/areas, product manual v5.26 §5.14 p63."""
+
+    product = "109"
+    excluded = [
+        ("DK", "3800"),
+        ("DK", "3999"),
+        ("ES", "35000"),
+        ("ES", "38999"),
+        ("ES", "51080"),
+        ("ES", "52080"),
+        ("FR", "97100"),
+        ("FR", "99999"),
+        ("IT", "00120"),
+        ("IT", "22061"),
+        ("IT", "23041"),
+        ("IT", "47890"),
+        ("IT", "47899"),
+        ("NO", "8099"),
+        ("NO", "9170"),
+        ("NO", "9179"),
+        ("PT", "9000-001"),
+        ("PT", "9999-999"),
+    ]
+    served = [
+        ("DK", "1620"),
+        ("ES", "28001"),
+        ("FR", "75004"),
+        ("FR", "97099"),
+        ("IT", "00184"),
+        ("IT", "04020"),
+        ("IT", "23030"),
+        ("NO", "0154"),
+        ("PT", "1000-001"),
+    ]
+    malformed = [
+        ("FR", "9720"),
+        ("FR", None),
+        ("IT", "120"),
+        ("DK", "16200"),
+    ]
+
+
 def _address(country: str, postal_code: typing.Optional[str]) -> dict:
     return {
         **_recipient_se,
@@ -326,7 +375,7 @@ def _rate_payload(recipient: dict, services: list) -> dict:
 
 
 ParcelConnectPlusService = "dhl_freight_sweden_parcel_connect_plus"
-ParcelConnectService = "dhl_freight_sweden_parcel_connect_b2c"
+RoadFreightStandardService = "dhl_freight_sweden_road_freight_standard"
 
 
 if __name__ == "__main__":
