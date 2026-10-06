@@ -198,6 +198,31 @@ EU_VAT_POSTAL_PREFIXES: typing.Tuple[typing.Tuple[str, str], ...] = (
     ("GB", "BT"),  # Northern Ireland
 )
 
+# DHL rejected customs handling full service and standard for SE to FI
+# 22100 with 24003 "... is not available for this country combination"
+# (tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json,
+# rejection-24003-112-se-fi-aland-standard.json), although product manual
+# v5.26 lists Åland (FI 22) for Customs handling - Standard (§6.6 p94).
+ALAND_POSTAL_RANGE: typing.Tuple[str, int, int] = ("FI", 22000, 22999)
+ALAND_REJECTED_CUSTOMS_SERVICES: typing.Dict[str, str] = {
+    "dhl_freight_sweden_customs_handling_standard": "customsHandlingStandard",
+    "dhl_freight_sweden_customs_handling_full_service": "customsHandlingFullService",
+}
+ALAND_CUSTOMS_EVIDENCE: typing.Tuple[str, ...] = (
+    "tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json",
+    "tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json",
+)
+
+
+def in_aland(country_code: typing.Optional[str], postal_code: typing.Optional[str]) -> bool:
+    """Whether an address lies in Åland, FI 22000-22999 once mapped and normalised."""
+    country, low, high = ALAND_POSTAL_RANGE
+    if parent_country((country_code or "").upper()) != country:
+        return False
+    postal = normalized_postal_code(country, postal_code)
+    return postal.isdigit() and low <= int(postal) <= high
+
+
 # Warning code shared with the PostNord connector.
 CUSTOMS_OMITTED_INTRA_EU = "customs_omitted_intra_eu"
 

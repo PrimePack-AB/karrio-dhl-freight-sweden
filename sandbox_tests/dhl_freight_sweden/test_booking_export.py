@@ -22,7 +22,9 @@ default 023.
 import typing
 import unittest
 
+import karrio.core.models as models
 import karrio.lib as lib
+import karrio.providers.dhl_freight_sweden.shipment.create as create
 
 import karrio.providers.dhl_freight_sweden.units as provider_units
 from . import booking, harness
@@ -193,13 +195,33 @@ class TestSandboxBookingExport(unittest.TestCase):
     def test_book_109_dk_parcel_shop(self):
         self.export("109", "DK", frozenset({provider_units.PartySubType.ParcelShop.value}))
 
+    def refused_to_aland(self, standard: bool) -> None:
+        """The connector refuses a customs handling service to Åland before booking.
+
+        DHL rejected both services with 24003 when these cases booked
+        (tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json,
+        rejection-24003-112-se-fi-aland-standard.json), so they no longer
+        spend a booking.
+        """
+        customs, customs_options = export_customs("112", booking.ALAND, standard)
+        payload: dict = dict(
+            service="112",
+            shipper=booking.SHIPPER,
+            recipient=booking.ALAND,
+            parcels=[booking.PARCEL],
+            options=customs_options,
+            **customs,
+        )
+        with self.assertRaises(create.AlandCustomsServiceError):
+            self.gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
+
     def test_book_112_fi_aland(self):
-        self.export("112", "FI", recipient=booking.ALAND)
+        self.refused_to_aland(standard=False)
 
     def test_book_112_fi_aland_standard_customs(self):
         # Product manual v5.26 lists "NO and Åland Islands (FI 22)" as the
         # valid countries of Customs handling - Standard (§6.6 p94).
-        self.export("112", "FI", recipient=booking.ALAND, standard_customs=True)
+        self.refused_to_aland(standard=True)
 
     def test_book_109_fi_aland_without_customs(self):
         self.export("109", "FI", recipient=booking.ALAND, with_customs=False)
