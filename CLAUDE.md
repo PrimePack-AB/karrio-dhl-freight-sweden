@@ -13,7 +13,7 @@
 - When the sandbox contradicts the manual (e.g. Åland 24003), follow the sandbox, keep the manual citation, and record the deviation in the findings note
 
 ## Evidence rules
-- Every sandbox claim in README.md or docs/notes/sandbox/sandbox-findings.md cites a committed redacted fixture in tests/dhl_freight_sweden/fixtures/sandbox/ produced by sandbox_tests evidence tooling
+- Every sandbox claim in README.md, any docs/ page outside docs/notes/, or docs/notes/sandbox/sandbox-findings.md cites a committed redacted fixture in tests/dhl_freight_sweden/fixtures/sandbox/ produced by sandbox_tests evidence tooling; `test_doc_links.py` enforces the links
 - Client key is secret (repo-root `.env`, never print); account number 116768 is not secret and must stay unredacted
 - The API has no cancel endpoint; sandbox bookings stay booked
 - Probe with free lookups (product matches, service points) before spending bookings; `require_product_match=False` forces a single case past the matches gate
