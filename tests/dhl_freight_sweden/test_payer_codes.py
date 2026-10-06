@@ -75,6 +75,35 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
 
         self.assertEqual(self._payer_code(payload), "3")
 
+    def test_special_accepts_manual_invoicing_code_8(self):
+        special = _payload("dhl_freight_sweden_special", _recipient_se)
+
+        self.assertEqual(self._payer_code(special), "1")
+        self.assertEqual(
+            self._payer_code(
+                _with_options(special, {"dhl_freight_sweden_payer_code": "8"})
+            ),
+            "8",
+        )
+
+    def test_payer_code_8_is_special_only(self):
+        services = [
+            "dhl_freight_sweden_paket",
+            "dhl_freight_sweden_pall",
+            "dhl_freight_sweden_stycke",
+            "dhl_freight_sweden_parti",
+        ]
+
+        for service in services:
+            with self.subTest(service=service):
+                error = self._error(
+                    _payload(
+                        service, _recipient_se, {"dhl_freight_sweden_payer_code": "8"}
+                    )
+                )
+
+                self.assertIn("valid codes: 1, 3, 4", str(error))
+
     def test_incoterm_dap_on_parcel_connect_translates_to_022(self):
         self.assertEqual(self._payer_code(_with_incoterm(_parcel_connect, "DAP")), "022")
 

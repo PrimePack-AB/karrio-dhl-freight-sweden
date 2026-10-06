@@ -293,8 +293,9 @@ PAYER_CODES: typing.Dict[str, PayerCodes] = {
     ShippingService.dhl_freight_sweden_road_freight_standard.value: PayerCodes(
         EXPORT_INCOTERMS, IMPORT_INCOTERMS  # §5.4 p24
     ),
+    # §5.5 p27; 8 is manual invoicing, which needs a separate agreement.
     ShippingService.dhl_freight_sweden_special.value: PayerCodes(
-        FREIGHT_PAYER_CODES  # v5.23 §5.5 p23
+        (*FREIGHT_PAYER_CODES, "8")
     ),
     ShippingService.dhl_freight_sweden_pall.value: PayerCodes(
         FREIGHT_PAYER_CODES  # §5.6 p30
