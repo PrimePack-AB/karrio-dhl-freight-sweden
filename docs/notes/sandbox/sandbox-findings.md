@@ -4,7 +4,7 @@ title: "DHL Freight SE sandbox findings, 2026-10-05 and 2026-10-06"
 
 ## Environment and method
 
-All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, except one booking on 2026-10-06, and all times below are UTC.
+All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, except one booking and one product matches lookup on 2026-10-06, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
 The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10 and its 112 GB case at 08:29.
 A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
@@ -165,6 +165,7 @@ The README lists PostalCode error 16012 as "not supported", and no capture shows
 No booking used the freight products 202, 205, 209, 210, 211, 212, 233, or SPI, or the parcel and home delivery products 104, 107, 401, 402, and 502.
 601 was booked only to DK, HU, and RO; 601 to HU or RO without EKAER or UIT entries, with a free flag `"true"`, or with a UIT number, and 601 to PL, are untested.
 109 with home addressing and no AccessPoint party is untested.
+112 to GB was not booked: the suite's 112 GB case asked product matches for SE 11143 to GB W1D 1AN, which returned HDI, 202, 601, and 233 but neither 109 nor 112, and skipped without booking ([lookup-product-matches-se-gb.json][l-pm-gb]); the manual lists GB for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200).
 Customs was tested only as Customs handling - Full service to NO; Customs handling - Standard, the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
 No additional service other than `customsHandlingFullService` was sent, payer codes 3 and 4 with a freight payer party were not used, and 601 used only DAP.
 Every booking had a single piece of 1 kg and 30 × 20 × 10 cm, so multi-piece shipments and bookings below the minimum piece dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17) are untested.
@@ -198,6 +199,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [l-pc-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-pl-route-16009.json
 [l-sp-se]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-se-capacity-not-applied.json
 [l-sp-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-pl-capacity-too-large.json
+[l-pm-gb]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb.json
 [l-pm-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-pl.json
 [l-pm-se]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se.json
 [l-products]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json
