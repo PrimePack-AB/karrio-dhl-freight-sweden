@@ -385,6 +385,7 @@ An excluded booking fails with `ExcludedDestinationError` keyed by the party's `
 | `dhl_freight_sweden_insurance` | number | Insurance value in the `currency` option; karrio's `insurance` maps to it |
 | `shipment_date` | date | The shipping date, also the invoice date fallback |
 
+A boolean option accepts true, `"true"`, `"1"`, 1, or `"yes"` and false, `"false"`, `"0"`, 0, or `"no"` (strings in any case), treats null or an empty string as unset, and fails with `OptionValueError` on any other value.
 `customs.options` takes `eori_number` for Standard and `voec_number` for VOEC.
 No additional service other than the customs services has been sent to the sandbox ([findings](docs/notes/sandbox/sandbox-findings.md#untested)).
 
@@ -395,6 +396,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | Error | Raised when | `details` key |
 |-------|-------------|---------------|
 | `LabelTypeError` | a label type other than PDF | `label_type` or `config.label_type` |
+| `OptionValueError` | a boolean option that spells neither true nor false | each such option |
 | `CustomsInformationRequiredError` | no customs data across the EU VAT area border | `customs` |
 | `CommercialInvoiceRequiredError` | a sale without `customs.commercial_invoice` | `customs.commercial_invoice` |
 | `CustomsInvoiceNumberError` | neither `customs.invoice` nor a reference | `customs.invoice` |
