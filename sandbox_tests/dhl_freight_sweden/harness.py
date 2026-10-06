@@ -37,7 +37,7 @@ BOOKING_SEGMENTS = frozenset(
 )
 SEGMENTS = frozenset({"lookups"}) | BOOKING_SEGMENTS
 DEFAULT_SEGMENTS = frozenset({"lookups"})
-DEFAULT_MAX_BOOKINGS = 10
+DEFAULT_MAX_BOOKINGS = 30
 BOOKING_PATH = "/transportinstruction/sendtransportinstruction"
 REDACTED = "<redacted>"
 SECRET_HEADERS = frozenset({"client-key"})

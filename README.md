@@ -649,7 +649,7 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 | `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` | `lookups` | comma-separated segments to run |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS` | all | comma-separated product codes the booking segments may book |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES` | all | comma-separated ISO recipient country codes the booking segments may book to |
-| `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `10` | booking attempts allowed in one process |
+| `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `30` | booking attempts allowed in one process |
 | `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR` | `$XDG_STATE_HOME/karrio-dhl-freight-sweden/sandbox/<YYYYmmdd-HHMMSS>` | capture directory (`~/.local/state` when `XDG_STATE_HOME` is unset) |
 
 The `lookups` segment books nothing: it checks PostalCodes routes (a valid SE code, the 118 home-delivery flag, and an unknown code), product matches for SE to SE and SE to PL, and the nearest service points for SE and PL, including the parcel capacity filter and `location_types`.
@@ -670,6 +670,7 @@ The sandbox enforced the capacity filter for PL but returned the same SE points 
 
 Each booking attempt is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
 To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
+The selectors cannot separate two cases that share a product and country, so add `unittest -k <method name>` per case (repeatable, matched as a substring of the test id) to rerun exactly one case, for example `-k test_book_112_no_customs_standard`.
 Every live call writes its request and response as JSON to the capture directory, with the `client-key` header and the client key redacted.
 The account number stays in the captures, because DHL API Farm support traces sandbox bookings by it.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
