@@ -30,13 +30,17 @@ def rate_request(
         payload,
         lib.identity,
         dict(
-            recipient=dict(
-                country_code=payload.recipient.country_code,
-                postal_code=payload.recipient.postal_code,
+            addresses=dict(
+                shipper=_address(payload.shipper),
+                recipient=_address(payload.recipient),
             ),
             services=list(payload.services or []),
         ),
     )
+
+
+def _address(address: models.Address) -> dict:
+    return dict(country_code=address.country_code, postal_code=address.postal_code)
 
 
 def parse_rate_response(
@@ -45,27 +49,26 @@ def parse_rate_response(
 ) -> typing.Tuple[typing.List[models.RateDetails], typing.List[models.Message]]:
     rates, messages = universal_parse_rate_response(_response, settings)
     ctx = _response.ctx or {}
-    recipient = ctx.get("recipient") or {}
-    exclusions = {
-        rate.service: exclusion
+    addresses = ctx.get("addresses") or {}
+    excluded = {
+        rate.service: hit
         for rate in rates
-        for exclusion in [
-            provider_units.excluded_destination(
+        for hit in [
+            provider_units.excluded_party(
                 provider_units.ShippingService.map(rate.service).value_or_key,
-                recipient.get("country_code"),
-                recipient.get("postal_code"),
+                addresses,
             )
         ]
-        if exclusion is not None
+        if hit is not None
     }
 
     return (
-        [rate for rate in rates if rate.service not in exclusions],
+        [rate for rate in rates if rate.service not in excluded],
         [
             *messages,
             *(
-                _excluded_destination_message(service, exclusion, recipient, settings)
-                for service, exclusion in exclusions.items()
+                _excluded_destination_message(service, hit, settings)
+                for service, hit in excluded.items()
                 if service in (ctx.get("services") or [])
             ),
         ],
@@ -74,22 +77,20 @@ def parse_rate_response(
 
 def _excluded_destination_message(
     service: str,
-    exclusion: provider_units.PostalCodeExclusion,
-    recipient: dict,
+    excluded: provider_units.ExcludedParty,
     settings: provider_utils.Settings,
 ) -> models.Message:
     return models.Message(
         carrier_id=settings.carrier_id,
         carrier_name=settings.carrier_name,
         code="destination_not_supported",
-        message=(
-            f"the service {service} does not deliver to {exclusion.country} "
-            f"postal codes {exclusion.low}-{exclusion.high} ({exclusion.region}) "
-            f"and needs a {exclusion.digits}-digit postal code to rule them out"
+        message=provider_units.excluded_party_message(
+            provider_units.ShippingService.map(service).value_or_key, excluded
         ),
         details=dict(
             service=service,
-            country_code=recipient.get("country_code"),
-            postal_code=recipient.get("postal_code"),
+            party=excluded.party,
+            country_code=excluded.exclusion.country,
+            postal_code=excluded.postal_code,
         ),
     )

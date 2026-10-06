@@ -1,3 +1,4 @@
+import re
 import typing
 
 import karrio.lib as lib
@@ -638,11 +639,31 @@ PARCEL_CONNECT_PLUS_COUNTRIES = [
 ]
 
 
-class PostalCodeExclusion(typing.NamedTuple):
-    """A recipient postal-code range a product does not deliver to.
+class PostalCodeFormat(typing.NamedTuple):
+    """A country's postal-code shape for the excluded-range checks.
 
-    ``digits`` is the country's postal-code length: a code of another
-    shape cannot be shown to lie outside the range, so it counts as
+    ``pattern`` must match the whole code once spaces are removed, and its
+    ``key`` group holds the ``key_digits`` digits the ranges compare.
+    """
+
+    pattern: str
+    key_digits: int
+    description: str
+
+
+FOUR_DIGITS = PostalCodeFormat(r"(?P<key>\d{4})", 4, "4-digit")
+FIVE_DIGITS = PostalCodeFormat(r"(?P<key>\d{5})", 5, "5-digit")
+POSTAL_CODE_FORMATS: typing.Dict[str, PostalCodeFormat] = {
+    "FR": FIVE_DIGITS,
+}
+
+
+class PostalCodeExclusion(typing.NamedTuple):
+    """A postal-code range of a country a product does not serve.
+
+    ``parties`` names the transport-instruction addresses the range applies
+    to. A code that does not match the country's ``POSTAL_CODE_FORMATS``
+    entry cannot be shown to lie outside the range, so it counts as
     excluded.
     """
 
@@ -650,48 +671,81 @@ class PostalCodeExclusion(typing.NamedTuple):
     country: str
     low: int
     high: int
-    digits: int
     region: str
+    parties: typing.Tuple[str, ...] = ("recipient",)
+
+    def describe(self) -> str:
+        width = POSTAL_CODE_FORMATS[self.country].key_digits
+        low, high = f"{self.low:0{width}d}", f"{self.high:0{width}d}"
+        return low if low == high else f"{low}-{high}"
 
 
-# "Excluded regions/areas" of product manual v5.26 that are numeric ranges.
+# The numeric "Excluded regions/areas" of product manual v5.26.
 POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     PostalCodeExclusion(
         product=ShippingService.dhl_freight_sweden_parcel_connect_plus.value,
         country="FR",
         low=97100,
         high=99999,
-        digits=5,
         region="outside mainland France and Corsica",  # §5.3 p18
     ),
 )
 
 
-def postal_code_well_formed(
-    exclusion: PostalCodeExclusion, postal_code: typing.Optional[str]
-) -> bool:
-    postal = str(postal_code or "").replace(" ", "")
-    return postal.isdigit() and len(postal) == exclusion.digits
+def postal_code_key(
+    country_code: typing.Optional[str], postal_code: typing.Optional[str]
+) -> typing.Optional[int]:
+    """The compared digits of a postal code, or None when it is malformed."""
+    postal_format = POSTAL_CODE_FORMATS.get((country_code or "").upper())
+    match = lib.identity(
+        re.fullmatch(postal_format.pattern, str(postal_code or "").replace(" ", ""))
+        if postal_format
+        else None
+    )
+    return int(match.group("key")) if match else None
 
 
-def excluded_destination(
+class ExcludedParty(typing.NamedTuple):
+    exclusion: PostalCodeExclusion
+    party: str
+    postal_code: typing.Optional[str]
+    well_formed: bool
+
+
+def excluded_party_message(product_code: str, excluded: "ExcludedParty") -> str:
+    exclusion = excluded.exclusion
+    direction = "to" if excluded.party == "recipient" else "from"
+    excluded_codes = f"{exclusion.country} postal codes {exclusion.describe()} ({exclusion.region})"
+
+    return lib.identity(
+        f"Product {product_code} does not ship {direction} {excluded_codes}; "
+        f"got {excluded.party} postal code {excluded.postal_code}"
+        if excluded.well_formed
+        else f"Product {product_code} {direction} {exclusion.country} requires a "
+        f"{POSTAL_CODE_FORMATS[exclusion.country].description} {excluded.party} "
+        f"postal code to rule out {excluded_codes}; got {excluded.postal_code!r}"
+    )
+
+
+def excluded_party(
     product_code: str,
-    country_code: typing.Optional[str],
-    postal_code: typing.Optional[str],
-) -> typing.Optional[PostalCodeExclusion]:
-    """The exclusion that bars the product from the recipient, if any."""
-    postal = str(postal_code or "").replace(" ", "")
+    addresses: typing.Mapping[str, typing.Mapping[str, typing.Any]],
+) -> typing.Optional[ExcludedParty]:
+    """The first party an exclusion bars the product from, if any.
 
+    ``addresses`` maps party names to ``country_code``/``postal_code`` dicts.
+    """
     return next(
         (
-            exclusion
+            ExcludedParty(exclusion, party, postal_code, key is not None)
             for exclusion in POSTAL_CODE_EXCLUSIONS
             if exclusion.product == product_code
-            and exclusion.country == (country_code or "").upper()
-            and (
-                not postal_code_well_formed(exclusion, postal)
-                or exclusion.low <= int(postal) <= exclusion.high
-            )
+            for party in exclusion.parties
+            for address in [addresses.get(party) or {}]
+            if (address.get("country_code") or "").upper() == exclusion.country
+            for postal_code in [address.get("postal_code")]
+            for key in [postal_code_key(exclusion.country, postal_code)]
+            if key is None or exclusion.low <= key <= exclusion.high
         ),
         None,
     )

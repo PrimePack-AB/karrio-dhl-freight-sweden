@@ -11,12 +11,29 @@ import unittest
 
 import karrio.core.models as models
 import karrio.sdk as karrio
+from karrio.providers.dhl_freight_sweden import units
 from karrio.providers.dhl_freight_sweden.shipment.create import (
     ExcludedDestinationError,
 )
 
-from .fixture import detail_keys, gateway, serialize_request
+from .fixture import detail_keys, gateway, members, serialize_request
 from .test_shipment import _payload, _recipient_se
+
+
+class TestDHLFreightPostalCodeExclusionTable(unittest.TestCase):
+    def test_every_excluded_country_has_a_postal_code_format(self):
+        for exclusion in units.POSTAL_CODE_EXCLUSIONS:
+            with self.subTest(exclusion=exclusion):
+                self.assertIn(exclusion.country, units.POSTAL_CODE_FORMATS)
+                self.assertLessEqual(exclusion.low, exclusion.high)
+
+    def test_exclusions_name_known_products_and_parties(self):
+        products = {member.value for member in members(units.ShippingService)}
+
+        for exclusion in units.POSTAL_CODE_EXCLUSIONS:
+            with self.subTest(exclusion=exclusion):
+                self.assertIn(exclusion.product, products)
+                self.assertTrue(set(exclusion.parties) <= {"shipper", "recipient"})
 
 
 class TestDHLFreightExcludedDestinationRating(unittest.TestCase):
@@ -64,6 +81,7 @@ class TestDHLFreightExcludedDestinationRating(unittest.TestCase):
                     "destination_not_supported",
                     dict(
                         service=ParcelConnectPlusService,
+                        party="recipient",
                         country_code="FR",
                         postal_code="97200",
                     ),
