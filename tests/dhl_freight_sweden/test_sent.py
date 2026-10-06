@@ -1,9 +1,9 @@
 """DHL Freight (SE API Farm) SENT additionalInformation tests.
 
 Lanes to or from PL carry SENT entries under the shipment's
-additionalInformation: SENT_REF with SENT_CARKEY (product manual v5.23
-§5.4 p19), or SENT_FREE "true", which the live API requires when neither
-identifier is sent (validation error 22001,
+additionalInformation: SENT_FREE "false" with SENT_REF and SENT_CARKEY, or
+SENT_FREE "true" (product manual v5.26 §5.4 p23). The live API requires
+SENT_FREE "true" when neither identifier is sent (validation error 22001,
 fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json). The
 connector requires one of them explicitly.
 """
@@ -75,13 +75,21 @@ class TestDHLFreightSent(unittest.TestCase):
             )
         )
 
-        self.assertEqual(
-            serialized["additionalInformation"],
-            [
-                {"code": "SENT_REF", "stringValue": "123456789A"},
-                {"code": "SENT_CARKEY", "stringValue": "82727166666"},
-            ],
+        self.assertEqual(serialized["additionalInformation"], SentIdentified)
+
+    def test_sent_free_false_with_identifiers(self):
+        serialized = self._serialize(
+            _parcel_connect(
+                _recipient_pl,
+                {
+                    "dhl_freight_sweden_sent_free": False,
+                    "dhl_freight_sweden_sent_ref": "123456789A",
+                    "dhl_freight_sweden_sent_carkey": "82727166666",
+                },
+            )
         )
+
+        self.assertEqual(serialized["additionalInformation"], SentIdentified)
 
     def test_sent_reference_without_carrier_key_fails(self):
         error = self._error(
@@ -168,6 +176,11 @@ _shipper_pl = {
 }
 
 SentFree = {"code": "SENT_FREE", "stringValue": "true"}
+SentIdentified = [
+    {"code": "SENT_FREE", "stringValue": "false"},
+    {"code": "SENT_REF", "stringValue": "123456789A"},
+    {"code": "SENT_CARKEY", "stringValue": "82727166666"},
+]
 
 
 if __name__ == "__main__":

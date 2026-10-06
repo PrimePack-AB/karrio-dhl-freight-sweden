@@ -94,8 +94,9 @@ No booking used an Incoterm as the payer code for 109 or 112.
 
 ### SENT for PL
 
-Manual v5.23 marks the SENT reference and carrier key optional in the related-fields tables of 202 (v5.23 p19) and 601 (v5.23 p87) and does not mention SENT for 109 (v5.23 pp66-68) or 112 (v5.23 pp13-16), and it does not document `SENT_FREE`.
-The sandbox rejected 109 to PL without SENT entries with 22001 ([rejection-22001][r-22001]) and accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123][b-123], [booking-2906761131][b-131]).
+The manual makes `SENT_FREE` ("Is shipment SENT free?") mandatory for shipments to or from PL in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), with the SENT reference and carrier key mandatory when the shipment is not SENT free, and its API example sends `SENT_FREE` `"false"` with `SENT_REF` and `SENT_CARKEY`.
+It does not mention SENT in the sections of 109 (§5.14 pp62-64) or 112 (§5.3 pp17-20).
+The sandbox applied the same rule to 109: it rejected 109 to PL without SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." ([rejection-22001][r-22001]), and it accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123][b-123], [booking-2906761131][b-131]).
 The vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines an `AdditionalInformation` schema that no other schema references.
 No booking sent `SENT_REF` and `SENT_CARKEY`, so the sandbox's acceptance of real SENT identifiers is untested.
 

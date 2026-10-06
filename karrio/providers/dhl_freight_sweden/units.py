@@ -492,10 +492,12 @@ class ShippingOption(lib.Enum):
     dhl_freight_sweden_customs_procedure_code = lib.OptionEnum("procedureCode", str)
 
     # SENT (Polish road transport monitoring) entries for lanes to or from PL,
-    # sent under the shipment's additionalInformation. The manual lists
-    # SENT_REF and SENT_CARKEY (AN..20, product manual v5.23 §5.4 p19); the
-    # live API additionally requires SENT_FREE "true" when neither is sent
-    # (validation error 22001, tests/dhl_freight_sweden/fixtures/sandbox/
+    # sent under the shipment's additionalInformation. Product manual v5.26
+    # makes SENT_FREE mandatory and, for a shipment that is not SENT free,
+    # SENT_REF and SENT_CARKEY (AN..20), which its API example sends after
+    # SENT_FREE "false" (§5.4 p23). The live API rejects a PL shipment
+    # without the identifiers unless SENT_FREE is "true" (validation error
+    # 22001, tests/dhl_freight_sweden/fixtures/sandbox/
     # rejection-22001-109-se-pl-without-sent.json). The connector requires
     # an explicit choice and never declares SENT free by itself.
     dhl_freight_sweden_sent_free = lib.OptionEnum("SENT_FREE", bool)
