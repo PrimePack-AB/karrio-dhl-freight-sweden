@@ -87,9 +87,10 @@ The rules follow the DHL Freight (Sweden) product manual, version 5.26, updated 
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 Section and page references below are to that version.
 
-The connector also refuses an export of goods for sale that lacks a commercial invoice; this rule is the connector's own and has no manual citation.
+The DHL API itself accepts a `ProformaInvoice` document on an export ([booking-2906761305-109-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json)).
+Customs requires a commercial invoice for a sale, so the connector refuses a proforma invoice for an export of goods for sale before it sends any request; this check is the connector's own and has no manual citation.
 Customs information is sent only when the shipper or the recipient lies outside the EU VAT area (see [Customs and the EU VAT area](#customs-and-the-eu-vat-area)), and there an unset `customs.content_type` and every value except `documents`, `gift`, `return_merchandise`, and `sample` count as a sale.
-A sale needs `customs.commercial_invoice` true, which sends a `CommercialInvoice` document; without it the booking fails before the request with a field error keyed `customs.commercial_invoice`.
+A sale needs `customs.commercial_invoice` true, which sends a `CommercialInvoice` document; without it the connector fails with a field error keyed `customs.commercial_invoice`.
 The four non-sale content types may leave `customs.commercial_invoice` false or unset, which sends a `ProformaInvoice` document.
 
 ### Payer codes
@@ -510,7 +511,7 @@ The same options book identically through the server (`POST /api/v1/shipments`).
 | "accepts only ... access points" / "accepts no access point" | connector field error | pick another sub type or a non-PUDO product |
 | "carries the type name ... instead of a service point id" | connector field error | send the id in `dhl_freight_sweden_service_point` |
 | payer code, SENT, EKAER, UIT, or GR VAT number/TIN field errors | connector field error | fix the option per [Booking rules](#booking-rules) |
-| "An export of goods for sale ... needs a commercial invoice" | connector field error | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
+| "Customs requires a commercial invoice for an export of goods for sale ..." | connector check before booking | set `customs.commercial_invoice` true, or set a non-sale `customs.content_type` for goods that are not sold, per [Booking rules](#booking-rules) |
 | "Address is mandatory for party AccessPoint" / "Name is mandatory ..." (22001) | DHL validation | reject the candidate, take the next |
 | "Accesspoint party is required for product 103" | DHL validation | a service-point product was booked without the options; do not retry as-is |
 | linehaul failure without postalCode (22006) | DHL validation | reject the candidate |
