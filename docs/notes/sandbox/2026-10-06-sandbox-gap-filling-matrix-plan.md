@@ -179,7 +179,7 @@ Insert at the end of the class, after `test_book_202_gb_northern_ireland_without
 - [ ] **Step 3: Verify offline**
 
 Run: `.venv/bin/python -m unittest discover -v -s sandbox_tests 2>&1 | tail -n 2`
-Expected: `OK (skipped=N)`, N grown by ten.
+Expected: `OK (skipped=6)` — the harness skips per class in `setUpClass`, so the skip count is invariant at six; the gate is a clean import with zero tests run.
 
 Run: `pyright`
 Expected: 0 errors.
@@ -235,7 +235,7 @@ Insert after `test_book_102_domestic`:
 - [ ] **Step 3: Verify offline**
 
 Run: `.venv/bin/python -m unittest discover -v -s sandbox_tests 2>&1 | tail -n 2`
-Expected: `OK (skipped=N)`, N grown by one.
+Expected: `OK (skipped=6)` — per-class skipping keeps the count invariant; the gate is a clean import with zero tests run.
 
 Run: `pyright` and `.venv/bin/python -m unittest discover -s tests`
 Expected: 0 errors; OK.
