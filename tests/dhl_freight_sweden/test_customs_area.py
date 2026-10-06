@@ -61,6 +61,12 @@ class TestDHLFreightEUVATArea(unittest.TestCase):
             ("FR", "FR-97200", False),
             ("GB", "GB-BT1 1AA", True),
             ("SE", "SE-111 43", True),
+            ("FR", "98600", False),
+            ("FR", "98899", False),
+            ("FR", "98900", True),
+            ("EL", "63086", False),
+            ("EL", "630 86", False),
+            ("EL", "10552", True),
             ("FI", "fi 22100", False),
             ("FI", "FI22100", False),
             ("FI", "FI 22 100", False),
@@ -80,6 +86,33 @@ class TestDHLFreightEUVATArea(unittest.TestCase):
                 self.assertEqual(
                     units.in_eu_vat_area(country_code, postal_code), expected
                 )
+
+    def test_tables_match_nordic_conventions(self):
+        self.assertEqual(
+            units.NON_EU_VAT_POSTAL_RANGES,
+            (
+                ("FI", 22000, 22999),
+                ("ES", 35000, 35999),
+                ("ES", 38000, 38999),
+                ("ES", 51000, 51999),
+                ("ES", 52000, 52999),
+                ("DE", 78266, 78266),
+                ("DE", 27498, 27498),
+                ("GR", 63086, 63086),
+                ("IT", 23041, 23041),
+                ("IT", 22061, 22061),
+                ("FR", 97000, 97999),
+                ("DK", 3800, 3999),
+                ("FR", 98600, 98899),
+                ("EL", 63086, 63086),
+            ),
+        )
+        self.assertEqual(units.EU_VAT_POSTAL_PREFIXES, (("GB", "BT"),))
+        self.assertEqual(
+            units.NUMERIC_POSTAL_TERRITORY_PARENTS,
+            {"AX": "FI", "FO": "DK", "GL": "DK", "IC": "ES", "EA": "ES"},
+        )
+        self.assertEqual(units.UK_POSTCODE_AREA_CODES, frozenset({"JE", "GY", "IM", "BT"}))
 
 
 class TestDHLFreightPostalCodeNormalisation(unittest.TestCase):

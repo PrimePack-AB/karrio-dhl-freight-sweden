@@ -206,10 +206,11 @@ An address lies inside the area when its country is an EU member state, GR, or M
 | ES | 35000-35999, 38000-38999 | Canary Islands |
 | ES | 51000-51999, 52000-52999 | Ceuta, Melilla |
 | DE | 78266, 27498 | Büsingen, Heligoland |
-| GR | 63086 | Mount Athos |
+| GR, EL | 63086 | Mount Athos |
 | IT | 23041, 22061 | Livigno, Campione d'Italia |
 | FR | 97000-97999 | French overseas departments and collectivities |
 | DK | 3800-3999 | Faroe Islands and Greenland |
+| FR | 98600-98899 | Wallis and Futuna, French Polynesia, New Caledonia |
 
 Postal codes are compared once spaces are removed and a leading country code of the address with a hyphen is dropped, so `FI-22100` reads as `22100` and `DK-3900` as `3900`; the excluded postal codes below are normalised the same way.
 The code sent to DHL is not changed.
