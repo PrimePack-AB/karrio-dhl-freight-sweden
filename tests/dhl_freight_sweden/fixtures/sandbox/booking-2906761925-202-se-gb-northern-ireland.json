@@ -1,0 +1,180 @@
+{
+ "kind": "booking",
+ "summary": "202 SE to GB BT1 1AA (Northern Ireland) with payer code DAP without customs data, then printed.",
+ "captured_at": "2026-10-06T09:07:54Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "202",
+ "route": "SE 11143 -> GB BT1 1AA",
+ "booking_id": "2906761925",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export.test_book_202_gb_northern_ireland_without_customs",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-06T09:07:54Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-110752/003-booking-202.request.json",
+    "sha256": "7692ebb77ed0abcaea2e4bf20cc47264e4a7026d2212eead3fb827b81b86816e"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-110752/003-booking-202.response.json",
+    "sha256": "15e5b06a3b57ee2b02ab089407df13aa2bda365733f730ec49e65a615b7d42b9"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Belfast",
+       "countryCode": "GB",
+       "postalCode": "BT1 1AA",
+       "street": "10 Donegall Place"
+      },
+      "contactName": "Siobhan Kelly",
+      "email": "siobhan.kelly@example.co.uk",
+      "name": "Siobhan Kelly",
+      "phone": "+44 7700 900456",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "202",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906761925",
+     "productCode": "202",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "DAP"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Siobhan Kelly",
+       "contactName": "Siobhan Kelly",
+       "address": {
+        "street": "10 Donegall Place",
+        "cityName": "Belfast",
+        "postalCode": "BT11AA",
+        "countryCode": "GB"
+       },
+       "phone": "+44 7700 900456",
+       "email": "siobhan.kelly@example.co.uk"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525025810"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LGBBT11AA+11000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-06T09:07:54Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-110752/004-booking-202.request.json",
+    "sha256": "4ba8ac8116fc0fa0429a46fdad0f89faa28ae312b33650dd346afe0e90395eb7"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-110752/004-booking-202.response.json",
+    "sha256": "430b56bb6a94ffc29a64739d7a207a04954e403231ebc433e482d03603327a9e"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906761925"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906761925.pdf",
+      "content": "<base64 omitted: 105092 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -485,6 +485,15 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "112 SE to FR home delivery with payer code 023, then printed; the response adds Chronopost additionalInformation entries.",
      "112", "SE 11143 -> FR 75004", "20261006-101051", ("003-booking-112", "004-booking-112"),
      "test_booking_export", 0),
+    ("booking-2906761917-109-se-fi-aland.json",
+     "109 SE to FI 22100 (Åland) with payer code 022 to ParcelShop 8011-221003201 without customs data, then printed.",
+     "109", "SE 11143 -> FI 22100", "20261006-110739",
+     ("003-service-points-109-fi-22100", "005-booking-109", "006-booking-109"),
+     "test_booking_export.test_book_109_fi_aland_without_customs", 1),
+    ("booking-2906761925-202-se-gb-northern-ireland.json",
+     "202 SE to GB BT1 1AA (Northern Ireland) with payer code DAP without customs data, then printed.",
+     "202", "SE 11143 -> GB BT1 1AA", "20261006-110752", ("003-booking-202", "004-booking-202"),
+     "test_booking_export.test_book_202_gb_northern_ireland_without_customs", 0),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
@@ -528,6 +537,21 @@ def _(b: Builder) -> Json:
         f"{SUITE_RUN}: test_booking_export.test_book_112_gb",
         [reduce_product_matches(b.suite_exchange("20261006-103901", "001-product-matches-112-gb")),
          b.suite_exchange("20261006-103901", "003-booking-112")],
+        primary=1,
+    )
+
+
+@evidence("rejection-24003-112-se-fi-aland.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "112 SE to FI 22100 (Åland) home delivery with payer code 023, customs handling full service, one "
+        "commodity, and a proforma invoice, after product matches offered 112, was rejected with 24003 "
+        "'customsHandlingFullService is not available for this country combination'.",
+        "112", "SE 11143 -> FI 22100", None, "24003",
+        f"{SUITE_RUN}: test_booking_export.test_book_112_fi_aland",
+        [reduce_product_matches(b.suite_exchange("20261006-110728", "001-product-matches-112-fi-22100")),
+         b.suite_exchange("20261006-110728", "003-booking-112")],
         primary=1,
     )
 
