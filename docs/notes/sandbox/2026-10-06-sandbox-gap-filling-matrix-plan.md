@@ -38,7 +38,7 @@ title: "Gap-filling sandbox matrix implementation plan, 2026-10-06"
 **Files:**
 - Modify: `sandbox_tests/dhl_freight_sweden/test_booking_export.py:32` and the module docstring.
 
-- [ ] **Step 1: Extend the Incoterm table**
+- [x] **Step 1: Extend the Incoterm table**
 
 Replace line 32:
 
@@ -52,7 +52,7 @@ with:
 INCOTERMS = {"109": "DAP", "112": "DDP", "202": "DAP", "205": "DAP", "233": "DAP", "601": "DAP"}
 ```
 
-- [ ] **Step 2: Extend the module docstring's customs paragraph**
+- [x] **Step 2: Extend the module docstring's customs paragraph**
 
 In the module docstring, after the sentence ending `...the customs service that needs no registration identifier.`, the paragraph currently explains the Combiterm translation for 109 and 112. Append one sentence to that paragraph, before the closing quotes:
 
@@ -62,7 +62,7 @@ case also passes that Incoterm as its explicit payer code, because the
 freight products have no default payer code.
 ```
 
-- [ ] **Step 3: Verify imports and types**
+- [x] **Step 3: Verify imports and types**
 
 Run: `.venv/bin/python -m unittest discover -v -s sandbox_tests 2>&1 | tail -n 2`
 Expected: `OK (skipped=N)` for every test — the sandbox is disabled, so nothing runs, but the module imports.
@@ -73,7 +73,7 @@ Expected: 0 errors.
 Run: `.venv/bin/python -m unittest discover -s tests`
 Expected: OK.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add sandbox_tests/dhl_freight_sweden/test_booking_export.py
@@ -87,7 +87,7 @@ git commit -m "feat: map the DAP incoterm for the freight products in sandbox cu
 **Files:**
 - Modify: `sandbox_tests/dhl_freight_sweden/test_booking_export.py` (test methods and module docstring).
 
-- [ ] **Step 1: Update the module docstring**
+- [x] **Step 1: Update the module docstring**
 
 Replace the docstring's first paragraph (lines 1-12) with:
 
@@ -112,7 +112,7 @@ accepts it, and skips otherwise. Lanes to PL declare SENT free explicitly.
 
 Keep the existing second paragraph (the NO/GB customs explanation) below it, with one scoping edit to its first sentence: "NO and GB are outside the EU VAT area, so their bookings carry customs data when they carry any: one commodity, a proforma invoice number, and DHL customs handling full service, the customs service that needs no registration identifier."
 
-- [ ] **Step 2: Add the nine pass-1 cases and the conditional forced case**
+- [x] **Step 2: Add the nine pass-1 cases and the conditional forced case**
 
 Insert after `test_book_112_gb` (line 193) and before `test_book_109_dk_parcel_shop`:
 
@@ -177,7 +177,7 @@ Insert at the end of the class, after `test_book_202_gb_northern_ireland_without
         )
 ```
 
-- [ ] **Step 3: Verify offline**
+- [x] **Step 3: Verify offline**
 
 Run: `.venv/bin/python -m unittest discover -v -s sandbox_tests 2>&1 | tail -n 2`
 Expected: `OK (skipped=6)` — the harness skips per class in `setUpClass`, so the skip count is invariant at six; the gate is a clean import with zero tests run.
@@ -188,7 +188,7 @@ Expected: 0 errors.
 Run: `.venv/bin/python -m unittest discover -s tests`
 Expected: OK.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add sandbox_tests/dhl_freight_sweden/test_booking_export.py
@@ -202,7 +202,7 @@ git commit -m "test: add the freight and Standard customs sandbox booking cases"
 **Files:**
 - Modify: `sandbox_tests/dhl_freight_sweden/test_booking_approved.py`.
 
-- [ ] **Step 1: Update the module docstring**
+- [x] **Step 1: Update the module docstring**
 
 Replace the docstring's second sentence (line 3-6) with:
 
@@ -213,7 +213,7 @@ pre-flight). Bookings count against ``DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS``
 and cannot be cancelled through the API.
 ```
 
-- [ ] **Step 2: Add the case**
+- [x] **Step 2: Add the case**
 
 Insert after `test_book_102_domestic`:
 
@@ -233,7 +233,7 @@ Insert after `test_book_102_domestic`:
         )
 ```
 
-- [ ] **Step 3: Verify offline**
+- [x] **Step 3: Verify offline**
 
 Run: `.venv/bin/python -m unittest discover -v -s sandbox_tests 2>&1 | tail -n 2`
 Expected: `OK (skipped=6)` — per-class skipping keeps the count invariant; the gate is a clean import with zero tests run.
@@ -241,7 +241,7 @@ Expected: `OK (skipped=6)` — per-class skipping keeps the count invariant; the
 Run: `pyright` and `.venv/bin/python -m unittest discover -s tests`
 Expected: 0 errors; OK.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add sandbox_tests/dhl_freight_sweden/test_booking_approved.py
@@ -258,7 +258,7 @@ git commit -m "test: add the 401 domestic sandbox booking case"
 - Modify: `README.md:652` and `README.md:671-672`.
 - Modify: `CLAUDE.md` (Commands section, sandbox bullet).
 
-- [ ] **Step 1: Raise the default and move its pin**
+- [x] **Step 1: Raise the default and move its pin**
 
 Replace in `harness.py`:
 
@@ -274,7 +274,7 @@ DEFAULT_MAX_BOOKINGS = 30
 
 Update the pinning assertion in `tests/dhl_freight_sweden/test_sandbox_harness.py` (`test_defaults`) from `self.assertEqual(config.max_bookings, 10)` to `self.assertEqual(config.max_bookings, 30)` — keep the literal, so the defaults test still detects unintentional default changes.
 
-- [ ] **Step 2: Update the README env table**
+- [x] **Step 2: Update the README env table**
 
 Replace the row at `README.md:652`:
 
@@ -288,7 +288,7 @@ with:
 | `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS` | `30` | booking attempts allowed in one process |
 ```
 
-- [ ] **Step 3: Document `-k` selection in the README**
+- [x] **Step 3: Document `-k` selection in the README**
 
 At `README.md:672`, replace:
 
@@ -303,7 +303,7 @@ To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT
 The selectors cannot separate two cases that share a product and country, so add `unittest -k <method name>` per case (repeatable, matched as a substring of the test id) to rerun exactly one case, for example `-k test_book_112_no_customs_standard`.
 ```
 
-- [ ] **Step 4: Update the CLAUDE.md policy bullet**
+- [x] **Step 4: Update the CLAUDE.md policy bullet**
 
 In `CLAUDE.md` under Commands, replace:
 
@@ -317,7 +317,7 @@ with:
 - Sandbox suite (opt-in, books real sandbox shipments): `DHL_FREIGHT_SWEDEN_SANDBOX=1`, `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=<segment>`, `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=<codes>`, `DHL_FREIGHT_SWEDEN_COUNTRIES=<codes>`, `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=<n>` (default 30); narrow single cases with `unittest -k <method>`, never retry rejected bookings
 ```
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `.venv/bin/python -c "from sandbox_tests.dhl_freight_sweden import harness; assert harness.DEFAULT_MAX_BOOKINGS == 30; print('ok')"`
 Expected: `ok`.
@@ -325,7 +325,7 @@ Expected: `ok`.
 Run: `pyright` and `.venv/bin/python -m unittest discover -s tests`
 Expected: 0 errors; OK.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add sandbox_tests/dhl_freight_sweden/harness.py tests/dhl_freight_sweden/test_sandbox_harness.py README.md CLAUDE.md
@@ -338,7 +338,7 @@ git commit -m "feat: raise the sandbox default booking budget to 30"
 
 **Files:** none in the repository; captures land under `~/.local/state/karrio-dhl-freight-sweden/sandbox/<run>/`.
 
-- [ ] **Step 1: Run the nine cases**
+- [x] **Step 1: Run the nine cases**
 
 ```bash
 set -a; . ./.env; set +a
@@ -362,7 +362,7 @@ DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=12 \
 Expected: the seven non-205 cases book (`ok`), except that the 109 Standard case may end in a service-point skip, which costs nothing; the two 205 cases either book or end in `skipped ... product matches do not offer 205 from SE to DK/NO` — a skip costs nothing.
 Any `FAILED` is unexpected: stop, capture the run directory from the `sandbox captures:` line in the log, and report back before touching anything else.
 
-- [ ] **Step 2: Record what happened**
+- [x] **Step 2: Record what happened**
 
 ```bash
 RUN=<run-dir-from-the-log>
@@ -382,7 +382,7 @@ Note the run directory and each booking id — task 6 needs them. Note the UTC t
 - Create: `tests/dhl_freight_sweden/fixtures/sandbox/booking-<id>-<product>-se-<dest>.json`.
 - Modify: `docs/notes/sandbox/sandbox-findings.md`, `README.md:657-661`, `README.md:677`.
 
-- [ ] **Step 1: Add one SUITE_BOOKINGS tuple per booking**
+- [x] **Step 1: Add one SUITE_BOOKINGS tuple per booking**
 
 Each tuple's shape (from `evidence.py:433-497`): `(file name, summary, product, route, run dir, stems, test id, primary)`.
 The `stems` are the capture file stems without the `.request.json`/`.response.json` suffix: the transport-instruction exchange and the print exchange, both labeled `booking-<product>`, plus for 109 the `service-points-109-no` pair before them.
@@ -406,7 +406,7 @@ Draft summaries for the others, adjusted to what the responses echo (payer code,
 
 Place the new tuples at the end of `SUITE_BOOKINGS`, before the closing `)`, in booking order.
 
-- [ ] **Step 2: Rebuild and check reproducibility**
+- [x] **Step 2: Rebuild and check reproducibility**
 
 ```bash
 .venv/bin/python -m sandbox_tests.dhl_freight_sweden.evidence
@@ -415,7 +415,7 @@ git status --short tests/dhl_freight_sweden/fixtures/sandbox/
 
 Expected: only new `booking-<id>-*.json` files; no existing fixture modified (byte reproducibility — a modified existing file means a wrong tuple, not a rebuilder fault).
 
-- [ ] **Step 3: Run the offline gates**
+- [x] **Step 3: Run the offline gates**
 
 Run: `.venv/bin/python -m unittest discover -s tests`
 Expected: OK — the evidence contract tests parse every new fixture with the connector's parsers and check the redaction.
@@ -423,13 +423,13 @@ Expected: OK — the evidence contract tests parse every new fixture with the co
 Run: `pyright`
 Expected: 0 errors.
 
-- [ ] **Step 4: Findings note rows**
+- [x] **Step 4: Findings note rows**
 
 In `docs/notes/sandbox/sandbox-findings.md`, append one row per booking to the bookings table (lines 35-57) in the existing column format, with the UTC response time, payer code, customs (`full service, ProformaInvoice` / `standard, EORI SE0000000000, ProformaInvoice`), service point or `none`, routing code from the response, and the `[booking-<id>][b-<suffix>]` link; add the link definitions to the appendix (lines 237-294).
 Update the table preamble's booking count and year-listing sentence if it enumerates dates.
 Rewrite the Untested lines that this pass closes (lines 228-232): drop 205, 233, and 401 from the never-booked lists, extend the 601 sentence with NO, and reduce the customs sentence to what remains untested (own declaration, joint declaration including 109 with 023, VOEC, other non-EU destinations). If DHL deviated from the manual in any response, add a Deviations entry citing the fixture instead of silently normalizing.
 
-- [ ] **Step 5: README segment description**
+- [x] **Step 5: README segment description**
 
 Update `README.md:659-661`: the `booking-export` paragraph gains the freight lanes to DK and NO with explicit DAP payer codes, the NO Standard-customs variants for 112 and 109, and the sentence that the 205 cases skip unless product matches offer 205.
 Replace the now-stale `README.md:677` planned-segments sentence:
@@ -440,7 +440,7 @@ Planned segments, not yet implemented: a wider customs matrix covering the other
 
 with a sentence naming what remains unbooked (own and joint declaration, VOEC, further non-EU destinations) — or delete the line if task 8's outcome closes it fully.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add sandbox_tests/dhl_freight_sweden/evidence.py tests/dhl_freight_sweden/fixtures/sandbox/ docs/notes/sandbox/sandbox-findings.md README.md
@@ -453,7 +453,7 @@ git commit -m "test: add evidence for the freight matrix and Standard customs bo
 
 **Files:** `sandbox_tests/dhl_freight_sweden/evidence.py`, `tests/dhl_freight_sweden/fixtures/sandbox/`, `docs/notes/sandbox/sandbox-findings.md`, `README.md:657`.
 
-- [ ] **Step 1: Run the case**
+- [x] **Step 1: Run the case**
 
 ```bash
 set -a; . ./.env; set +a
@@ -467,7 +467,7 @@ DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1 \
 Expected: `test_book_401_domestic ... ok`; the segment's other cases skip on the product filter before any spend.
 The `PRODUCTS=401` filter isolates the case, so no `-k` is needed.
 
-- [ ] **Step 2: Evidence tuple, rebuild, gates**
+- [x] **Step 2: Evidence tuple, rebuild, gates**
 
 Add the SUITE_BOOKINGS tuple (stems are the two `booking-401` exchanges, primary 0):
 
@@ -479,12 +479,12 @@ Add the SUITE_BOOKINGS tuple (stems are the two `booking-401` exchanges, primary
 
 Rebuild with `.venv/bin/python -m sandbox_tests.dhl_freight_sweden.evidence`, then run `.venv/bin/python -m unittest discover -s tests` and `pyright` — OK and 0 errors.
 
-- [ ] **Step 3: Documentation**
+- [x] **Step 3: Documentation**
 
 Findings note: bookings row; drop 401 from the Untested never-booked list (line 228).
 README `booking-approved` sentence (line 657): add 401 within SE.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add sandbox_tests/dhl_freight_sweden/evidence.py tests/dhl_freight_sweden/fixtures/sandbox/ docs/notes/sandbox/sandbox-findings.md README.md
@@ -497,7 +497,7 @@ git commit -m "test: add evidence for the 401 domestic booking"
 
 Run only if task 5 showed both 205 cases skipped as unoffered. Skip this task entirely otherwise.
 
-- [ ] **Step 1: Run the forced case**
+- [x] **Step 1: Run the forced case**
 
 ```bash
 set -a; . ./.env; set +a
@@ -513,7 +513,7 @@ Two outcomes, both acceptable:
 `ok` — 205 booked; register it exactly as in task 6's recipe.
 `FAILED` — DHL rejected (the assertion in `booking.book` fails by design, the same way the 112 GB answer was captured); the capture still holds the request and response. Register it as rejection evidence: grep `evidence.py` for `rejection-22005-112` to find the hand-written entry pattern for a booking-segment rejection, and follow it with the observed error code in the file name (`rejection-<code>-205-se-no.json`) and a REJECTIONS-style tuple or `@evidence` function. Add the findings rejections-table row and the Untested/README sentence stating what DHL answered for 205.
 
-- [ ] **Step 2: Rebuild, gates, commit**
+- [x] **Step 2: Rebuild, gates, commit**
 
 Same gates as task 6 step 2-3, then:
 
@@ -526,7 +526,7 @@ git commit -m "test: record DHL's answer for a forced 205 booking to NO"
 
 ### Task 9: Final verification and integration offer
 
-- [ ] **Step 1: Full gates**
+- [x] **Step 1: Full gates**
 
 Run: `.venv/bin/python -m unittest discover -s tests`
 Expected: OK.
@@ -537,10 +537,10 @@ Expected: 0 errors.
 Run: `git -C . log --oneline main..sandbox-gap-filling-matrix`
 Expected: the design note, plan note, and one commit per task above.
 
-- [ ] **Step 2: Consistency sweep**
+- [x] **Step 2: Consistency sweep**
 
 Check that every new sentence in `README.md` and `docs/notes/sandbox/sandbox-findings.md` naming a booking or rejection cites its fixture, that `bookings.jsonl` booking count equals the new evidence files plus any rejection, and that no fixture in `git status` is left untracked.
 
-- [ ] **Step 3: Report and offer integration**
+- [x] **Step 3: Report and offer integration**
 
 Report the booking ids, total spend, and any deviations to the user, and offer the fast-forward integration: `git checkout main && git merge --ff-only sandbox-gap-filling-matrix` (rebase first if main moved). Do not merge without the user's go-ahead.
