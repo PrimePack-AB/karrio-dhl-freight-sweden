@@ -256,6 +256,17 @@ TRANSPORT_DECLARATIONS = (
 )
 
 
+# Product manual v5.26 makes a VAT number/TIN mandatory for all parties in
+# the shipment information of these products for shipments to or from GR:
+# §5.4 p22 (202), §5.11 p51 (SPI), §5.19 p81 (601).
+PARTY_TAX_ID_COUNTRY = "GR"
+PARTY_TAX_ID_PRODUCTS = (
+    ShippingService.dhl_freight_sweden_road_freight_standard.value,
+    ShippingService.dhl_freight_sweden_standard_pallet_international.value,
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value,
+)
+
+
 class PayerCodes(typing.NamedTuple):
     """Terms-of-delivery codes a product accepts.
 

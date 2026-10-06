@@ -131,10 +131,14 @@ class TestDHLFreightShipment(unittest.TestCase):
 
         for country_code, postal_code, keeps_customs in cases:
             with self.subTest(country_code=country_code, postal_code=postal_code):
+                # 202 to GR requires a VAT number/TIN for every party.
+                tax_id = {"federal_tax_id": "TAX123"} if country_code == "GR" else {}
                 payload = {
                     **ShipmentPayload202Customs,
+                    "shipper": {**ShipmentPayload202Customs["shipper"], **tax_id},
                     "recipient": {
                         **_recipient_se,
+                        **tax_id,
                         "country_code": country_code,
                         "postal_code": postal_code,
                     },
