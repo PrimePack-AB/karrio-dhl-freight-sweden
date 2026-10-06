@@ -419,6 +419,10 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "109 SE to DK with payer code 022 to ParcelShop 8009-115191, then printed.",
      "109", "SE 11143 -> DK 1620", "20261005-191426",
      ("003-service-points-109-dk", "005-booking-109", "006-booking-109"), "test_booking_export", 1),
+    ("booking-2906761867-112-se-fr.json",
+     "112 SE to FR home delivery with payer code 023, then printed; the response adds Chronopost additionalInformation entries.",
+     "112", "SE 11143 -> FR 75004", "20261006-101051", ("003-booking-112", "004-booking-112"),
+     "test_booking_export", 0),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
@@ -552,18 +556,20 @@ def _(b: Builder) -> Json:
 
 
 SUITE_LABELS = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005"
+SUITE_LABELS_20261006 = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261006"
 
 
 def suite_label(
     b: Builder, summary: str, product: str, route: str, booking_id: str,
     run: str, booking_stem: str, print_stem: str, test: str,
+    labels: str = SUITE_LABELS,
 ) -> Json:
-    """A suite booking and its print call, with the label PDF decoded into ``SUITE_LABELS``."""
-    d = b.state_root / SUITE_LABELS
+    """A suite booking and its print call, with the label PDF decoded into ``labels``."""
+    d = b.state_root / labels
     printed = json.loads((b.suite / run / f"{print_stem}.response.json").read_text())["response"]
     return b.document(
         "label", summary, product, route, booking_id, None,
-        f"{SUITE_RUN}: {test}; label PDF decoded from the print response into {SUITE_LABELS}",
+        f"{SUITE_RUN}: {test}; label PDF decoded from the print response into {labels}",
         [b.suite_exchange(run, booking_stem),
          b.with_label(
              b.suite_exchange(run, print_stem), printed,
@@ -658,6 +664,20 @@ def _(b: Builder) -> Json:
         "and no consignee phone.",
         "109", "SE 11143 -> DK 1620", "2906761354",
         "20261005-191426", "005-booking-109", "006-booking-109", "test_booking_export",
+    )
+
+
+@evidence("label-2906761867-112-se-fr.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "112 SE to FR home delivery booked with consignor phone +46 8 123 456, Consignee Jean Dupont, "
+        "10 Rue de Rivoli, 75004 Paris, and consignee phone +33 6 12 34 56 78, printed with page type Label "
+        "as one 283.46 x 425.2 pt (100 x 150 mm) PDF page; the label text shows the Chronopost reference "
+        "XY22 2000 028 and the routing code 25075004+74000000, and no Phn. line and no phone number.",
+        "112", "SE 11143 -> FR 75004", "2906761867",
+        "20261006-101051", "003-booking-112", "004-booking-112", "test_booking_export",
+        labels=SUITE_LABELS_20261006,
     )
 
 
