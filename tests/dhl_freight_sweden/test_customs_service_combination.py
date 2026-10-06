@@ -84,7 +84,7 @@ class TestDHLFreightCustomsServiceCombination(unittest.TestCase):
 
                 self.assertEqual(detail_keys(error), set(pair))
                 for option in pair:
-                    self.assertIn(SERVICES[option][0], str(error))
+                    self.assertIn(f"{option} ({SERVICES[option][0]})", str(error))
                 self.assertIn("§6.5 p92", str(error))
                 self.assertIn("§6.8 p98", str(error))
 

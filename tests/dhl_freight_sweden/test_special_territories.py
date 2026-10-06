@@ -164,7 +164,7 @@ class TestDHLFreightAlandCustomsServices(unittest.TestCase):
 
                     self.assertEqual(detail_keys(context.exception), {option})
                     self.assertIn("24003", str(context.exception))
-                    self.assertIn(service, str(context.exception))
+                    self.assertIn(f"{option} ({service})", str(context.exception))
                     self.assertIn("rejection-24003-112-se-fi-aland.json", str(context.exception))
                     self.assertIn(
                         "rejection-24003-112-se-fi-aland-standard.json", str(context.exception)
