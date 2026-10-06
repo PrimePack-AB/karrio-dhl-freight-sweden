@@ -1,0 +1,402 @@
+{
+ "kind": "booking",
+ "summary": "109 SE to FI 22100 (Åland) with payer code 022 to ParcelShop 8011-221003201, a CommercialInvoice with invoiceAmount 200 SEK and one commodity, and no customs handling service, then printed.",
+ "captured_at": "2026-10-06T13:30:05Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> FI 22100",
+ "booking_id": "2906762592",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export.test_book_109_fi_aland_customs_without_service",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-06T13:30:05Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-153003-109-fi-aland-customs/003-service-points-109-fi-22100.request.json",
+    "sha256": "b831c87c416c21f9241cbfefcd168c2efbde2b1ace4f808ef803416fc467993f"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-153003-109-fi-aland-customs/003-service-points-109-fi-22100.response.json",
+    "sha256": "a792734630996d4ab2fcd4f748af486bc77d3def66029a2a8bcfa6eb26dd60a3"
+   },
+   "request": {
+    "address": {
+     "cityName": "Mariehamn",
+     "countryCode": "FI",
+     "postalCode": "22100",
+     "street": "Torggatan 10"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 10.0,
+     "length": 30.0,
+     "weight": 1.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "servicePoints": [
+     {
+      "id": "3201",
+      "servicePointId": "8011-221003201",
+      "street": "Nygatan 6",
+      "name": "c/o Posti",
+      "shopName": "Åland Posts postkontor Mariehamn",
+      "cityName": "Mariehamn",
+      "postalCode": "22100",
+      "countryCode": "FI",
+      "distance": 1.06,
+      "routeDistance": 1.06,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 60.100285,
+      "longitude": 19.94091,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "3201",
+      "servicePointId": "8011-221103201",
+      "street": "Flygfältsvägen 10",
+      "name": "c/o Posti",
+      "shopName": "Sviby Postterminal",
+      "cityName": "Sviby",
+      "postalCode": "22110",
+      "countryCode": "FI",
+      "distance": 3.77,
+      "routeDistance": 3.77,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 60.121811,
+      "longitude": 19.914085,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "3201",
+      "servicePointId": "8011-221503201",
+      "street": "Sparvägen 1",
+      "name": "c/o Posti",
+      "shopName": "Postombud, Lekia Maxinge Jomala",
+      "cityName": "Jomala",
+      "postalCode": "22150",
+      "countryCode": "FI",
+      "distance": 4.39,
+      "routeDistance": 4.39,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 60.129977,
+      "longitude": 19.933324,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "3201",
+      "servicePointId": "8011-226103201",
+      "street": "Norrbyvägen 20",
+      "name": "c/o Posti",
+      "shopName": "Postombud, Kea-Market",
+      "cityName": "Lemland",
+      "postalCode": "22610",
+      "countryCode": "FI",
+      "distance": 8.31,
+      "routeDistance": 8.31,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 60.070654,
+      "longitude": 20.084842,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "3201",
+      "servicePointId": "8011-224103201",
+      "street": "von Knorringsvägen 2",
+      "name": "c/o Posti",
+      "shopName": "Postombud, Mattson's",
+      "cityName": "Godby",
+      "postalCode": "22410",
+      "countryCode": "FI",
+      "distance": 15.76,
+      "routeDistance": 15.76,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "postoffice",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "letter-service",
+       "parcel:drop-off"
+      ],
+      "latitude": 60.230252,
+      "longitude": 19.988611,
+      "clickAndCollectId": ""
+     }
+    ],
+    "residentialAddressing": true
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-06T13:30:05Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-153003-109-fi-aland-customs/005-booking-109.request.json",
+    "sha256": "51da7ee9617ee87b4d5c7499a18818312b4b3093e4603bea9aafac7baddd8cb4"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-153003-109-fi-aland-customs/005-booking-109.response.json",
+    "sha256": "b5f675ad2acad8f0a8bb8e000b265db727f5277dc0ce3f04dabc42319e77e38d"
+   },
+   "request": {
+    "additionalServices": {},
+    "customsInformation": {
+     "customsCommodities": [
+      {
+       "commodityDescription": "Cotton T-shirt",
+       "countryCodeOfOrigin": "SE",
+       "customsValue": 200.0,
+       "customsValueCurrency": "SEK",
+       "hsItemId": "610910",
+       "netWeight": 0.5,
+       "numberOfUnits": 1,
+       "procedureCode": "1042"
+      }
+     ],
+     "customsDocuments": [
+      {
+       "id": "SANDBOX-INV-1",
+       "invoiceAmount": 200.0,
+       "invoiceCurrency": "SEK",
+       "invoiceDate": "2026-10-06",
+       "transportMovement": "Export",
+       "type": "CommercialInvoice"
+      }
+     ]
+    },
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Mariehamn",
+       "countryCode": "FI",
+       "postalCode": "22100",
+       "street": "Torggatan 10"
+      },
+      "contactName": "Erik Eriksson",
+      "email": "erik.eriksson@example.ax",
+      "name": "Erik Eriksson",
+      "phone": "+358 40 000 0000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "Mariehamn",
+       "countryCode": "FI",
+       "postalCode": "22100",
+       "street": "Nygatan 6"
+      },
+      "id": "8011-221003201",
+      "name": "c/o Posti",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906762592",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Erik Eriksson",
+       "contactName": "Erik Eriksson",
+       "address": {
+        "street": "Torggatan 10",
+        "cityName": "Mariehamn",
+        "postalCode": "22100",
+        "countryCode": "FI"
+       },
+       "phone": "+358 40 000 0000",
+       "email": "erik.eriksson@example.ax"
+      },
+      {
+       "id": "8011-221003201",
+       "type": "AccessPoint",
+       "name": "c/o Posti",
+       "address": {
+        "street": "Nygatan 6",
+        "cityName": "Mariehamn",
+        "postalCode": "22100",
+        "countryCode": "FI"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "customsInformation": {
+      "customsDocuments": [
+       {
+        "id": "SANDBOX-INV-1",
+        "type": "CommercialInvoice",
+        "transportMovement": "Export",
+        "invoiceDate": "2026-10-06T00:00:00",
+        "invoiceCurrency": "SEK",
+        "invoiceAmount": 200.0
+       }
+      ],
+      "customsCommodities": [
+       {
+        "countryCodeOfOrigin": "SE",
+        "customsValueCurrency": "SEK",
+        "customsValue": 200.0,
+        "hsItemId": "610910",
+        "commodityDescription": "Cotton T-shirt",
+        "procedureCode": "1042",
+        "netWeight": 0.5,
+        "numberOfUnits": 1
+       }
+      ]
+     },
+     "pieces": [
+      {
+       "id": [
+        "373221512525026541"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LFI22100+70530000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-06T13:30:06Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-153003-109-fi-aland-customs/006-booking-109.request.json",
+    "sha256": "9a62837acade730a3aa6b253103822749124848fddd18678400bf5900cbc4e99"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-153003-109-fi-aland-customs/006-booking-109.response.json",
+    "sha256": "6cfeb5d5f7714c1b0552819b0b24a721e45d500868537464f5d47edb06ca66c3"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906762592"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906762592.pdf",
+      "content": "<base64 omitted: 104696 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}

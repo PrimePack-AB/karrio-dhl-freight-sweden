@@ -533,6 +533,12 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "invoiceAmount 200 SEK, one 2 kg 30x20x15 cm piece, then printed.",
      "601", "SE 11143 -> CH 8001", "20261006-144106-601-ch", ("003-booking-601", "004-booking-601"),
      "test_booking_export.test_book_601_ch_customs_full_commercial_invoice", 0),
+    ("booking-2906762592-109-se-fi-aland-customs.json",
+     "109 SE to FI 22100 (Åland) with payer code 022 to ParcelShop 8011-221003201, a CommercialInvoice "
+     "with invoiceAmount 200 SEK and one commodity, and no customs handling service, then printed.",
+     "109", "SE 11143 -> FI 22100", "20261006-153003-109-fi-aland-customs",
+     ("003-service-points-109-fi-22100", "005-booking-109", "006-booking-109"),
+     "test_booking_export.test_book_109_fi_aland_customs_without_service", 1),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
