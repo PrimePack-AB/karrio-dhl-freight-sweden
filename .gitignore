@@ -7,3 +7,4 @@ build/
 .env*
 !.envrc
 !.env.example
+.claude.local.md
