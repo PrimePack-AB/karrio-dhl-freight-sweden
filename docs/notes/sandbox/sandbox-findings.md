@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, and its freight and Standard customs bookings at 10:39.
 A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
@@ -28,7 +28,7 @@ The `label` files come from the suite's print calls of bookings 2906761222, 2906
 
 ## Bookings
 
-All 21 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 28 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg, and only those marked in the table carried customs data.
 None was cancelled, because the API Farm has no cancellation operation.
 
@@ -55,6 +55,13 @@ None was cancelled, because the API Farm has no cancellation operation.
 | 2906761867 | 2026-10-06 08:10:52 | 112 | SE → FR 75004 | 023 | none | none | 2LFR75004+74000000 | [booking-2906761867][b-867] |
 | 2906761917 | 2026-10-06 09:07:41 | 109 | SE → FI 22100 (Åland) | 022 | none | 8011-221003201 ParcelShop | 2LFI22100+70530000 | [booking-2906761917][b-917] |
 | 2906761925 | 2026-10-06 09:07:54 | 202 | SE → GB BT1 1AA (Northern Ireland) | DAP | none | none | 2LGBBT11AA+11000000 | [booking-2906761925][b-925] |
+| 2906762105 | 2026-10-06 10:39:13 | 109 | SE → NO 0154 | 022 | standard, EORI SE0000000000, ProformaInvoice | 8009-129635 ParcelShop | 2LNO0186+70530001 | [booking-2906762105][b-105] |
+| 2906762113 | 2026-10-06 10:39:17 | 112 | SE → NO 0154 | 023 | standard, EORI SE0000000000, ProformaInvoice | none | 2LNO0154+000000 | [booking-2906762113][b-113] |
+| 2906762121 | 2026-10-06 10:39:19 | 202 | SE → DK 1620 | DAP | none | none | 2LDK1620+11000000 | [booking-2906762121][b-121] |
+| 2906762139 | 2026-10-06 10:39:22 | 202 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+11000001 | [booking-2906762139][b-139] |
+| 2906762147 | 2026-10-06 10:39:28 | 233 | SE → DK 1620 | DAP | none | none | 2LDK1620+00000000 | [booking-2906762147][b-147] |
+| 2906762154 | 2026-10-06 10:39:31 | 233 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+00000001 | [booking-2906762154][b-154] |
+| 2906762162 | 2026-10-06 10:39:35 | 601 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+00000001 | [booking-2906762162][b-162] |
 
 The time is the response `Date` header, except for the three direct bookings whose captures carry no header, where it is the capture file's modification time.
 The 109 and 112 bookings to PL declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, and 2906761347 sent `UIT_FREE` `"false"` without a number, and DHL echoed these entries in the responses.
@@ -195,9 +202,11 @@ For 103 the manual says to always search the ten closest service points (§5.12 
 ### Customs to NO
 
 The manual's Customs handling - Full service section says a commercial invoice must be sent to DHL and lists routing barcode 001 on the label (§6.5 p92), and for 109 it asks for two copies of the customs documents on the outside of the package (§5.14 p62).
-The sandbox accepted 109 and 112 to NO with `customsHandlingFullService`, one commodity, and a `ProformaInvoice` document without an invoice amount or EORI ([booking-2906761305][b-305], [booking-2906761313][b-313]).
+The sandbox accepted 109 and 112 to NO with `customsHandlingFullService`, one commodity, and a `ProformaInvoice` document without an invoice amount or EORI ([booking-2906761305][b-305], [booking-2906761313][b-313]), and 202, 233, and 601 to NO the same way ([booking-2906762139][b-139], [booking-2906762154][b-154], [booking-2906762162][b-162]).
+It accepted 109 and 112 to NO with `customsHandlingStandard`, one commodity, a `ProformaInvoice`, and the made-up EORI number SE0000000000 as well ([booking-2906762105][b-105], [booking-2906762113][b-113]); the manual lists NO among the valid countries of Customs handling - Standard (§6.6 p94).
 No documents were e-mailed to DHL for these bookings, and the evidence does not show whether DHL would act on a missing commercial invoice.
 109 to NO returned routing code 2LNO0186+70530001, ending in 001, while 112 to NO returned 2LNO0154+000000 without it.
+The 202, 233, and 601 full-service bookings to NO returned 2LNO0154+11000001, 2LNO0154+00000001, and 2LNO0154+00000001, also ending in 001, as did the 109 Standard booking with 2LNO0186+70530001 again, while the 112 Standard booking returned 2LNO0154+000000.
 
 ### Routing code reference and product codes
 
@@ -225,11 +234,11 @@ The README lists PostalCode error 16012 as "not supported", and no capture shows
 
 ## Untested
 
-No booking used the freight products 205, 209, 210, 211, 212, 233, or SPI, 202 was booked only to GB BT1 1AA without customs data, or the parcel and home delivery products 104, 107, 401, 402, and 502.
-601 was booked only to DK, HU, and RO; 601 to HU or RO without EKAER or UIT entries, with a free flag `"true"`, or with a UIT number, and 601 to PL, are untested.
+No booking used the freight products 205, 209, 210, 211, 212, or SPI, or the parcel and home delivery products 104, 107, 401, 402, and 502; 202 was booked to GB BT1 1AA without customs data, to DK, and to NO with customs handling full service, and 233 to DK and to NO with customs handling full service.
+601 was booked only to DK, HU, NO, and RO; 601 to HU or RO without EKAER or UIT entries, with a free flag `"true"`, or with a UIT number, and 601 to PL, are untested.
 109 with home addressing and no AccessPoint party is untested.
 112 to GB was not booked: product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233 but neither 109 nor 112 ([lookup-product-matches-se-gb.json][l-pm-gb]), and the 112 booking sent regardless was rejected with 22005 and 22026 ([rejection-22005-112-gb][r-22005-gb]); the manual lists GB for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200), and 109 to GB was not sent.
-Customs was tested only as Customs handling - Full service to NO, and to FI 22100, where it and Customs handling - Standard were rejected with 24003; Customs handling - Standard elsewhere, the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
+Customs was tested only as Customs handling - Full service and Customs handling - Standard to NO, and to FI 22100, where both were rejected with 24003; the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
 No additional service other than `customsHandlingFullService` was sent, payer codes 3 and 4 with a freight payer party were not used, and 601 used only DAP.
 Every booking had a single piece of 1 kg and 30 × 20 × 10 cm, so multi-piece shipments and bookings below the minimum piece dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17) are untested.
 The Print API was called only for labels, and the PickupRequest, TimeTable, PriceQuote, and HomeDeliveryLocator APIs were not called.
@@ -255,6 +264,13 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [b-867]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761867-112-se-fr.json
 [b-917]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761917-109-se-fi-aland.json
 [b-925]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761925-202-se-gb-northern-ireland.json
+[b-105]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762105-109-se-no-standard-customs.json
+[b-113]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762113-112-se-no-standard-customs.json
+[b-121]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762121-202-se-dk.json
+[b-139]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762139-202-se-no.json
+[b-147]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json
+[b-154]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762154-233-se-no.json
+[b-162]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762162-601-se-no.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json
 [r-22005-gb]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json

@@ -1,0 +1,231 @@
+{
+ "kind": "booking",
+ "summary": "601 SE to NO with payer code DAP, customsHandlingFullService, and a ProformaInvoice, then printed.",
+ "captured_at": "2026-10-06T10:39:35Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "601",
+ "route": "SE 11143 -> NO 0154",
+ "booking_id": "2906762162",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export.test_book_601_no_customs_full",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-06T10:39:35Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-123912/039-booking-601.request.json",
+    "sha256": "aa2897ac17bdf55bbdf226a28c1c2010040a807090f88119cd7506a058e78795"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-123912/039-booking-601.response.json",
+    "sha256": "b324df8d8a7592ce7131fab0d6dd1e5f5639b3c8650bc4521ed1ae39d3fd85d3"
+   },
+   "request": {
+    "additionalServices": {
+     "customsHandlingFullService": true
+    },
+    "customsInformation": {
+     "customsCommodities": [
+      {
+       "commodityDescription": "Cotton T-shirt",
+       "countryCodeOfOrigin": "SE",
+       "customsValue": 200.0,
+       "customsValueCurrency": "SEK",
+       "hsItemId": "610910",
+       "netWeight": 0.5,
+       "numberOfUnits": 1,
+       "procedureCode": "1042"
+      }
+     ],
+     "customsDocuments": [
+      {
+       "id": "SANDBOX-INV-1",
+       "invoiceCurrency": "SEK",
+       "invoiceDate": "2026-10-06",
+       "transportMovement": "Export",
+       "type": "ProformaInvoice"
+      }
+     ]
+    },
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Oslo",
+       "countryCode": "NO",
+       "postalCode": "0154",
+       "street": "Karl Johans gate 10"
+      },
+      "contactName": "Ola Nordmann",
+      "email": "ola.nordmann@example.no",
+      "name": "Ola Nordmann",
+      "phone": "+47 400 00 000",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "601",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906762162",
+     "productCode": "601",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "DAP"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Ola Nordmann",
+       "contactName": "Ola Nordmann",
+       "address": {
+        "street": "Karl Johans gate 10",
+        "cityName": "Oslo",
+        "postalCode": "0154",
+        "countryCode": "NO"
+       },
+       "phone": "+47 400 00 000",
+       "email": "ola.nordmann@example.no"
+      }
+     ],
+     "additionalServices": {
+      "customsHandlingFullService": true
+     },
+     "customsInformation": {
+      "customsDocuments": [
+       {
+        "id": "SANDBOX-INV-1",
+        "type": "ProformaInvoice",
+        "transportMovement": "Export",
+        "invoiceDate": "2026-10-06T00:00:00",
+        "invoiceCurrency": "SEK",
+        "invoiceAmount": 0.0
+       }
+      ],
+      "customsCommodities": [
+       {
+        "countryCodeOfOrigin": "SE",
+        "customsValueCurrency": "SEK",
+        "customsValue": 200.0,
+        "hsItemId": "610910",
+        "commodityDescription": "Cotton T-shirt",
+        "procedureCode": "1042",
+        "netWeight": 0.5,
+        "numberOfUnits": 1
+       }
+      ]
+     },
+     "pieces": [
+      {
+       "id": [
+        "373221512525026060"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LNO0154+00000001"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-06T10:39:35Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-123912/040-booking-601.request.json",
+    "sha256": "705cb6756fec59bc84dd8834512e9d1fac7b3c05da6736cf77637666f0e4f4b8"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261006-123912/040-booking-601.response.json",
+    "sha256": "3db4e6ab00ac42b5f16a03bb328c2b9a8a4425be36129af7773f6a684f5d1f21"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906762162"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906762162.pdf",
+      "content": "<base64 omitted: 105932 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}
