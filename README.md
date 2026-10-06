@@ -71,7 +71,10 @@ Parcel dimensions are sent in centimetres, and some products enforce minimum pie
 DHL validates these minimums server-side at booking; the connector does not check them and forwards the dimensions as given.
 Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional service rather than an access-point party: set the `dhl_freight_sweden_doorstep_access_code` option and the connector sends it as `additionalServices.doorstepDelivery.accessCode`.
 Product manual v5.26 lists FR among the valid countries of Parcel Connect Plus (112) (§5.3 p18, Appendix G p199) and requires the Print and TransportInstruction APIs for FR shipments, the two APIs the connector books and prints through, so the rate sheet includes FR for 112.
-The manual limits 112 delivery in FR to mainland France and Corsica and excludes postal codes 97100-99999 (§5.3 p18); the connector checks neither this range nor the other excluded regions the manual lists for 112 and forwards the address as given.
+The manual limits 112 delivery in FR to mainland France and Corsica and excludes postal codes 97100-99999 (§5.3 p18).
+Rating does not offer 112 to a FR recipient whose postal code lies in that range or is not exactly five digits once spaces are removed, including a missing postal code, because such a code cannot be shown to lie outside the range; an explicitly requested 112 adds a `destination_not_supported` message instead of a rate.
+Booking 112 to such a FR postal code fails before the booking request with `details` keyed by `recipient.postal_code`.
+The other excluded regions the manual lists for 112 (§5.3 p18), 109 (§5.14 p63), 107 (§5.15 p66), and 202, 205, and SPI (§5.4 p23, §5.9 p43, §5.11 p52) are not checked, and the connector forwards those addresses as given.
 The sandbox accepted 112 from SE to FR 75004 with payer code 023 and printed its label, and the response added Chronopost `additionalInformation` entries the request did not send (2026-10-06: [booking-2906761867-112-se-fr.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761867-112-se-fr.json), [label-2906761867-112-se-fr.json](tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json)).
 
 ## Booking rules

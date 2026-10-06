@@ -71,6 +71,12 @@ class TransportDeclarationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class ExcludedDestinationError(errors.ShippingSDKDetailedError):
+    """Raised when the product does not deliver to the recipient postal code."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class PartyTaxIdError(errors.ShippingSDKDetailedError):
     """Raised when a party lacks the VAT number/TIN its product and lane require."""
 
@@ -208,6 +214,7 @@ def shipment_request(
         initializer=provider_units.shipping_options_initializer,
     )
 
+    _check_destination(service, recipient)
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
     payer_code = _payer_code(
         service,
@@ -599,6 +606,42 @@ def _check_customs_service_identifiers(
                 for field, label in missing.items()
             },
         )
+
+
+def _check_destination(product_code: str, recipient) -> None:
+    exclusion = provider_units.excluded_destination(
+        product_code, recipient.country_code, recipient.postal_code
+    )
+
+    if exclusion is None:
+        return
+
+    excluded_range = f"{exclusion.low}-{exclusion.high}"
+    well_formed = provider_units.postal_code_well_formed(
+        exclusion, recipient.postal_code
+    )
+    message = lib.identity(
+        f"Product {product_code} does not deliver to {exclusion.country} postal "
+        f"codes {excluded_range} ({exclusion.region}); got {recipient.postal_code}"
+        if well_formed
+        else f"Product {product_code} to {exclusion.country} requires a "
+        f"{exclusion.digits}-digit postal code to rule out the excluded postal "
+        f"codes {excluded_range} ({exclusion.region}); got {recipient.postal_code!r}"
+    )
+
+    raise ExcludedDestinationError(
+        message,
+        details={
+            "recipient.postal_code": dict(
+                code="invalid" if well_formed else "required",
+                message=lib.identity(
+                    f"excluded postal codes {excluded_range}"
+                    if well_formed
+                    else f"{exclusion.digits}-digit postal code required"
+                ),
+            )
+        },
+    )
 
 
 def _check_party_tax_ids(
