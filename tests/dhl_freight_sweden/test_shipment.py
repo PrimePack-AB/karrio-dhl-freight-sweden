@@ -752,6 +752,27 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertNotIn("invoiceAmount", document)
         self.assertNotIn("invoiceCurrency", document)
 
+    def test_create_shipment_request_partly_valued_commodities_omit_invoice_amount(self):
+        valued, unvalued = ShipmentPayload202UndeclaredValue["customs"]["commodities"]
+        request = gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(
+                **{
+                    **ShipmentPayload202UndeclaredValue,
+                    "customs": {
+                        **ShipmentPayload202UndeclaredValue["customs"],
+                        "commodities": [
+                            valued,
+                            {**unvalued, "value_amount": None},
+                        ],
+                    },
+                }
+            )
+        )
+        serialized = serialize_request(request)
+
+        document = serialized["customsInformation"]["customsDocuments"][0]
+        self.assertNotIn("invoiceAmount", document)
+
     def test_shipment_customs_service_missing_identifier_surfaces_field_error(self):
         cases = [
             (
