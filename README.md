@@ -198,7 +198,7 @@ The connector returns the first report as the label and does not surface a QR co
 
 The connector sends customs information and the requested customs services only when the shipper or the recipient lies outside the EU VAT area for goods; within it, customs data and customs services are dropped with a `customs_omitted_intra_eu` warning.
 The manual makes customs proceedings mandatory for deliveries outside the European Union or the tax area and names Åland (FI 22) and the Canary Islands as areas outside the tax area (§7.4 p162).
-An address lies inside the area when its country is an EU member state, GR, or MC, and its postal code is not in one of the ranges below, or when it is a GB postcode starting with `BT` (Northern Ireland), which is inside the area for goods.
+An address lies inside the area when its country is an EU member state, GR, or MC, its postal code is not in one of the ranges below, and, for DK, the code is neither led by FO or GL nor a three-digit Faroese code, or when it is a GB postcode starting with `BT` (Northern Ireland), which is inside the area for goods.
 
 | Country | Postal codes | Territory |
 |---------|--------------|-----------|
@@ -212,8 +212,11 @@ An address lies inside the area when its country is an EU member state, GR, or M
 | DK | 3800-3999 | Faroe Islands and Greenland |
 | FR | 98600-98899 | Wallis and Futuna, French Polynesia, New Caledonia |
 
-Postal codes are compared once spaces are removed and a leading country code of the address with a hyphen is dropped, so `FI-22100` reads as `22100` and `DK-3900` as `3900`; the excluded postal codes below are normalised the same way.
-The code sent to DHL is not changed.
+Postal codes are compared upper-cased and trimmed, without a leading prefix code, and without spaces.
+The prefix codes are the address's own country code and, under FI, DK, and ES, the codes of their territories with numeric postal codes, AX, FO, GL, IC, and EA; one is removed when a hyphen, whitespace, or, except for GB, a digit follows it, so `FI-22100`, `FI 22 100`, `FI22100`, and `AX-22100` read as `22100` under FI.
+`JE`, `GY`, `IM`, and `BT` begin United Kingdom postcodes and are never removed.
+The excluded postal codes below are normalised the same way, and the code sent to DHL is not changed.
+The rule and the tables match the nordic_conventions plugin's territories module.
 
 ### Special territories
 
@@ -228,13 +231,13 @@ Service point lookups send the country code as given.
 | Guernsey | GG | GB | yes | GB GY1 1AA: HDI, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-gy11aa.json)); GG GY1 1AA: none |
 | Isle of Man | IM | GB | yes | GB IM1 1AA: HDI, 202, 601, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-im11aa.json)) |
 | Northern Ireland | XI | GB | no, GB `BT` postcodes are inside for goods | GB BT1 1AA: HDI, 202, 601, 233 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-bt11aa.json)) |
-| Faroe Islands | FO | DK | only for DK 3800-3999; the three-digit FO codes are not recognised | FO 100: none ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fo-100.json)) |
+| Faroe Islands | FO | DK | yes, three-digit codes and codes led by FO | FO 100: none ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fo-100.json)) |
 | Greenland | GL | DK | yes, DK 3800-3999 | DK 3900: HDI, 109 ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)) |
 | Canary Islands | IC | ES | yes, ES 35000-35999, 38000-38999 | ES 35001: HDI ([evidence](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-es-35001.json)) |
 | Ceuta, Melilla | EA | ES | yes, ES 51000-52999 | not probed |
 
 The Customs column applies the [EU VAT area](#customs-and-the-eu-vat-area) check to the parent country and postal code.
-After the mapping the [excluded postal codes](#excluded-postal-codes) apply: Jersey and Guernsey are excluded from 109, 112, 202, and 601, Northern Ireland from 109 and 112, the Faroe Islands, Greenland, and the Canary Islands from 109, 112, 202, 233, and 601 (the Faroe Islands' three-digit codes as malformed DK codes for 109 and 112), Ceuta and Melilla from 202, 233, and 601 and their codes 51080 and 52080 from 109 and 112, and the Isle of Man from none.
+After the mapping the [excluded postal codes](#excluded-postal-codes) apply: Jersey and Guernsey are excluded from 109, 112, 202, and 601, Northern Ireland from 109 and 112, the Faroe Islands, Greenland, and the Canary Islands from 109, 112, 202, 233, and 601 (the Faroe Islands' three-digit codes through the DK 3800-3999 entry for 109 and 112 and the catalog's `???` for the others), Ceuta and Melilla from 202, 233, and 601 and their codes 51080 and 52080 from 109 and 112, and the Isle of Man from none.
 The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given, excluded from 109, 112, and 107, and passed through on the other products.
 
 ### Excluded postal codes
@@ -264,8 +267,9 @@ A booking fails with `details` keyed by `recipient.postal_code` or `shipper.post
 | 107 (shipper) | PT | 9000-9999 (first four digits) | the Azores, Madeira, and other islands | §5.15 p66 |
 | 202, 205, SPI (shipper and recipient) | UA | 95000-99999 | Crimea/Sebastopol region | §5.4 p23, §5.9 p43, §5.11 p52 |
 
-Each country's codes are compared in its own format once spaces and a leading `<country>-` prefix are removed: four digits for DK and NO, five digits for ES, FR, IT, and UA (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
+Each country's codes are compared in its own format once [normalised](#customs-and-the-eu-vat-area): four digits for DK and NO, five digits for ES, FR, IT, and UA (leading zeros kept, so `04020` and not `4020`), and `NNNN-NNN` for PT, whose ranges cover the first four digits and which is also accepted without the hyphen or as the four-digit prefix alone.
 A code of another shape cannot be shown to lie outside the excluded ranges, so it counts as excluded in rating and booking.
+The DK ranges of 112, 109, and 107, "Greenland & The Faroe Islands (3800-3999)", also exclude a code led by FO or GL and a three-digit Faroese code, which are reported as excluded rather than malformed.
 A missing or blank code is not checked in rating, so the product is still offered, while booking rejects it with `details` keyed by the party's `postal_code`.
 The ranges apply to the recipient, except for the UA range of 202, 205, and SPI, products used to and from SE, which applies to both parties, and for 107, a return sent from the listed countries to the original sender, whose ranges apply to the shipper, as the manual's 107 entry for FR reads "Delivery only from France mainland and Corsica" (§5.15 p66).
 The manual's areas without postal-code ranges are checked as patterns, `*` standing for any characters and `?` for one, matched against the whole normalised code.

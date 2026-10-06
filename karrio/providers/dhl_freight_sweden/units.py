@@ -214,6 +214,18 @@ def postal_prefix_codes(country_code: str) -> typing.Tuple[str, ...]:
     )
 
 
+def _split_postal_code(
+    country: str, postal_code: typing.Optional[str]
+) -> typing.Tuple[typing.Optional[str], str]:
+    postal = str(postal_code or "").strip().upper()
+    for code in postal_prefix_codes(country):
+        separator = r"[\s-]+" if code == "GB" else r"[\s-]+|(?=\d)"
+        prefix = re.match(rf"{re.escape(code)}(?:{separator})", postal)
+        if prefix:
+            return code, postal[prefix.end():].replace(" ", "")
+    return None, postal.replace(" ", "")
+
+
 def normalized_postal_code(
     country_code: typing.Optional[str],
     postal_code: typing.Optional[str],
@@ -225,15 +237,27 @@ def normalized_postal_code(
     ``FI 22 100``, ``FI22100``, and ``AX-22100`` all read as ``22100`` under
     FI. The rule is shared with nordic_conventions' territories module.
     """
+    return _split_postal_code((country_code or "").upper(), postal_code)[1]
+
+
+FAROESE_POSTAL_CODE_DIGITS = 3
+
+
+def in_danish_territory(
+    country_code: typing.Optional[str],
+    postal_code: typing.Optional[str],
+) -> bool:
+    """Whether a DK address lies in the Faroe Islands or Greenland by its postal code.
+
+    That is a code led by a DK territory code (FO, GL), whatever its number,
+    or a three-digit Faroese code; DK 3800-3999 is covered by the ranges.
+    """
     country = (country_code or "").upper()
-    postal = str(postal_code or "").strip().upper()
-    for code in postal_prefix_codes(country):
-        separator = r"[\s-]+" if code == "GB" else r"[\s-]+|(?=\d)"
-        prefix = re.match(rf"{re.escape(code)}(?:{separator})", postal)
-        if prefix:
-            postal = postal[prefix.end():]
-            break
-    return postal.replace(" ", "")
+    prefix, postal = _split_postal_code(country, postal_code)
+    return country == "DK" and (
+        prefix not in (None, country)
+        or (postal.isdigit() and len(postal) == FAROESE_POSTAL_CODE_DIGITS)
+    )
 
 
 def in_eu_vat_area(
@@ -245,11 +269,15 @@ def in_eu_vat_area(
     postal = normalized_postal_code(country, postal_code)
     postal_number = int(postal) if postal.isdigit() else None
 
-    inside_member_state = country in EU_VAT_AREA_COUNTRIES and not any(
+    inside_member_state = (
+        country in EU_VAT_AREA_COUNTRIES
+        and not in_danish_territory(country, postal_code)
+        and not any(
         country == range_country
         and postal_number is not None
         and low <= postal_number <= high
-        for range_country, low, high in NON_EU_VAT_POSTAL_RANGES
+            for range_country, low, high in NON_EU_VAT_POSTAL_RANGES
+        )
     )
     return inside_member_state or any(
         country == prefix_country and postal.startswith(prefix)
@@ -771,6 +799,7 @@ class PostalCodeExclusion(typing.NamedTuple):
     high: int
     region: str
     parties: typing.Tuple[str, ...] = ("recipient",)
+    danish_territories: bool = False
 
     def describe(self) -> str:
         width = POSTAL_CODE_FORMATS[self.country].key_digits
@@ -784,7 +813,13 @@ class PostalCodeExclusion(typing.NamedTuple):
         return f"{POSTAL_CODE_FORMATS[self.country].description} postal code"
 
     def verdict(self, postal_code: typing.Optional[str]) -> typing.Optional[bool]:
-        """Whether the code is excluded, or None when it is malformed or missing."""
+        """Whether the code is excluded, or None when it is malformed or missing.
+
+        With ``danish_territories`` a code ``in_danish_territory`` is excluded
+        too, whatever its digits.
+        """
+        if self.danish_territories and in_danish_territory(self.country, postal_code):
+            return True
         key = postal_code_key(self.country, postal_code)
         return None if key is None else self.low <= key <= self.high
 
@@ -834,9 +869,12 @@ def _excluded(
     region: str,
     *ranges: typing.Union[int, typing.Tuple[int, int]],
     parties: typing.Tuple[str, ...] = ("recipient",),
+    danish_territories: bool = False,
 ) -> typing.Tuple[PostalCodeExclusion, ...]:
     return tuple(
-        PostalCodeExclusion(product.value, country, low, high, region, parties)
+        PostalCodeExclusion(
+            product.value, country, low, high, region, parties, danish_territories
+        )
         for product in products
         for low, high in (
             code if isinstance(code, tuple) else (code, code) for code in ranges
@@ -856,10 +894,15 @@ CRIMEA_PRODUCTS = (
 )
 
 # The numeric "Excluded regions/areas" of product manual v5.26; the areas
-# without ranges are in POSTAL_CODE_PATTERN_EXCLUSIONS.
+# without ranges are in POSTAL_CODE_PATTERN_EXCLUSIONS. The DK entries read
+# "Greenland & The Faroe Islands (3800-3999)" (§5.3 p18, §5.14 p63, §5.15
+# p66), so they also exclude FO- and GL-led and three-digit Faroese codes.
 POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     # 112, §5.3 p18
-    *_excluded(PARCEL_CONNECT_PLUS, "DK", "Greenland and the Faroe Islands", (3800, 3999)),
+    *_excluded(
+        PARCEL_CONNECT_PLUS, "DK", "Greenland and the Faroe Islands", (3800, 3999),
+        danish_territories=True,
+    ),
     *_excluded(PARCEL_CONNECT_PLUS, "ES", "Canary Islands", (35000, 35999), (38000, 38999)),
     *_excluded(PARCEL_CONNECT_PLUS, "ES", "Ceuta and Melilla", 51080, 52080),
     *_excluded(PARCEL_CONNECT_PLUS, "FR", "outside mainland France and Corsica", (97100, 99999)),
@@ -873,7 +916,10 @@ POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     *_excluded(PARCEL_CONNECT_PLUS, "NO", "Jan Mayen and Svalbard", 8099, (9170, 9179)),
     *_excluded(PARCEL_CONNECT_PLUS, "PT", "the Azores, Madeira, and other islands", (9000, 9999)),
     # 109, §5.14 p63
-    *_excluded(PARCEL_CONNECT, "DK", "Greenland and the Faroe Islands", (3800, 3999)),
+    *_excluded(
+        PARCEL_CONNECT, "DK", "Greenland and the Faroe Islands", (3800, 3999),
+        danish_territories=True,
+    ),
     *_excluded(PARCEL_CONNECT, "ES", "Canary Islands", (35000, 35999), (38000, 38999)),
     *_excluded(PARCEL_CONNECT, "ES", "Ceuta and Melilla", 51080, 52080),
     *_excluded(PARCEL_CONNECT, "FR", "outside mainland France and Corsica", (97100, 99999)),
@@ -889,7 +935,7 @@ POSTAL_CODE_EXCLUSIONS: typing.Tuple[PostalCodeExclusion, ...] = (
     # entry reads "Delivery only from France mainland and Corsica".
     *_excluded(
         PARCEL_RETURN_CONNECT, "DK", "Greenland and the Faroe Islands", (3800, 3999),
-        parties=SHIPPER,
+        parties=SHIPPER, danish_territories=True,
     ),
     *_excluded(
         PARCEL_RETURN_CONNECT, "ES", "Canary Islands", (35000, 35999), (38000, 38999),
