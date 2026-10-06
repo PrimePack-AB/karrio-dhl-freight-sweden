@@ -13,7 +13,7 @@ import unittest
 
 import karrio.core.models as models
 import karrio.lib as lib
-from karrio.providers.dhl_freight_sweden import product_matches, units
+from karrio.providers.dhl_freight_sweden import product_matches, service_points, units
 
 from .fixture import as_dict, gateway, proxy_of, serialize_request, settings_of
 from .test_shipment import Customs, _payload, _recipient_se
@@ -153,6 +153,34 @@ class TestDHLFreightTerritoryProductMatches(unittest.TestCase):
 
         consignee = as_dict(lib.to_dict(request.serialize()))["parties"][1]["address"]
         self.assertEqual(consignee, {"countryCode": "FI", "postalCode": "22100"})
+
+
+
+class TestDHLFreightTerritoryServicePoints(unittest.TestCase):
+    def test_territory_address_is_looked_up_under_its_parent(self):
+        for territory, postal_code in [("AX", "22100"), ("JE", "JE2 3AB"), ("FO", "100")]:
+            with self.subTest(territory=territory):
+                request = service_points.service_points_request(
+                    dict(
+                        address=dict(
+                            city="City", postal_code=postal_code, country_code=territory
+                        )
+                    ),
+                    settings_of(gateway),
+                )
+
+                address = as_dict(lib.to_dict(request.serialize()))["address"]
+                self.assertEqual(address["countryCode"], PARENTS[territory])
+                self.assertEqual(address["postalCode"], postal_code)
+
+    def test_other_country_codes_are_looked_up_as_given(self):
+        request = service_points.service_points_request(
+            dict(address=dict(city="Kralendijk", postal_code="1234", country_code="BQ")),
+            settings_of(gateway),
+        )
+
+        address = as_dict(lib.to_dict(request.serialize()))["address"]
+        self.assertEqual(address["countryCode"], "BQ")
 
 
 if __name__ == "__main__":
