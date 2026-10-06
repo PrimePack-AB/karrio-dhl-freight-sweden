@@ -26,8 +26,7 @@ class ConnectionConfig(lib.Enum):
     """DHL Freight connection configuration options."""
 
     server_url = lib.OptionEnum("server_url", str)
-    # Last-resort label type tag. The API has no raster selector; the document
-    # format is read from the printed bytes, then the report contentType.
+    # Requested label format; only SUPPORTED_LABEL_TYPES are accepted.
     label_type = lib.OptionEnum("label_type", str, "PDF")
     # Print page layout, mapped to the Print API PageTypeEnum.
     label_page_type = lib.OptionEnum("label_page_type", str, "Label")
@@ -82,6 +81,12 @@ class AdditionalInformationCode(lib.StrEnum):
 
 SENT_COUNTRY = "PL"
 SENT_VALUE_MAX_LENGTH = 20
+
+
+# Label formats the connector accepts. The Print API has no document format
+# parameter (vendor/se-api-farm/print-api-2.10.0.json), and every sandbox
+# label is a PDF (tests/dhl_freight_sweden/fixtures/sandbox/label-*.json).
+SUPPORTED_LABEL_TYPES: typing.Tuple[str, ...] = ("PDF",)
 
 
 class PageType(lib.StrEnum):

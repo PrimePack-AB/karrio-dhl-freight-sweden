@@ -101,6 +101,12 @@ class CommercialInvoiceRequiredError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class LabelTypeError(errors.ShippingSDKDetailedError):
+    """Raised when the requested label type is not a format the Print API returns."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 def parse_shipment_response(
     _response: lib.Deserializable[typing.List[dict]],
     settings: provider_utils.Settings,
@@ -213,15 +219,44 @@ def _label_type(report, settings: provider_utils.Settings) -> str:
             (label for keyword, label in CONTENT_TYPE_LABELS if keyword in content_type),
             None,
         )
-        or settings.connection_config.label_type.state
         or "PDF"
     )
+
+
+def _check_label_type(
+    payload: models.ShipmentRequest, settings: provider_utils.Settings
+) -> None:
+    field, label_type = next(
+        (
+            (field, value)
+            for field, value in [
+                ("label_type", payload.label_type),
+                ("config.label_type", settings.connection_config.label_type.state),
+            ]
+            if value
+        ),
+        ("label_type", "PDF"),
+    )
+    supported = provider_units.SUPPORTED_LABEL_TYPES
+
+    if str(label_type).upper() not in supported:
+        raise LabelTypeError(
+            f"Label type {label_type} is not supported; the DHL Freight Sweden "
+            f"Print API returns {', '.join(supported)} labels only",
+            details={
+                field: dict(
+                    code="invalid",
+                    message=f"Unsupported label type {label_type}",
+                )
+            },
+        )
 
 
 def shipment_request(
     payload: models.ShipmentRequest,
     settings: provider_utils.Settings,
 ) -> lib.Serializable:
+    _check_label_type(payload, settings)
     shipper = lib.to_address(provider_units.with_parent_country(payload.shipper))
     recipient = lib.to_address(provider_units.with_parent_country(payload.recipient))
     packages = lib.to_packages(payload.parcels)
