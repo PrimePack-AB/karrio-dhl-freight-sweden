@@ -100,16 +100,17 @@ ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
 GB only according to a separate agreement. Åland (FI 22100) is booked with
 112 and customs and with 109 without customs data, and Northern Ireland
 (GB BT1 1AA) with 202 without customs data. The freight products 202, 205,
-233, and 601 book to DK inside the EU VAT area and to NO with customs
-handling full service, each with the explicit DAP payer code, and 112 and
-109 book to NO with customs handling Standard and a made-up EORI number.
+and 233 book to DK inside the EU VAT area, and 202, 205, 233, and 601 to
+NO with customs handling full service, each with the explicit DAP payer
+code, and 112 and 109 book to NO with customs handling Standard and a
+made-up EORI number.
 Before spending a booking it checks for free that product matches offer the
 product for the lane and, for 109, that a service point near the recipient
 accepts it, and skips otherwise. Lanes to PL declare SENT free explicitly.
 """
 ```
 
-Keep the existing second paragraph (the NO/GB customs explanation) unchanged below it.
+Keep the existing second paragraph (the NO/GB customs explanation) below it, with one scoping edit to its first sentence: "NO and GB are outside the EU VAT area, so their bookings carry customs data when they carry any: one commodity, a proforma invoice number, and DHL customs handling full service, the customs service that needs no registration identifier."
 
 - [ ] **Step 2: Add the nine pass-1 cases and the conditional forced case**
 
