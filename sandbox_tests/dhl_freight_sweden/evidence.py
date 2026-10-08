@@ -549,6 +549,21 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "without UIT_NUMBER, then printed.",
      "601", "SE 11143 -> RO 030031", "20261008-100438", ("008-booking-601", "009-booking-601"),
      "test_booking_declarations.test_book_601_ro_default_uit_free", 0),
+    ("booking-2906769647-601-se-pl-default-sent-free.json",
+     "601 SE to PL with payer code DAP and no SENT option, so the connector sent SENT_FREE true "
+     "without SENT_REF or SENT_CARKEY, then printed.",
+     "601", "SE 11143 -> PL 30-079", "20261008-102655", ("003-booking-601", "004-booking-601"),
+     "test_booking_declarations.test_book_601_pl_default_sent_free", 0),
+    ("booking-2906769654-601-se-pl-sent-identifiers.json",
+     "601 SE to PL with payer code DAP, SENT_FREE false, and the placeholder SENT_REF "
+     "SENT20261008000001 and SENT_CARKEY SANDBOXCARKEY0001, then printed.",
+     "601", "SE 11143 -> PL 30-079", "20261008-102655", ("008-booking-601", "009-booking-601"),
+     "test_booking_declarations.test_book_601_pl_sent_identifiers", 0),
+    ("booking-2906769662-601-se-ro-uit-number.json",
+     "601 SE to RO with payer code DAP, UIT_FREE false, and the placeholder UIT_NUMBER "
+     "0000-0000-0000-0001, then printed.",
+     "601", "SE 11143 -> RO 030031", "20261008-102655", ("013-booking-601", "014-booking-601"),
+     "test_booking_declarations.test_book_601_ro_uit_number", 0),
     ("booking-2906769613-109-se-pl-without-sent.json",
      "109 SE to PL with payer code 022 and ParcelShop 8005-PL-4504339 but no SENT entries, the request "
      "rejected with 22001 on 2026-10-05, was accepted, then printed.",
