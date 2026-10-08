@@ -64,6 +64,10 @@ Appendix M (§10.14.2.2 p232) states that the AccessPoint `subtype` carries the 
 The connector sends `ParcelShop` and `ParcelStation`.
 The sandbox accepted 109 bookings with `ParcelShop` to PL, RO, NO, and DK and with `ParcelStation` to a HU locker ([booking-2906761123-109-se-pl.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761123-109-se-pl.json), [booking-2906761263-109-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761305-109-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json), [booking-2906761354-109-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json), [booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
+The connector sends the service point id as given and does not check the point's service types.
+For 103 the manual says to use only the four-digit part nnnn of an id like SE-nnnn00 (§10.14.2.1 p231), while the sandbox accepted the full id SE-982000 ([booking-2906761230-103-se-se.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json)).
+For 109 the manual allows only shops and stations with service type `parcel:pick-up` (§10.14.2.2 p232), while the sandbox accepted the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
+
 ## SENT
 
 Lanes with the shipper or the recipient in PL carry SENT entries under the shipment's `additionalInformation`.

@@ -31,6 +31,11 @@ The instructions of 202 (§5.4 p22), 205 (§5.9 p41), and 601 (§5.19 p81) add t
 
 For DHL Road Freight Direct (205) the server-side minimum is on chargeable weight: the sandbox rejected a booking of one 1 kg piece from SE to NO with 22020 "ChargeableWeight is lower than product min 2500.0" ([rejection-22020-205-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)).
 
+## HDI in product matches
+
+Product matches return HDI on every lane where they return 601, for example SE to PL ([lookup-product-matches-se-pl.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-pl.json)), and on some lanes without 601, such as ES 35001 ([lookup-product-matches-se-es-35001.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-es-35001.json)).
+The manual names HDI as the invoice-file code for 601 (§5.19 p81), and the connector offers no HDI service.
+
 ## Home delivery with an access code
 
 Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional service rather than an access-point party: set the `dhl_freight_sweden_doorstep_access_code` option and the connector sends it as `additionalServices.doorstepDelivery.accessCode`.
