@@ -416,6 +416,13 @@ TRANSPORT_DECLARATION_PRODUCTS = (
     ShippingService.dhl_freight_sweden_standard_pallet_international.value,
     ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value,
 )
+# Without an EKAER or UIT declaration or number, the connector declares a
+# TRANSPORT_DECLARATION_PRODUCTS shipment free below this total gross weight
+# and refuses it at or above. The RO UIT exception covers goods "less than
+# 500 kg" (with a value under 10,000 RON) and the HU EKAER threshold for
+# risky products is 500 kg (with HUF 1,000,000); the connector checks
+# weight only.
+TRANSPORT_DECLARATION_FREE_WEIGHT_LIMIT_KG = 500.0
 TRANSPORT_DECLARATIONS = (
     TransportDeclaration(
         name="EKAER",
@@ -703,14 +710,14 @@ class ShippingOption(lib.Enum):
     # SENT_FREE "false" (§5.4 p23). The live API rejects a PL shipment
     # without the identifiers unless SENT_FREE is "true" (validation error
     # 22001, tests/dhl_freight_sweden/fixtures/sandbox/
-    # rejection-22001-109-se-pl-without-sent.json). The connector requires
-    # an explicit choice and never declares SENT free by itself.
+    # rejection-22001-109-se-pl-without-sent.json). Without SENT_FREE or
+    # either identifier, the connector declares the shipment SENT free.
     dhl_freight_sweden_sent_free = lib.OptionEnum("SENT_FREE", bool)
     dhl_freight_sweden_sent_ref = lib.OptionEnum("SENT_REF", str)
     dhl_freight_sweden_sent_carkey = lib.OptionEnum("SENT_CARKEY", str)
 
     # EKAER (HU, AN..20) and UIT (RO, AN..19) declarations, see
-    # TRANSPORT_DECLARATIONS.
+    # TRANSPORT_DECLARATIONS and TRANSPORT_DECLARATION_FREE_WEIGHT_LIMIT_KG.
     dhl_freight_sweden_ekaer_free = lib.OptionEnum("EKAER_FREE", bool)
     dhl_freight_sweden_ekaer_number = lib.OptionEnum("EKAER_NUMBER", str)
     dhl_freight_sweden_uit_free = lib.OptionEnum("UIT_FREE", bool)

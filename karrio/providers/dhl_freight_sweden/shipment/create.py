@@ -326,7 +326,9 @@ def shipment_request(
     lane_countries = {shipper.country_code, recipient.country_code}
     additional_information = [
         *_sent_information(options, lane_countries),
-        *_transport_declarations(options, service, lane_countries),
+        *_transport_declarations(
+            options, service, lane_countries, packages.weight.KG or 0.0
+        ),
         *_additional_information(
             options.dhl_freight_sweden_additional_information.state or [],
             _typed_information_codes(lane_countries),
@@ -1078,18 +1080,6 @@ def _sent_information(
             },
         )
 
-    if sent_free is not True:
-        raise SentInformationError(
-            "A shipment to or from PL requires an explicit SENT declaration: "
-            "dhl_freight_sweden_sent_free, or "
-            "dhl_freight_sweden_sent_ref with dhl_freight_sweden_sent_carkey",
-            details={
-                "dhl_freight_sweden_sent_free": dict(
-                    code="required", message="explicit SENT declaration is required"
-                )
-            },
-        )
-
     return [
         dhl_freight_sweden_req.AdditionalInformationType(
             code=codes.SENT_FREE.value, stringValue="true"
@@ -1101,6 +1091,7 @@ def _transport_declarations(
     options: units.ShippingOptions,
     product_code: str,
     lane_countries: typing.Set[str],
+    total_weight_kg: float,
 ) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
     return [
         entry
@@ -1110,6 +1101,7 @@ def _transport_declarations(
             declaration,
             options,
             required=product_code in provider_units.TRANSPORT_DECLARATION_PRODUCTS,
+            total_weight_kg=total_weight_kg,
         )
     ]
 
@@ -1118,6 +1110,7 @@ def _transport_declaration(
     declaration: provider_units.TransportDeclaration,
     options: units.ShippingOptions,
     required: bool,
+    total_weight_kg: float,
 ) -> typing.List[dhl_freight_sweden_req.AdditionalInformationType]:
     free = options[declaration.free_option].state
     number = (options[declaration.number_option].state or "").strip()
@@ -1178,20 +1171,28 @@ def _transport_declaration(
     if free is False:
         return [entry(declaration.free_code, "false")]
 
-    if required:
+    if not required:
+        return []
+
+    threshold = provider_units.TRANSPORT_DECLARATION_FREE_WEIGHT_LIMIT_KG
+    if total_weight_kg >= threshold:
         raise TransportDeclarationError(
-            f"A shipment to or from {declaration.country} with this product "
-            f"requires an explicit {declaration.name} declaration: {declaration.free_option}, "
-            f"or {declaration.number_option}",
+            f"A shipment to or from {declaration.country} with this product at "
+            f"or above {threshold:g} kg total gross weight requires "
+            f"{declaration.number_option} or an explicit {declaration.name} "
+            f"declaration ({declaration.free_option})",
             details={
-                declaration.free_option: dict(
+                name: dict(
                     code="required",
-                    message=f"explicit {declaration.name} declaration is required",
+                    message=f"{declaration.name} number or explicit "
+                    f"{declaration.name} declaration is required at or above "
+                    f"{threshold:g} kg",
                 )
+                for name in [declaration.free_option, declaration.number_option]
             },
         )
 
-    return []
+    return [entry(declaration.free_code, "true")]
 
 
 def _typed_information_codes(lane_countries: typing.Set[str]) -> typing.Set[str]:
