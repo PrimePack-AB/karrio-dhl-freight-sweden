@@ -16,7 +16,6 @@ import karrio.sdk as karrio
 from karrio.providers.dhl_freight_sweden.shipment.create import (
     OptionValueError,
     SentInformationError,
-    TransportDeclarationError,
 )
 
 from .fixture import detail_keys, gateway, serialize_request
@@ -314,16 +313,16 @@ class TestDHLFreightDeclarationFlags(unittest.TestCase):
 
                 self.assertEqual(serialized["additionalInformation"], [SentFree])
 
-    def test_sent_free_unset_requires_explicit_declaration(self):
+    def test_sent_free_unset_sends_sent_free(self):
         for value in UNSET_SPELLINGS:
             with self.subTest(value=value):
-                with self.assertRaises(SentInformationError) as context:
-                    _request(
-                        _parcel_connect_pl(_recipient_pl, {"dhl_freight_sweden_sent_free": value})
-                    )
+                serialized = self._serialize(
+                    _parcel_connect_pl(_recipient_pl, {"dhl_freight_sweden_sent_free": value})
+                )
 
                 self.assertEqual(
-                    detail_keys(context.exception), {"dhl_freight_sweden_sent_free"}
+                    serialized["additionalInformation"],
+                    [{"code": "SENT_FREE", "stringValue": "true"}],
                 )
 
     def test_ekaer_free_false_spellings_send_number(self):
@@ -347,14 +346,16 @@ class TestDHLFreightDeclarationFlags(unittest.TestCase):
                     ],
                 )
 
-    def test_ekaer_free_unset_requires_explicit_declaration(self):
+    def test_ekaer_free_unset_sends_ekaer_free(self):
         for value in UNSET_SPELLINGS:
             with self.subTest(value=value):
-                with self.assertRaises(TransportDeclarationError) as context:
-                    _request(_road_freight(_recipient_hu, {"dhl_freight_sweden_ekaer_free": value}))
+                serialized = self._serialize(
+                    _road_freight(_recipient_hu, {"dhl_freight_sweden_ekaer_free": value})
+                )
 
                 self.assertEqual(
-                    detail_keys(context.exception), {"dhl_freight_sweden_ekaer_free"}
+                    serialized["additionalInformation"],
+                    [{"code": "EKAER_FREE", "stringValue": "true"}],
                 )
 
     def test_uit_free_false_spellings_send_uit_free_false(self):
@@ -369,14 +370,16 @@ class TestDHLFreightDeclarationFlags(unittest.TestCase):
                     [{"code": "UIT_FREE", "stringValue": "false"}],
                 )
 
-    def test_uit_free_unset_requires_explicit_declaration(self):
+    def test_uit_free_unset_sends_uit_free(self):
         for value in UNSET_SPELLINGS:
             with self.subTest(value=value):
-                with self.assertRaises(TransportDeclarationError) as context:
-                    _request(_road_freight(_recipient_ro, {"dhl_freight_sweden_uit_free": value}))
+                serialized = self._serialize(
+                    _road_freight(_recipient_ro, {"dhl_freight_sweden_uit_free": value})
+                )
 
                 self.assertEqual(
-                    detail_keys(context.exception), {"dhl_freight_sweden_uit_free"}
+                    serialized["additionalInformation"],
+                    [{"code": "UIT_FREE", "stringValue": "true"}],
                 )
 
 

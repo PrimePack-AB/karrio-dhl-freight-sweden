@@ -5,6 +5,9 @@ The "Related fields" tables of product manual v5.26 for products 202, 205,
 UIT_FREE with UIT_NUMBER (AN..19) for RO; the UIT number is conditional even
 when the shipment is not UIT free ("Code should be provided if possible",
 e.g. §5.4 p23).
+
+Without a declaration or number, these products declare the shipment EKAER
+or UIT free below 500 kg total gross weight and are refused at or above it.
 """
 
 import typing
@@ -34,17 +37,121 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
             gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
         return context.exception
 
-    def test_declaration_products_without_declaration_fail(self):
+    def test_declaration_products_without_declaration_send_free(self):
         for service in DeclarationServices:
-            for recipient, option in [
-                (_recipient_hu, "dhl_freight_sweden_ekaer_free"),
-                (_recipient_ro, "dhl_freight_sweden_uit_free"),
-            ]:
+            for recipient, code in [(_recipient_hu, "EKAER_FREE"), (_recipient_ro, "UIT_FREE")]:
                 with self.subTest(service=service, country=recipient["country_code"]):
-                    error = self._error(_declaration_payload(service, recipient))
+                    serialized = self._serialize(_declaration_payload(service, recipient))
 
-                    self.assertEqual(detail_keys(error), {option})
-                    self.assertIn(option, str(error))
+                    self.assertEqual(
+                        serialized["additionalInformation"],
+                        [{"code": code, "stringValue": "true"}],
+                    )
+
+    def test_without_declaration_below_500_kg_sends_free(self):
+        for recipient, code in Declarations:
+            for parcels in [
+                [{"weight": 499.99, "weight_unit": "KG"}],
+                [{"weight": 1102, "weight_unit": "LB"}],
+                [{"weight": 249.9, "weight_unit": "KG"}] * 2,
+            ]:
+                with self.subTest(code=code, parcels=parcels):
+                    serialized = self._serialize(
+                        _with_parcels(_road_freight(recipient), parcels)
+                    )
+
+                    self.assertEqual(
+                        serialized["additionalInformation"],
+                        [{"code": code, "stringValue": "true"}],
+                    )
+
+    def test_without_declaration_at_or_above_500_kg_fails(self):
+        for recipient, name in [(_recipient_hu, "ekaer"), (_recipient_ro, "uit")]:
+            for parcels in [
+                [{"weight": 500, "weight_unit": "KG"}],
+                [{"weight": 500.01, "weight_unit": "KG"}],
+                [{"weight": 1102.5, "weight_unit": "LB"}],
+                [{"weight": 1103, "weight_unit": "LB"}],
+                [{"weight": 200, "weight_unit": "KG"}] * 3,
+            ]:
+                with self.subTest(name=name, parcels=parcels):
+                    error = self._error(_with_parcels(_road_freight(recipient), parcels))
+
+                    options = {
+                        f"dhl_freight_sweden_{name}_free",
+                        f"dhl_freight_sweden_{name}_number",
+                    }
+                    self.assertEqual(detail_keys(error), options)
+                    self.assertIn("500 kg", str(error))
+                    for option in options:
+                        self.assertIn(option, str(error))
+
+    def test_from_hu_and_ro_without_declaration_at_500_kg_fails(self):
+        for shipper, option in [
+            (_shipper_hu, "dhl_freight_sweden_ekaer_free"),
+            (_shipper_ro, "dhl_freight_sweden_uit_free"),
+        ]:
+            with self.subTest(country=shipper["country_code"]):
+                error = self._error(
+                    _with_parcels(
+                        _import_payload("dhl_freight_sweden_road_freight_standard", shipper),
+                        [{"weight": 500, "weight_unit": "KG"}],
+                    )
+                )
+
+                self.assertIn(option, detail_keys(error))
+                self.assertIn("to or from", str(error))
+
+    def test_explicit_free_at_or_above_500_kg_is_sent(self):
+        for recipient, code in Declarations:
+            option = f"dhl_freight_sweden_{code.split('_')[0].lower()}_free"
+            for weight in [500, 2000]:
+                with self.subTest(code=code, weight=weight):
+                    serialized = self._serialize(
+                        _with_parcels(
+                            _road_freight(recipient, {option: True}),
+                            [{"weight": weight, "weight_unit": "KG"}],
+                        )
+                    )
+
+                    self.assertEqual(
+                        serialized["additionalInformation"],
+                        [{"code": code, "stringValue": "true"}],
+                    )
+
+    def test_number_at_or_above_500_kg_is_sent(self):
+        cases = [
+            (_recipient_hu, "dhl_freight_sweden_ekaer_number", "EKAER", "E2026100500001"),
+            (_recipient_ro, "dhl_freight_sweden_uit_number", "UIT", "1234-5678-9012-3456"),
+        ]
+
+        for recipient, option, name, number in cases:
+            with self.subTest(name=name):
+                serialized = self._serialize(
+                    _with_parcels(
+                        _road_freight(recipient, {option: number}),
+                        [{"weight": 800, "weight_unit": "KG"}],
+                    )
+                )
+
+                self.assertEqual(
+                    serialized["additionalInformation"],
+                    [
+                        {"code": f"{name}_FREE", "stringValue": "false"},
+                        {"code": f"{name}_NUMBER", "stringValue": number},
+                    ],
+                )
+
+    def test_other_products_at_or_above_500_kg_send_nothing_by_default(self):
+        for recipient in [_recipient_hu, _recipient_ro]:
+            with self.subTest(country=recipient["country_code"]):
+                serialized = self._serialize(
+                    _with_parcels(
+                        _parcel_connect(recipient), [{"weight": 600, "weight_unit": "KG"}]
+                    )
+                )
+
+                self.assertNotIn("additionalInformation", serialized)
 
     def test_ekaer_free_is_sent(self):
         serialized = self._serialize(
@@ -202,17 +309,16 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
 
         self.assertNotIn("additionalInformation", serialized)
 
-    def test_declaration_products_from_hu_and_ro_without_declaration_fail(self):
+    def test_declaration_products_from_hu_and_ro_without_declaration_send_free(self):
         for service in DeclarationServices:
-            for shipper, option in [
-                (_shipper_hu, "dhl_freight_sweden_ekaer_free"),
-                (_shipper_ro, "dhl_freight_sweden_uit_free"),
-            ]:
+            for shipper, code in [(_shipper_hu, "EKAER_FREE"), (_shipper_ro, "UIT_FREE")]:
                 with self.subTest(service=service, country=shipper["country_code"]):
-                    error = self._error(_import_payload(service, shipper))
+                    serialized = self._serialize(_import_payload(service, shipper))
 
-                    self.assertEqual(detail_keys(error), {option})
-                    self.assertIn("to or from", str(error))
+                    self.assertEqual(
+                        serialized["additionalInformation"],
+                        [{"code": code, "stringValue": "true"}],
+                    )
 
     def test_lanes_from_hu_and_ro_send_explicit_declarations(self):
         cases = [
@@ -272,6 +378,10 @@ def _road_freight(recipient: dict, options: typing.Optional[dict] = None) -> dic
     )
 
 
+def _with_parcels(payload: dict, parcels: typing.List[dict]) -> dict:
+    return {**payload, "parcels": parcels}
+
+
 def _parcel_connect(recipient: dict, options: typing.Optional[dict] = None) -> dict:
     return _payload("dhl_freight_sweden_parcel_connect_b2c", recipient, options)
 
@@ -297,6 +407,8 @@ _recipient_ro = {
     "postal_code": "010011",
     "country_code": "RO",
 }
+
+Declarations = [(_recipient_hu, "EKAER_FREE"), (_recipient_ro, "UIT_FREE")]
 
 _shipper_hu = {
     **_recipient_hu,
