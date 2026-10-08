@@ -10,9 +10,9 @@ with a SENT reference and carrier key, which sends ``SENT_FREE`` "false",
 ``UIT_FREE`` "false" and ``UIT_NUMBER``. Three cases set no declaration
 option, so the connector's default applies and sends ``SENT_FREE`` "true",
 or below 500 kg ``EKAER_FREE`` "true" or ``UIT_FREE`` "true", alone. Every
-case except the first two asserts the serialized request before booking. Before spending a booking each test
-checks for free that product matches offer 601 for the lane, and skips
-otherwise.
+case asserts the serialized request before booking. Before spending a
+booking each test checks for free that product matches offer 601 for the
+lane, and skips otherwise.
 """
 
 import typing
@@ -36,6 +36,13 @@ UIT_NUMBER = "0000-0000-0000-0001"
 DECLARATIONS = {
     "HU": {"dhl_freight_sweden_ekaer_number": EKAER_NUMBER},
     "RO": {"dhl_freight_sweden_uit_free": False},
+}
+DECLARATION_INFORMATION = {
+    "HU": [
+        {"code": "EKAER_FREE", "stringValue": "false"},
+        {"code": "EKAER_NUMBER", "stringValue": EKAER_NUMBER},
+    ],
+    "RO": [{"code": "UIT_FREE", "stringValue": "false"}],
 }
 IDENTIFIERS = {
     "PL": {
@@ -88,21 +95,18 @@ class TestSandboxBookingDeclarations(unittest.TestCase):
         self,
         country: str,
         declaration: typing.Mapping[str, typing.Any],
-        expected_information: typing.Optional[typing.List[dict]] = None,
+        expected_information: typing.List[dict],
     ):
         booking.require_booking(self, self.session, PRODUCT, country)
         shipment = payload(country, declaration)
 
-        if expected_information is not None:
-            serialized = lib.to_dict(
-                self.gateway.mapper.create_shipment_request(
-                    models.ShipmentRequest(**shipment)
-                ).serialize()
-            )
-            assert isinstance(serialized, dict)
-            self.assertEqual(
-                serialized.get("additionalInformation"), expected_information
-            )
+        serialized = lib.to_dict(
+            self.gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(**shipment)
+            ).serialize()
+        )
+        assert isinstance(serialized, dict)
+        self.assertEqual(serialized.get("additionalInformation"), expected_information)
 
         codes, messages = booking.offered_products(
             self.session,
@@ -121,10 +125,10 @@ class TestSandboxBookingDeclarations(unittest.TestCase):
         booking.book(self, self.session, self.gateway, PRODUCT, shipment)
 
     def test_book_601_hu_with_ekaer_number(self):
-        self.declare("HU", DECLARATIONS["HU"])
+        self.declare("HU", DECLARATIONS["HU"], DECLARATION_INFORMATION["HU"])
 
     def test_book_601_ro_not_uit_free_without_number(self):
-        self.declare("RO", DECLARATIONS["RO"])
+        self.declare("RO", DECLARATIONS["RO"], DECLARATION_INFORMATION["RO"])
 
     def test_book_601_hu_default_ekaer_free(self):
         self.declare("HU", {}, DEFAULT_INFORMATION["HU"])

@@ -331,6 +331,9 @@ class TestSandboxDeclarationPayloads(unittest.TestCase):
                 )
 
                 self.assertEqual(serialized["additionalInformation"], expected)
+                self.assertEqual(
+                    declarations.DECLARATION_INFORMATION[country], expected
+                )
 
     def test_601_without_declarations_serialize_as_default_free(self):
         cases = {
