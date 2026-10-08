@@ -5,6 +5,7 @@
 - `pyright` from repo root - type check; trust the CLI over stale editor diagnostics after red-phase TDD
 - Sandbox suite (opt-in, books real sandbox shipments): `DHL_FREIGHT_SWEDEN_SANDBOX=1`, `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=<segment>`, `DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=<codes>`, `DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES=<codes>`, `DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=<n>` (default 30); narrow single cases with `unittest -k <method>`, never retry rejected bookings
 - Territory-table parity with nordic_conventions: `cd ../nordic_conventions && PYTHONPATH=../karrio-dhl-freight-sweden .venv/bin/python -m unittest discover -s tests` - EU VAT tables and postcode normalisation must change identically in both repos
+- Docs site preview: `DOCS_DIR=$PWD/docs SITE_BASE=/karrio-dhl-freight-sweden REPO_URL=https://github.com/PrimePack-AB/karrio-dhl-freight-sweden bun run --cwd ../starlight-docs-harness dev` - renders ./docs minus docs/notes/ at http://localhost:4321/karrio-dhl-freight-sweden/; publishing is automatic on docs pushes to main via docs-pages
 
 ## Product manual
 - Source of truth: DHL Freight Sweden product manual, newest listed at https://dhlpaket.se/dashboard/specifications/products/ - cite the URL, do not crawl it; never vendor the PDF
