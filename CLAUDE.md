@@ -15,7 +15,7 @@
 
 ## Product manual
 - Source of truth: DHL Freight Sweden product manual, newest listed at https://dhlpaket.se/dashboard/specifications/products/ - cite the URL, do not crawl it; never vendor the PDF
-- Cite as `§x.y pN` against the version and sha named in README; a new manual version means re-mapping every citation (section numbers shift when products are removed)
+- Cite as `§x.y pN` against the version and sha named in docs/development/index.md (Product manual citations); a new manual version means re-mapping every citation (section numbers shift when products are removed)
 - Exclusion precedence: manual first; Product API `postalCodeExcludes` only where the manual is silent, and only once a product-matches fixture is committed
 - When the sandbox contradicts the manual (e.g. Åland 24003), follow the sandbox, keep the manual citation, and record the deviation in the findings note
 

@@ -455,8 +455,7 @@ Its territory tables match this connector's, and a test in that repository check
 
 ## Further documentation
 
-The rules cite the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, as `§x.y pN`.
-DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
+The rules cite the DHL Freight (Sweden) product manual as `§x.y pN`, and [Product manual citations](docs/development/index.md#product-manual-citations) names the cited version, its sha256, and where DHL lists the current manual.
 [Booking rules](docs/concepts/booking-rules.md), [Destinations](docs/concepts/destinations.md), [Products](docs/concepts/products.md), and [Labels](docs/concepts/labels.md) explain each rule with its citation and evidence, and [Service-point lookups](docs/guides/lookups.md) documents the lookups.
 Every sandbox claim cites a redacted evidence file in [tests/dhl_freight_sweden/fixtures/sandbox/](tests/dhl_freight_sweden/fixtures/sandbox/), and the [sandbox findings](docs/notes/sandbox/sandbox-findings.md) record every booking, rejection, and deviation from the manual.
 [Development](docs/development/index.md) covers setup and tests, [Running the sandbox suite](docs/guides/sandbox-runs.md) runs the opt-in suite that books against the DHL sandbox, and [Sandbox suite and evidence](docs/development/traceability/sandbox-suite.md) describes its segments and the evidence it produces.
