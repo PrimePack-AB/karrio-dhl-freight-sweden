@@ -48,97 +48,146 @@ The `label` files come from the suite's print calls of bookings 2906761222, 2906
 ## Bookings
 
 All 41 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
-Every booking had one piece of 1 kg except 2906762477, which had one piece of 2 kg, and only those marked in the table carried customs data.
+Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm.
 None was cancelled, because the API Farm has no cancellation operation.
-
-| Id | Time | Product | Route | Payer code | Customs | Service point | Routing code | Evidence |
-|----|------|---------|-------|------------|---------|---------------|--------------|----------|
-| 2906761073 | 14:31:56 (file time) | 109 | SE → PL 30-079 | 022 | none | 8005-PL-4507446 ParcelShop | 2LPL30079+70530000 | [booking-2906761073][b-073] |
-| 2906761081 | 14:31:56 (file time) | 112 | SE → PL 30-079 | 023 | none | none | 2LPL30079+74000000 | [booking-2906761081][b-081] |
-| 2906761123 | 14:48:37 | 109 | SE → PL 30-079 | 022 | none | 8005-PL-4507446 ParcelShop | 2LPL30079+70530000 | [booking-2906761123][b-123] |
-| 2906761131 | 14:48:39 | 112 | SE → PL 30-079 | 023 | none | none | 2LPL30079+74000000 | [booking-2906761131][b-131] |
-| 2906761149 | 14:48:40 (file time) | 112 | SE → PL 30-079 | 022 | none | none | 2LPL30079+74000000 | [booking-2906761149][b-149] |
-| 2906761222 | 16:21:37 | 102 | SE → SE 11151 | 1 | none | none | 2LSE11151+02000000 | [booking-2906761222][b-222] |
-| 2906761230 | 16:21:45 | 103 | SE → SE 11151 | 1 | none | SE-982000 ParcelShop | 2LSE11157+02000000 | [booking-2906761230][b-230] |
-| 2906761248 | 16:29:32 | 601 | SE → DK 1620 | DAP | none | none | 2LDK1620+00000000 | [booking-2906761248][b-248] |
-| 2906761255 | 16:29:38 | 118 | SE → SE 11151 | 1 | none | none | 2LSE11151+02000000 | [booking-2906761255][b-255] |
-| 2906761263 | 16:29:49 | 109 | SE → RO 030031 | 022 | none | 8023-231652 ParcelShop | 2LRO040011+70530000 | [booking-2906761263][b-263] |
-| 2906761271 | 16:29:53 | 112 | SE → RO 030031 | 023 | none | none | 2LRO030031+74000000 | [booking-2906761271][b-271] |
-| 2906761289 | 16:30:05 | 109 | SE → HU 1052 | 022 | none | 8013-118530 ParcelStation | 2LHU1826+70540000 | [booking-2906761289][b-289] |
-| 2906761297 | 16:30:08 | 112 | SE → HU 1052 | 023 | none | none | 2LHU1052+74000000 | [booking-2906761297][b-297] |
-| 2906761305 | 16:30:17 | 109 | SE → NO 0154 | 022 | full service, ProformaInvoice | 8009-129635 ParcelShop | 2LNO0186+70530001 | [booking-2906761305][b-305] |
-| 2906761313 | 16:30:20 | 112 | SE → NO 0154 | 023 | full service, ProformaInvoice | none | 2LNO0154+000000 | [booking-2906761313][b-313] |
-| 2906761339 | 16:53:40 | 601 | SE → HU 1052 | DAP | none | none | 2LHU1052+00000000 | [booking-2906761339][b-339] |
-| 2906761347 | 16:53:52 | 601 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906761347][b-347] |
-| 2906761354 | 17:14:34 | 109 | SE → DK 1620 | 022 | none | 8009-115191 ParcelShop | 2LDK1620+70530000 | [booking-2906761354][b-354] |
-| 2906761867 | 2026-10-06 08:10:52 | 112 | SE → FR 75004 | 023 | none | none | 2LFR75004+74000000 | [booking-2906761867][b-867] |
-| 2906761917 | 2026-10-06 09:07:41 | 109 | SE → FI 22100 (Åland) | 022 | none | 8011-221003201 ParcelShop | 2LFI22100+70530000 | [booking-2906761917][b-917] |
-| 2906761925 | 2026-10-06 09:07:54 | 202 | SE → GB BT1 1AA (Northern Ireland) | DAP | none | none | 2LGBBT11AA+11000000 | [booking-2906761925][b-925] |
-| 2906762105 | 2026-10-06 10:39:13 | 109 | SE → NO 0154 | 022 | standard, EORI SE0000000000, ProformaInvoice | 8009-129635 ParcelShop | 2LNO0186+70530001 | [booking-2906762105][b-105] |
-| 2906762113 | 2026-10-06 10:39:17 | 112 | SE → NO 0154 | 023 | standard, EORI SE0000000000, ProformaInvoice | none | 2LNO0154+000000 | [booking-2906762113][b-113] |
-| 2906762121 | 2026-10-06 10:39:19 | 202 | SE → DK 1620 | DAP | none | none | 2LDK1620+11000000 | [booking-2906762121][b-121] |
-| 2906762139 | 2026-10-06 10:39:22 | 202 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+11000001 | [booking-2906762139][b-139] |
-| 2906762147 | 2026-10-06 10:39:28 | 233 | SE → DK 1620 | DAP | none | none | 2LDK1620+00000000 | [booking-2906762147][b-147] |
-| 2906762154 | 2026-10-06 10:39:31 | 233 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+00000001 | [booking-2906762154][b-154] |
-| 2906762162 | 2026-10-06 10:39:35 | 601 | SE → NO 0154 | DAP | full service, ProformaInvoice | none | 2LNO0154+00000001 | [booking-2906762162][b-162] |
-| 2906762303 | 2026-10-06 11:12:21 | 401 | SE → SE 11151 | 1 | none | none | 2LSE11151+02000000 | [booking-2906762303][b-303] |
-| 2906762477 | 2026-10-06 12:41:10 | 601 | SE → CH 8001 | DAP | full service, CommercialInvoice | none | 2LCH8001+00000001 | [booking-2906762477][b-477] |
-| 2906762592 | 2026-10-06 13:30:05 | 109 | SE → FI 22100 (Åland) | 022 | no service, CommercialInvoice | 8011-221003201 ParcelShop | 2LFI22100+70530000 | [booking-2906762592][b-592] |
-| 2906769555 | 2026-10-08 08:04:40 | 601 | SE → HU 1052 | DAP | none | none | 2LHU1052+00000000 | [booking-2906769555][b-555] |
-| 2906769563 | 2026-10-08 08:04:41 | 601 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906769563][b-563] |
-| 2906769613 | 2026-10-08 08:11:20 | 109 | SE → PL 30-079 | 022 | none | 8005-PL-4504339 ParcelShop | 2LPL30074+70530000 | [booking-2906769613][b-613] |
-| 2906769647 | 2026-10-08 08:26:55 | 601 | SE → PL 30-079 | DAP | none | none | 2LPL30079+00000000 | [booking-2906769647][b-647] |
-| 2906769654 | 2026-10-08 08:26:57 | 601 | SE → PL 30-079 | DAP | none | none | 2LPL30079+00000000 | [booking-2906769654][b-654] |
-| 2906769662 | 2026-10-08 08:26:58 | 601 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906769662][b-662] |
-| 2906769969 | 2026-10-08 08:48:07 | 202 | SE → HU 1052 | DAP | none | none | 2LHU1052+11000000 | [booking-2906769969][b-969] |
-| 2906769977 | 2026-10-08 08:48:09 | 202 | SE → RO 030031 | DAP | none | none | 2LRO030031+11000000 | [booking-2906769977][b-977] |
-| 2906769985 | 2026-10-08 08:48:11 | 233 | SE → HU 1052 | DAP | none | none | 2LHU1052+00000000 | [booking-2906769985][b-985] |
-| 2906769993 | 2026-10-08 08:48:12 | 233 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906769993][b-993] |
-
-The time is the response `Date` header, except for the three direct bookings whose captures carry no header, where it is the capture file's modification time.
-The 109 and 112 bookings to PL except 2906769613 declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, 2906761347 sent `UIT_FREE` `"false"` without a number, 2906769555 sent `EKAER_FREE` `"true"` alone, 2906769563 sent `UIT_FREE` `"true"` alone, 2906769647 (601 to PL) sent `SENT_FREE` `"true"` alone, 2906769654 (601 to PL) sent `SENT_FREE` `"false"` with the placeholder `SENT_REF` `SENT20261008000001` and `SENT_CARKEY` `SANDBOXCARKEY0001`, 2906769662 sent `UIT_FREE` `"false"` with the placeholder `UIT_NUMBER` `0000-0000-0000-0001`, 2906769969 (202) and 2906769985 (233) to HU sent `EKAER_FREE` `"true"` alone, and 2906769977 (202) and 2906769993 (233) to RO sent `UIT_FREE` `"true"` alone, and DHL echoed these entries in the responses.
-No other booking sent additional information entries.
-The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
-Every booking except 2906761073, 2906761081, and 2906761149 was followed by a Print API call that returned a PDF label (`label_<id>.pdf`).
-The label of 2906761354, printed with page type `Label`, is one PDF page of 297.638 × 595.276 pt (105 × 210 mm) ([label-2906761354][lb-354]).
-Its text shows the Consignee name below the sender block and the Consignee name and address at the bottom, and its only `Phn.` line carries the sender's +46 8 123 456, although the booking sent the consignee phone +45 20 12 34 56.
-The 109 NO label of 2906761305 shows the Consignee name and address, Karl Johans gate 10, 0154 Oslo, at the bottom, apart from the shop's CHRISTIAN KROHGS GATE 1, 0186 OSLO, and likewise prints only the sender's phone ([label-2906761305][lb-305]).
-The home-delivery labels of 102, 118, and 601, the 112 label to HU, and the 103 service-point label print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761297][lb-297], [label-2906761255][lb-255], [label-2906761248][lb-248], [label-2906761230][lb-230]); the section [Phone numbers on labels](#phone-numbers-on-labels) compares these labels with the manual.
-The 112 FR label of 2906761867, printed with page type `Label`, is one PDF page of 283.46 × 425.2 pt (100 × 150 mm) in a different layout from the other labels: it shows the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000, and no `Phn.` line ([label-2906761867][lb-867]).
-Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
-The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (§10.14.7 p235).
-On 2026-10-08 the route for SE 98138 Kiruna answered `bookable` `true` and `homeDeliveryParcel` `false`, so `karrio.Address.validate` reports success unscoped and failure scoped to 118 ([lookup-postal-code-se-98138-no-home-delivery.json][l-pc-98138]).
-With `address_validation` `enforce`, a 118 request to SE 98138 and one to SE 99999 each sent only the route lookup and raised `PostalCodeNotServableError`, the first for `homeDeliveryParcel` `false` and the second for 16010, with no TransportInstruction call ([98138 pre-flight][l-pf-98138], [99999 pre-flight][l-pf-99999]).
-On 2026-10-08 the route lookup for SE 11151 with the client key `not-a-real-key` answered HTTP 401 `{"error": "No valid application matching client key"}`, which `karrio.Address.validate` reported as `postal_code_api_unavailable` without validation details ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
-With the same key and `address_validation` `enforce`, a 118 request to SE 11151 sent only the route lookup, which answered 401, and raised `PostalCodeApiUnavailableError` with no TransportInstruction call ([401 pre-flight][l-pf-401]).
+The evidence files keep each booking's routing code; the routing codes that bear on a finding are quoted under [Deviations from manual v5.26](#deviations-from-manual-v526).
 The 103 and 109 bookings to RO, HU, NO, DK, FI 22100, and, for 2906769613, PL were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
-The five service points nearest Mariehamn 22100 were Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 ([booking-2906761917][b-917]).
+The Options column gives the payer code, any service point, customs data, and additional information entries; only the bookings that list customs data carried any, and DHL echoed every additional information entry sent.
+The direct-script bookings 2906761073 and 2906761081 and the connector-script booking 2906761149 were not printed; every other booking was followed by a Print API call that returned a PDF label (`label_<id>.pdf`).
+
+### Domestic SE
+
+| Date | Product | Lane | Options | Shipment id | Evidence |
+|------|---------|------|---------|-------------|----------|
+| 2026-10-05 | 102 | SE → SE 11151 | payer code 1 | 2906761222 | [booking][b-222], [label][lb-222] |
+| 2026-10-05 | 103 | SE → SE 11151 | payer code 1, ParcelShop SE-982000 sent as the full id | 2906761230 | [booking][b-230], [label][lb-230] |
+| 2026-10-05 | 118 | SE → SE 11151 | payer code 1, after an `enforce` PostalCode route pre-flight | 2906761255 | [booking][b-255], [label][lb-255] |
+| 2026-10-06 | 401 | SE → SE 11151 | payer code 1 | 2906762303 | [booking][b-303] |
+
+### Intra-EU
+
+| Date | Product | Lane | Options | Shipment id | Evidence |
+|------|---------|------|---------|-------------|----------|
+| 2026-10-05 | 109 | SE → PL 30-079 | 022, ParcelShop 8005-PL-4507446, `SENT_FREE` `"true"`, sent directly to TransportInstruction | 2906761073 | [booking][b-073] |
+| 2026-10-05 | 112 | SE → PL 30-079 | 023, `SENT_FREE` `"true"`, sent directly to TransportInstruction | 2906761081 | [booking][b-081] |
+| 2026-10-05 | 109 | SE → PL 30-079 | 022, ParcelShop 8005-PL-4507446, `SENT_FREE` `"true"` | 2906761123 | [booking][b-123] |
+| 2026-10-05 | 112 | SE → PL 30-079 | 023, `SENT_FREE` `"true"` | 2906761131 | [booking][b-131] |
+| 2026-10-05 | 112 | SE → PL 30-079 | 022, `SENT_FREE` `"true"` | 2906761149 | [booking][b-149] |
+| 2026-10-05 | 601 | SE → DK 1620 | DAP | 2906761248 | [booking][b-248], [label][lb-248] |
+| 2026-10-05 | 109 | SE → RO 030031 | 022, ParcelShop 8023-231652 | 2906761263 | [booking][b-263] |
+| 2026-10-05 | 112 | SE → RO 030031 | 023 | 2906761271 | [booking][b-271] |
+| 2026-10-05 | 109 | SE → HU 1052 | 022, ParcelStation 8013-118530, a locker | 2906761289 | [booking][b-289] |
+| 2026-10-05 | 112 | SE → HU 1052 | 023 | 2906761297 | [booking][b-297], [label][lb-297] |
+| 2026-10-05 | 601 | SE → HU 1052 | DAP, `EKAER_FREE` `"false"`, placeholder `EKAER_NUMBER` `E0000SANDBOX0001` | 2906761339 | [booking][b-339] |
+| 2026-10-05 | 601 | SE → RO 030031 | DAP, `UIT_FREE` `"false"` without a number | 2906761347 | [booking][b-347] |
+| 2026-10-05 | 109 | SE → DK 1620 | 022, ParcelShop 8009-115191 | 2906761354 | [booking][b-354], [label][lb-354] |
+| 2026-10-06 | 112 | SE → FR 75004 | 023 | 2906761867 | [booking][b-867], [label][lb-867] |
+| 2026-10-06 | 202 | SE → DK 1620 | DAP | 2906762121 | [booking][b-121] |
+| 2026-10-06 | 233 | SE → DK 1620 | DAP | 2906762147 | [booking][b-147] |
+| 2026-10-08 | 601 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769555 | [booking][b-555] |
+| 2026-10-08 | 601 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769563 | [booking][b-563] |
+| 2026-10-08 | 109 | SE → PL 30-079 | 022, ParcelShop 8005-PL-4504339, no SENT entries | 2906769613 | [booking][b-613] |
+| 2026-10-08 | 601 | SE → PL 30-079 | DAP, `SENT_FREE` `"true"` alone, the connector's default | 2906769647 | [booking][b-647] |
+| 2026-10-08 | 601 | SE → PL 30-079 | DAP, `SENT_FREE` `"false"`, placeholder `SENT_REF` `SENT20261008000001` and `SENT_CARKEY` `SANDBOXCARKEY0001` | 2906769654 | [booking][b-654] |
+| 2026-10-08 | 601 | SE → RO 030031 | DAP, `UIT_FREE` `"false"`, placeholder `UIT_NUMBER` `0000-0000-0000-0001` | 2906769662 | [booking][b-662] |
+| 2026-10-08 | 202 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769969 | [booking][b-969] |
+| 2026-10-08 | 202 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769977 | [booking][b-977] |
+| 2026-10-08 | 233 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769985 | [booking][b-985] |
+| 2026-10-08 | 233 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769993 | [booking][b-993] |
+
+The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
+
+### Outside the EU VAT area and special territories
+
+| Date | Product | Lane | Options | Shipment id | Evidence |
+|------|---------|------|---------|-------------|----------|
+| 2026-10-05 | 109 | SE → NO 0154 | 022, ParcelShop 8009-129635, customs handling full service, one commodity, `ProformaInvoice` without invoice amount or EORI | 2906761305 | [booking][b-305], [label][lb-305] |
+| 2026-10-05 | 112 | SE → NO 0154 | 023, customs handling full service, one commodity, `ProformaInvoice` without invoice amount or EORI | 2906761313 | [booking][b-313] |
+| 2026-10-06 | 109 | SE → FI 22100 (Åland) | 022, Posti ParcelShop 8011-221003201, no customs data | 2906761917 | [booking][b-917] |
+| 2026-10-06 | 202 | SE → GB BT1 1AA (Northern Ireland) | DAP, no customs data | 2906761925 | [booking][b-925] |
+| 2026-10-06 | 109 | SE → NO 0154 | 022, ParcelShop 8009-129635, customs handling Standard, made-up EORI SE0000000000, one commodity, `ProformaInvoice` | 2906762105 | [booking][b-105] |
+| 2026-10-06 | 112 | SE → NO 0154 | 023, customs handling Standard, made-up EORI SE0000000000, one commodity, `ProformaInvoice` | 2906762113 | [booking][b-113] |
+| 2026-10-06 | 202 | SE → NO 0154 | DAP, customs handling full service, one commodity, `ProformaInvoice` | 2906762139 | [booking][b-139] |
+| 2026-10-06 | 233 | SE → NO 0154 | DAP, customs handling full service, one commodity, `ProformaInvoice` | 2906762154 | [booking][b-154] |
+| 2026-10-06 | 601 | SE → NO 0154 | DAP, customs handling full service, one commodity, `ProformaInvoice` | 2906762162 | [booking][b-162] |
+| 2026-10-06 | 601 | SE → CH 8001 | DAP, customs handling full service, one commodity, `CommercialInvoice` with `invoiceAmount` 200.0 SEK, consignee phone and e-mail address | 2906762477 | [booking][b-477] |
+| 2026-10-06 | 109 | SE → FI 22100 (Åland) | 022, Posti ParcelShop 8011-221003201, customs data without a customs service, `CommercialInvoice` | 2906762592 | [booking][b-592] |
+
+## Labels
+
+All eight labels with evidence files were printed with page type `Label`.
+Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone, and the 103 booking sent no AccessPoint phone.
+
+| Booking | Product and lane | Page | Content | Evidence |
+|---------|------------------|------|---------|----------|
+| 2906761222 | 102 SE → SE | one page, 297.638 × 595.276 pt (105 × 210 mm) | a `Phn.` line with no number | [label-2906761222][lb-222] |
+| 2906761230 | 103 SE → SE, service point SE-982000 | one page, 105 × 210 mm | a `Phn.` line with no number | [label-2906761230][lb-230] |
+| 2906761248 | 601 SE → DK | one page, 105 × 210 mm | a `Phn.` line with no number, and not the consignee phone +45 20 12 34 56 | [label-2906761248][lb-248] |
+| 2906761255 | 118 SE → SE | one page, 105 × 210 mm | a `Phn.` line with no number | [label-2906761255][lb-255] |
+| 2906761297 | 112 SE → HU | one page, 105 × 210 mm | a `Phn.` line with neither the sender phone nor the consignee phone +36 30 000 0000 | [label-2906761297][lb-297] |
+| 2906761305 | 109 SE → NO, ParcelShop 8009-129635 | one page, 105 × 210 mm | the Consignee name and address, Karl Johans gate 10, 0154 Oslo, at the bottom, apart from the shop's CHRISTIAN KROHGS GATE 1, 0186 OSLO; the sender's phone as the only `Phn.` line, and not the consignee phone +47 400 00 000 | [label-2906761305][lb-305] |
+| 2906761354 | 109 SE → DK, ParcelShop 8009-115191 | one page, 297.638 × 595.276 pt (105 × 210 mm) | the Consignee name below the sender block and the Consignee name and address at the bottom; the sender's +46 8 123 456 as the only `Phn.` line, and not the consignee phone +45 20 12 34 56 | [label-2906761354][lb-354] |
+| 2906761867 | 112 SE → FR | one page, 283.46 × 425.2 pt (100 × 150 mm), in a different layout from the other labels | the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000; no `Phn.` line, and not the consignee phone +33 6 12 34 56 78 | [label-2906761867][lb-867] |
+
+The print calls for 2906762477 (601 to CH) and 2906762592 (109 to Åland) each returned one PDF label, the first as one report of type `Label`.
+
+The manual's label field description (§9.4.2) marks the sender phone, field 6 "Consignor or pickup party phone number", conditional, and does not allow printing it for 104, for 402/502, or for 107 from AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, while making it mandatory for 107 from SK (p168).
+For field 9 it marks the consignee or delivery party phone number conditional and the receiving parcelshop's phone number mandatory for 103 (p170).
+It does not allow printing the receiver phone for 109 and 112 to AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, makes it mandatory for 109 and 112 to SK, and does not allow it for 118 or 401 (p170).
+It makes the receiver's mobile phone number mandatory in the shipment data for 118 (§5.16 p68) and the consignee phone number and e-mail address mandatory for 601 (§5.19 p81).
+The 109 labels to DK and NO, the 112 labels to FR and HU, and the 118 label match the field 9 rules, and the missing sender phone on the 112 and 118 labels matches the conditional field 6.
+On the 102 and 601 labels fields 6 and 9 are conditional.
+The 103 label is the one deviation, listed under [Deviations from manual v5.26](#deviations-from-manual-v526).
 
 ## Rejections
 
-The suite's rejection segment built a valid request through the connector and changed the serialized payload just before sending, and on 2026-10-05 DHL answered each with HTTP 400, the first three with one validation error and the 103 case with four.
-When the segment ran again on 2026-10-08, DHL accepted the unchanged 109 PL request without SENT entries as booking 2906769613 ([booking-2906769613][b-613]), described under [SENT for PL](#sent-for-pl).
-The booking-export segment's 112 GB case, sent without its product matches check, was answered with HTTP 400 and two validation errors, its 205 case, also sent without the check, with HTTP 400 and one, and its two 112 Åland cases, which passed the check, with HTTP 400 and one each.
-No booking was created by any of them on 2026-10-05.
+Every answer below was HTTP 400 and created no booking.
+The rejection segment built a valid request through the connector and changed the serialized payload just before sending (the four 2026-10-05 rows); the booking-export segment sent the GB and 205 cases without their product matches check and the two Åland cases after it.
 
-| Error code | Field | Message | Payload | Evidence |
-|------------|-------|---------|---------|----------|
-| 22001 | `AdditionalInformation` | SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true. | 109 SE → PL 30-079, payer code 022, ParcelShop 8005-PL-4504339, no SENT entries, on 2026-10-05; accepted on 2026-10-08 | [rejection-22001][r-22001], [booking-2906769613][b-613] |
-| 22015 | `Parties[2]` | AccessPoint Party is not allowed for this product | 112 SE → PL 30-079, payer code 023, `SENT_FREE` `"true"`, added AccessPoint ParcelShop 8005-PL-4504339 | [rejection-22015][r-22015] |
-| 22020 | `PayerCode.Code` | Payercode 1 is not valid for product | 112 SE → PL 30-079, payer code 1, `SENT_FREE` `"true"` | [rejection-22020][r-22020] |
-| 22001 | `Parties[2].Address.Address` | Address is mandatory for party AccessPoint | 103 SE → SE 11151, AccessPoint SE-982000 with only id, type, and sub type | [rejection-22001-103][r-22001-103] |
-| 22001 | `Parties[2].Name` | Name is mandatory for party AccessPoint | same request | [rejection-22001-103][r-22001-103] |
-| 22026 | `Parties[2]` | AccessPoint CountryCode is not valid for this product | same request | [rejection-22001-103][r-22001-103] |
-| 22006 | `Parties[2].PostalCode` | Error retrieving gateway linehaul for shipment | same request | [rejection-22001-103][r-22001-103] |
-| 22005 | `ProductCode` | No valid product was found for given productcode and countries | 112 SE → GB W1D 1AN, payer code 023, customs handling full service, one commodity | [rejection-22005-112-gb][r-22005-gb] |
-| 22026 | `Parties[1]` | Consignee CountryCode is not valid for this product | same request | [rejection-22005-112-gb][r-22005-gb] |
-| 24003 | `customsHandlingFullService` | customsHandlingFullService is not available for this country combination | 112 SE → FI 22100, payer code 023, customs handling full service, one commodity, proforma invoice | [rejection-24003-112-fi-aland][r-24003-ax] |
-| 24003 | `customsHandlingStandard` | customsHandlingStandard is not available for this country combination | 112 SE → FI 22100, payer code 023, customs handling standard, made-up EORI number SE0000000000, one commodity, proforma invoice | [rejection-24003-112-fi-aland-standard][r-24003-ax-std] |
-| 22020 | `ChargeableWeight` | ChargeableWeight is lower than product min 2500.0 | 205 SE → NO 0154, payer code DAP, customs handling full service, one commodity, one 1 kg piece, sent without the product matches check | [rejection-22020-205-no][r-22020-205-no] |
+| Date | Product | Lane | Mutation or request | DHL code and message | Evidence |
+|------|---------|------|---------------------|----------------------|----------|
+| 2026-10-05; accepted 2026-10-08 | 109 | SE → PL 30-079 | payer code 022, ParcelShop 8005-PL-4504339, SENT entries removed | 22001 `AdditionalInformation` "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true."; on 2026-10-08 DHL accepted the unchanged request as booking 2906769613, and the request was not retried since | [rejection-22001][r-22001], [booking-2906769613][b-613] |
+| 2026-10-05 | 112 | SE → PL 30-079 | payer code 023, `SENT_FREE` `"true"`, AccessPoint ParcelShop 8005-PL-4504339 added | 22015 `Parties[2]` "AccessPoint Party is not allowed for this product" | [rejection-22015][r-22015] |
+| 2026-10-05 | 112 | SE → PL 30-079 | payer code changed to 1, `SENT_FREE` `"true"` | 22020 `PayerCode.Code` "Payercode 1 is not valid for product" | [rejection-22020][r-22020] |
+| 2026-10-05 | 103 | SE → SE 11151 | AccessPoint SE-982000 reduced to id, type, and sub type | 22001 `Parties[2].Address.Address` "Address is mandatory for party AccessPoint"; 22001 `Parties[2].Name` "Name is mandatory for party AccessPoint"; 22026 `Parties[2]` "AccessPoint CountryCode is not valid for this product"; 22006 `Parties[2].PostalCode` "Error retrieving gateway linehaul for shipment" | [rejection-22001-103][r-22001-103] |
+| 2026-10-06 | 112 | SE → GB W1D 1AN | payer code 023, customs handling full service, one commodity, sent without the product matches check | 22005 `ProductCode` "No valid product was found for given productcode and countries"; 22026 `Parties[1]` "Consignee CountryCode is not valid for this product" | [rejection-22005-112-gb][r-22005-gb] |
+| 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling full service, one commodity, proforma invoice, after product matches offered 112 | 24003 `customsHandlingFullService` "customsHandlingFullService is not available for this country combination" | [rejection-24003-112-fi-aland][r-24003-ax] |
+| 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling Standard, made-up EORI number SE0000000000, one commodity, proforma invoice | 24003 `customsHandlingStandard` "customsHandlingStandard is not available for this country combination" | [rejection-24003-112-fi-aland-standard][r-24003-ax-std] |
+| 2026-10-06 | 205 | SE → NO 0154 | payer code DAP, customs handling full service, one commodity, one 1 kg piece, sent without the product matches check | 22020 `ChargeableWeight` "ChargeableWeight is lower than product min 2500.0" | [rejection-22020-205-no][r-22020-205-no] |
 
-The PostalCode API rejected the unknown SE postal code 99999 with HTTP 400 and the PascalCase ErrorResult `{"ErrorCode": 16010, "Status": 400, "UserMessage": "Post code '99999' not found."}` ([lookup-postal-code-se-99999-16010.json][l-pc-99999]).
-On 2026-10-08 it answered SE 98060 with 16012 "Post code '98060' not supported." ([lookup-postal-code-se-98060-16012.json][l-pc-98060]) and SE 84094 with 16011 "Post code '84094' (Landsbygd) not supported." ([lookup-postal-code-se-84094-16011.json][l-pc-84094]).
-Its route lookup for PL 30-079 answered HTTP 400 with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), which matches the manual listing the route service only for domestic products (§10.14.1 p230).
+## Lookup errors
+
+| Date | Code | API | Input | Message | Evidence |
+|------|------|-----|-------|---------|----------|
+| 2026-10-05 | 16010 | PostalCode | SE 99999 | HTTP 400 with the PascalCase ErrorResult `{"ErrorCode": 16010, "Status": 400, "UserMessage": "Post code '99999' not found."}` | [lookup-postal-code-se-99999-16010.json][l-pc-99999] |
+| 2026-10-08 | 16011 | PostalCode | SE 84094 | "Post code '84094' (Landsbygd) not supported." | [lookup-postal-code-se-84094-16011.json][l-pc-84094] |
+| 2026-10-08 | 16012 | PostalCode | SE 98060 | "Post code '98060' not supported." | [lookup-postal-code-se-98060-16012.json][l-pc-98060] |
+| 2026-10-05 | 16009 | PostalCode route | PL 30-079 | HTTP 400, "Country code 'PL' not supported." | [lookup-postal-code-pl-route-16009.json][l-pc-pl] |
+| 2026-10-06 | 16009 | PostalCode route | CH 8001 | HTTP 400, "Country code 'CH' not supported." | [lookup-postal-code-ch-8001-16009][l-pc-ch] |
+| 2026-10-08 | none | PostalCode route | SE 11151 with the client key `not-a-real-key` | HTTP 401, `{"error": "No valid application matching client key"}` | [lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401] |
+| 2026-10-05 | none | ServicePointLocator | Warszawa, one 500 kg piece of 300 × 200 × 200 cm | HTTP 400, "The dimensions are too large for servicepoint" | [lookup-service-points-pl-capacity-too-large.json][l-sp-pl] |
+| 2026-10-05 | none | ServicePointLocator | the same piece with `locationTypes` `["locker"]` | HTTP 400, "The dimensions are too large for locationtype locker" | [lookup-service-points-pl-capacity-too-large.json][l-sp-pl] |
+| 2026-10-06 | none | ServicePointLocator | Bahnhofstrasse 1, 8001 Zürich, one 2 kg piece | HTTP 400, "No matching servicepoint was found" | [lookup-service-points-ch-8001-none][l-sp-ch] |
+
+The PL route answer matches the manual, which lists the route service only for domestic products (§10.14.1 p230).
+`karrio.Address.validate` reported the 401 as `postal_code_api_unavailable` without validation details.
+
+## Other lookups
+
+| Date | Lookup | Input | Answer | Evidence |
+|------|--------|-------|--------|----------|
+| 2026-10-05 | PostalCode route | SE 11151 | `bookable` `true` and `homeDeliveryParcel` `true`, the route flag the manual ties to 118 (§10.14.7 p235) | [lookup-postal-code-se-11151-route.json][l-pc-11151] |
+| 2026-10-05 | 118 `enforce` pre-flight | SE 11151, before booking 2906761255 | `homeDeliveryParcel` `true`, and the booking went ahead | [booking-2906761255][b-255] |
+| 2026-10-08 | PostalCode route | SE 98138 Kiruna | `bookable` `true` and `homeDeliveryParcel` `false`, unscoped and scoped to 118 alike, so `karrio.Address.validate` reports success unscoped and failure scoped to 118 | [lookup-postal-code-se-98138-no-home-delivery.json][l-pc-98138] |
+| 2026-10-08 | 118 `enforce` pre-flight | SE 98138 | only the route lookup, then `PostalCodeNotServableError` for `homeDeliveryParcel` `false`, with no TransportInstruction call | [98138 pre-flight][l-pf-98138] |
+| 2026-10-08 | 118 `enforce` pre-flight | SE 99999 | only the route lookup, then `PostalCodeNotServableError` for 16010, with no TransportInstruction call | [99999 pre-flight][l-pf-99999] |
+| 2026-10-08 | 118 `enforce` pre-flight | SE 11151 with the client key `not-a-real-key` | only the route lookup, which answered 401, then `PostalCodeApiUnavailableError`, with no TransportInstruction call | [401 pre-flight][l-pf-401] |
+| 2026-10-05 | ServicePointLocator, ten points | Stockholm, one 2.5 kg piece of 40 × 30 × 15 cm and one 500 kg piece of 300 × 200 × 200 cm | the same ten service points in the same order for both pieces | [lookup-service-points-se-capacity-not-applied.json][l-sp-se] |
+| 2026-10-05 | ServicePointLocator | Warszawa, one 2.5 kg piece | points, with `id` 101 and `servicePointId` 8005-PL-4516440 for one of them | [lookup-service-points-pl-capacity-too-large.json][l-sp-pl] |
+| 2026-10-05 | ServicePointLocator, five points | SE 11151, before booking 2906761230 | `id` and `servicePointId` both SE-982000 | [booking-2906761230][b-230] |
+| 2026-10-05 | ServicePointLocator | București, before booking 2906761263 | `id` 231652 and `servicePointId` 8023-231652 | [booking-2906761263][b-263] |
+| 2026-10-05 | ServicePointLocator | Budapest 1052, before booking 2906761289 | the locker 8013-118530, whose entry lists only the service type `parcel:pick-up-unregistered` | [booking-2906761289][b-289] |
+| 2026-10-06 | ServicePointLocator, five points | Mariehamn 22100, before booking 2906761917 | five Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 | [booking-2906761917][b-917] |
 
 ## Special territories in product matches
 
