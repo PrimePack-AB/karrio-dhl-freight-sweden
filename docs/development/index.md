@@ -33,6 +33,12 @@ The connector and its documentation cite the DHL Freight (Sweden) product manual
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 The manual is cited rather than vendored, and a new manual version means re-mapping every citation, because section numbers shift when products are removed.
 
+## Breaking changes
+
+Rating and booking follow the lanes that the "Valid countries" tables of manual v5.26 allow for each product, listed in [Products](../concepts/products.md#lanes).
+Rating drops rates on other lanes, merchant rate sheets included, for example 233 from SE to GR and 601 from SE to LI, and an explicitly requested product adds a `destination_not_supported` message instead.
+Booking fails before the booking request with `ProductLaneError` on such a lane (see [Booking rules](../concepts/booking-rules.md#product-lanes)), with `JointDeclarationDestinationError` for the customs joint declaration to a recipient country other than NO or CH across the EU VAT area border (see the README's customs services), and with `TerritoryPostalCodeError` for a territory code AX, IC, EA, FO, or GL whose postal code is missing or outside the territory (see [Destinations](../concepts/destinations.md#special-territories)).
+
 ## Known limitations
 
 The README is also the PyPI long description (`readme = "README.md"` in `pyproject.toml`), and its relative links to `docs/`, `examples/`, and the evidence files do not resolve on PyPI; fixing them is deferred until the package is published.
