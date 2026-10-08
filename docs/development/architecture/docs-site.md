@@ -14,7 +14,7 @@ The deploy job deploys that artifact with `actions/deploy-pages`, and only that 
 The repository's Pages source is set to GitHub Actions.
 
 Consuming a new harness release means editing the SHA pin and its tag comment in the workflow.
-Published harness tags are never force-moved; the v1 tag predates the v1.1 fixes, and this repository's landing page needs v1.2 or later.
+Published harness tags are never force-moved; the v1 tag predates the v1.1 fixes, this repository's landing page needs v1.2 or later, and its Mermaid diagrams need v1.3 or later.
 
 A failed build leaves the last good deployment serving, and the failure surfaces in the Actions log.
 The `github-pages` environment has no required reviewers, because a required review would leave deployments pending silently instead of failing.
@@ -33,6 +33,19 @@ This repository provides `docs/index.md`, a Starlight `template: splash` page wi
 Its hero action links are not rewritten, so they are written as site routes that include the `/karrio-dhl-freight-sweden` base path, or as absolute URLs, and it carries no hero image, which would have to sit in a mounted subdirectory.
 Other files at the top level of `docs/` are not mounted.
 Every page carries `title:` frontmatter, the only field Starlight's default schema requires.
+
+## Diagrams, components, and favicon
+
+Since v1.3 the harness renders fenced code blocks tagged `mermaid` as diagrams, and the same fences render as diagrams on GitHub.
+The diagram loader ships only when a mounted page or the root index contains a mermaid fence, and diagrams follow the site's light and dark theme toggle.
+Diagrams render in the browser, so they need JavaScript; readers without it see the diagram source as preformatted text.
+
+Since v1.3 a `.mdx` page can also import Starlight's built-in components, resolved against the harness's own dependencies.
+This repository keeps its pages as `.md` regardless.
+`test_doc_links.py` scans only `*.md` files, so links in `.mdx` pages would go unchecked.
+Import statements and component tags would show as raw text on GitHub, and the docs must stay readable there.
+
+The harness also ships a neutral default `favicon.svg`, linked from every page under the base path, so this repository supplies no favicon of its own.
 
 ## Link classes
 
@@ -56,7 +69,7 @@ Both resolve git history and edit paths against the repository the build runs in
 
 ## Deferred maintenance
 
-These items were deferred when the site went live on 2026-10-08 and do not block publishing:
+These items were deferred when the site went live on 2026-10-08, do not block publishing, and remain open as of harness v1.3:
 
 - Migrate the harness's `markdown.rehypePlugins` configuration to Astro's `markdown.processor` API before Astro removes the legacy path.
 - Update the deploy example in the harness README from `actions/checkout@v4` to `v5`.
