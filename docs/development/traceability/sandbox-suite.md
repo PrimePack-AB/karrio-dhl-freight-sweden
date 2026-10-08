@@ -60,9 +60,11 @@ Rebuilding over the same captures reproduces the committed files byte for byte, 
 
 No sandbox booking yet covers:
 
-- SPI
+- 104, 107, 209, 210, 211, 212, 402, 502, or SPI
 - 205 at or above its 2500.0 chargeable-weight minimum
 - the customer's own declaration
 - the joint declaration, including 109 with payer code 023
 - VOEC
-- destinations outside the EU VAT area other than NO and CH
+- destinations outside the EU VAT area other than NO, CH, and Åland
+
+The [findings note](../../notes/sandbox/sandbox-findings.md#coverage) has the full product and lane-class matrix.

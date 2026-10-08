@@ -288,20 +288,45 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
-## Untested
+## Coverage
 
-No booking used the freight products 205, 209, 210, 211, 212, or SPI, or the parcel and home delivery products 104, 107, 402, and 502; 202 was booked to GB BT1 1AA without customs data, to DK, and to NO with customs handling full service, and 233 to DK and to NO with customs handling full service; both were also booked to HU and RO without EKAER or UIT options.
-The booking-export 205 cases to DK 1620 and NO 0154 skip, because product matches for both lanes returned HDI, 109, 202, 112, 601, and 233 and not 205 ([lookup-product-matches-se-dk-1620][l-pm-205-dk], [lookup-product-matches-se-no-0154][l-pm-205-no]).
-The NO case sent past the check with a 1 kg piece was rejected with 22020 'ChargeableWeight is lower than product min 2500.0' ([rejection-22020-205-no][r-22020-205-no]), so a 205 booking at or above that chargeable-weight minimum is untested.
-601 was booked only to CH, DK, HU, NO, PL, and RO; 601, 202, or 233 to HU or RO without EKAER or UIT entries, which the connector never sends, is untested, and 202 and 233 to HU and RO were booked only with the connector's default `EKAER_FREE` or `UIT_FREE` `"true"`.
-The EKAER and UIT entries were not tested on 205 or SPI, which product matches for a 1 kg piece did not offer to HU or RO ([lookup-product-matches-se-hu-1052][l-pm-hu], [lookup-product-matches-se-ro-030031][l-pm-ro]).
-The sandbox accepted placeholder SENT, EKAER, and UIT identifiers, so whether DHL production checks them is unknown; the connector checks only their length and combination and passes them through.
-109 with home addressing and no AccessPoint party is untested.
-112 to GB was not booked: product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233 but neither 109 nor 112 ([lookup-product-matches-se-gb.json][l-pm-gb]), and the 112 booking sent regardless was rejected with 22005 and 22026 ([rejection-22005-112-gb][r-22005-gb]); the manual lists GB for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200), and 109 to GB was not sent.
-Customs was tested only as Customs handling - Full service and Customs handling - Standard to NO, Customs handling - Full service to CH, and both to FI 22100, where both were rejected with 24003, and customs information without a customs service was sent only to FI 22100, where it booked; the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
-No additional service other than `customsHandlingFullService` and `customsHandlingStandard` was sent, payer codes 3 and 4 with a freight payer party were not used, and 601 used only DAP.
-Every booking had a single piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with 2 kg and 30 × 20 × 15 cm, so multi-piece shipments and bookings below the minimum piece dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17) are untested.
-The Print API was called only for labels, and the PickupRequest, TimeTable, PriceQuote, and HomeDeliveryLocator APIs were not called.
+The matrix gives each product's sandbox result per lane class, where not offered means the connector's service catalogue (`units.py`) has no lane of that class for the product.
+Every cell's evidence is in the tables above.
+
+| Product | Domestic SE | Intra-EU | Outside the EU VAT area and special territories |
+|---------|-------------|----------|-------------------------------------------------|
+| 102 | booked | not offered | not offered |
+| 103 | booked; rejected with an id-only AccessPoint | not offered | not offered |
+| 104 | untested, matched to SE 41101 | not offered | not offered |
+| 107 | untested | untested | untested |
+| 109 | not offered | booked to PL, RO, HU, and DK; rejected and later booked to PL without SENT entries | booked to NO and FI 22100 |
+| 112 | not offered | booked to PL, RO, HU, and FR; rejected to PL with an AccessPoint and with payer code 1 | booked to NO; rejected to GB and FI 22100 |
+| 118 | booked | not offered | not offered |
+| 202 | not offered | booked to DK, HU, and RO | booked to NO and GB BT1 1AA |
+| 205 | not offered | untested, not matched to DK 1620, HU 1052, or RO 030031 | rejected to NO below the chargeable-weight minimum |
+| 209, 210, 212 | untested | not offered | not offered |
+| 211 | untested, matched to SE 41101 | not offered | not offered |
+| 233 | not offered | booked to DK, HU, and RO | booked to NO |
+| 401 | booked | not offered | not offered |
+| 402, 502 | untested, matched to SE 41101 | not offered | not offered |
+| 601 | not offered | booked to DK, HU, PL, and RO | booked to NO and CH |
+| SPI | not offered | untested, not matched to HU 1052 or RO 030031 | untested |
+
+These were never exercised:
+
+- the PickupRequest, TimeTable, PriceQuote, and HomeDeliveryLocator APIs, and the Print API for anything but labels
+- any additional service other than `customsHandlingFullService` and `customsHandlingStandard`
+- the customer's own declaration, the joint declaration (including 109 with payer code 023), and VOEC
+- customs to destinations outside the EU VAT area other than NO, CH, and FI 22100, and customs data without a customs service anywhere but FI 22100
+- payer codes 3 and 4 with a freight payer party, and 601 with any payer code but DAP
+- 205 at or above its 2500.0 chargeable-weight minimum
+- 601, 202, or 233 to HU or RO without EKAER or UIT entries, which the connector never sends, and 202 and 233 there with anything but the default `"true"` free flags
+- EKAER and UIT entries on 205 or SPI
+- whether DHL production checks SENT, EKAER, and UIT identifiers, which the sandbox accepted as placeholders; the connector checks only their length and combination and passes them through
+- 109 with home addressing and no AccessPoint party
+- 109 to GB, which the manual lists for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200)
+- any booking to LI or GR, and any 107 booking with `qrCode`
+- multi-piece shipments, and pieces below the minimum dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17)
 
 [b-073]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761073-109-se-pl.json
 [b-081]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761081-112-se-pl.json
