@@ -134,8 +134,14 @@ details, messages = karrio.Address.validate(
 ```
 
 Scoped to 118 through `options.service`, `details.success` reports `homeDeliveryParcel`; unscoped, it reports the route's `bookable` flag, and `details.complete_address` carries DHL's city for the code.
-An unknown code returns DHL's error as a message, such as 16010 "post code not found" ([lookup-postal-code-se-99999-16010.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json)), and a country the route does not cover returns 16009 ([lookup-postal-code-ch-8001-16009.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json)).
-A Swedish code DHL knows but does not serve returns 16012 "post code not supported" ([lookup-postal-code-se-98060-16012.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98060-16012.json)), and a rural (Landsbygd) code returns 16011 ([lookup-postal-code-se-84094-16011.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json)).
+A code DHL refuses returns DHL's error as a message, and the `address_validation` setting described below turns the same codes into a warning or a blocked booking.
+
+| Code | Meaning | `warn` behaviour | `enforce` behaviour |
+| ------ | --------- | ------------------ | --------------------- |
+| 16009 | the route does not cover the country ([lookup-postal-code-ch-8001-16009.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json)) | warning, books | `PostalCodeNotServableError`, no booking |
+| 16010 | post code not found ([lookup-postal-code-se-99999-16010.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json)) | warning, books | `PostalCodeNotServableError`, no booking |
+| 16011 | rural (Landsbygd) post code ([lookup-postal-code-se-84094-16011.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json)) | warning, books | `PostalCodeNotServableError`, no booking |
+| 16012 | post code known but not supported ([lookup-postal-code-se-98060-16012.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98060-16012.json)) | warning, books | `PostalCodeNotServableError`, no booking |
 
 DHL enables the PostalCode API per developer application, so a client key whose application lacks it cannot verify a location.
 `karrio.Address.validate` then returns no details and a `postal_code_api_unavailable` warning, which says the location was not verified rather than that the address is invalid.
@@ -143,7 +149,7 @@ The sandbox answers an unknown client key with HTTP 401 ([lookup-postal-code-se-
 Any other failed lookup, such as a timeout, a 5xx answer, a body that is not JSON, or a 4xx error outside 16009 to 16012, returns no details and an `address_validation_unavailable` warning.
 
 The `address_validation` setting runs the same check before a 118 booking to a Swedish recipient, and `off`, the default, makes no lookup.
-A refusal, meaning a route with `homeDeliveryParcel` `false` or the DHL error 16009, 16010, 16011, or 16012, adds DHL's message as a warning and books under `warn`, and blocks the booking with `PostalCodeNotServableError` under `enforce`.
+A refusal, meaning one of the codes in the table or a route with `homeDeliveryParcel` `false`, adds DHL's message as a warning and books under `warn`, and blocks the booking with `PostalCodeNotServableError` under `enforce`.
 Missing PostalCode API access, an HTTP 401 or 403 answer, adds a `postal_code_api_unavailable` warning and books under `warn`, and blocks the booking with `PostalCodeApiUnavailableError` under `enforce`, with no booking call ([lookup-postal-code-se-11151-118-enforce-preflight-401.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-118-enforce-preflight-401.json)).
 Any other failed lookup adds an `address_validation_unavailable` warning and books in both modes, so a PostalCodes outage cannot block bookings.
 Values are read case-insensitively, a value that names no mode means `off`, and a connection can move from `off` to `warn` to `enforce`.
