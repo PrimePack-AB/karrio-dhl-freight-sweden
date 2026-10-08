@@ -6,10 +6,10 @@ The SE API Farm pricequote API is not integrated, so ``get_rates``
 issues no carrier call; the rate=0.0 placeholders are overridden by the
 merchant's negotiated prices at runtime.
 
-Zone coverage follows the DHL Product API destination footprint: the
-outbound parcel family (109/112) rates to
-its from-SE Europe country lists, and 107 — the reverse lane to Sweden —
-rates when the recipient is in Sweden.
+Lane coverage follows product manual v5.26's valid countries
+(``units.PRODUCT_LANES``): the domestic products rate within SE, the export
+products to their listed countries, and 107 — the reverse lane to Sweden —
+from its listed countries to SE.
 """
 
 import unittest
@@ -76,23 +76,22 @@ class TestDHLFreightRating(unittest.TestCase):
         self.assertEqual(messages, [])
 
     def test_parse_rate_response_domestic_full_catalog(self):
-        # SE->SE: the 11 domestic products plus the return-lane product 107
-        # rate (delivery in Sweden classifies as domicile via the account
-        # country, and 107's Sweden zone matches the recipient); the outbound
-        # parcels 109/112 do not rate because their Europe zones
-        # exclude SE, and the international freight products require an
-        # international lane.
+        # SE->SE: only the 11 domestic products rate; 107 returns from
+        # abroad to SE (§5.15 p66), the outbound parcels 109/112 exclude SE,
+        # and the international freight products require an international
+        # lane.
         request = models.RateRequest(**FullCatalogRatePayload)
         rates, messages = karrio.Rating.fetch(request).from_(gateway).parse()
 
         offered = {rate.service for rate in rates}
-        self.assertEqual(offered, DomesticServices | {ReturnConnectService})
+        self.assertEqual(offered, DomesticServices)
+        self.assertNotIn(ReturnConnectService, offered)
         self.assertNotIn(ParcelConnectService, offered)
         self.assertNotIn(ParcelConnectPlusService, offered)
         self.assertEqual(messages, [])
 
     def test_parse_rate_response_international(self):
-        # SE->DE: the unrestricted international freight products plus the
+        # SE->DE: the international freight products (DE is in each list) plus the
         # two outbound parcels (DE is in both Europe footprints) rate; the
         # domestic products and the SE-only return lane find no match.
         request = models.RateRequest(**InternationalRatePayload)
@@ -139,12 +138,13 @@ class TestDHLFreightRating(unittest.TestCase):
         # PL->SE: the Parcel Return Connect lane. The rating mixin classifies
         # delivery in the account country (SE) as domicile, so 107 surfaces
         # through its domicile flag with the Sweden zone matching the
-        # recipient; the outbound parcels exclude SE and the freight products
-        # require an international lane.
+        # recipient; the domestic products serve only SE->SE, the outbound
+        # parcels exclude SE, and the freight products require an
+        # international lane.
         rates, messages = self._fetch_rates_without_origin_gate(ReturnLaneRatePayload)
 
         offered = {rate.service for rate in rates}
-        self.assertEqual(offered, DomesticServices | {ReturnConnectService})
+        self.assertEqual(offered, {ReturnConnectService})
         self.assertEqual(messages, [])
 
 

@@ -826,85 +826,166 @@ def shipping_options_initializer(
     return units.ShippingOptions(readable, ShippingOption, items_filter=items_filter)
 
 
-# The API Farm publishes no money-rate API for these products (the pricequote
-# API is not integrated); these defaults seed the rate-sheet catalog with the
-# carrier's service levels and zones so universal rating can present the
-# product set. The rate=0.0 placeholders are overridden by the merchant's
-# negotiated prices at runtime.
-#
-# Zone model (recipient-gated, account_country_code="SE"):
-# - Domestic products: domicile-only, Sweden zone.
-# - Outbound parcel family (109/112): both flags set so all lanes are
-#   granted, Europe zone list from the product catalog gates the recipient.
-# - Parcel Return Connect (107): the reverse lane to Sweden; the zone matches
-#   the recipient, so Sweden.
-# - International freight: international-only with an unrestricted zone
-#   (no country list), so any non-SE destination rates without maintaining
-#   a country list.
-#
-# Outbound destination footprints from the DHL Product API catalog
-# (GET /productapi/v1/products/{code} toCountries, all from SE; every
-# product below is isDomestic=false).
-# Product manual v5.26 lists GB for 109 only according to a separate
-# agreement (§5.14 p63, Appendix G p200).
-PARCEL_CONNECT_B2C_COUNTRIES = [
-    "AT",
-    "BE",
-    "BG",
-    "CZ",
-    "DE",
-    "DK",
-    "EE",
-    "ES",
-    "FI",
-    "FR",
-    "GB",
-    "HR",
-    "HU",
-    "IE",
-    "IT",
-    "LT",
-    "LU",
-    "LV",
-    "NL",
-    "NO",
-    "PL",
-    "PT",
-    "RO",
-    "SI",
-    "SK",
-]
-# FR is listed for 112 by product manual v5.26 (§5.3 p18, Appendix G p199),
-# which excludes FR postal codes 97100-99999 and requires the Print and
-# TransportInstruction APIs for FR; the connector books through both. The
-# same pages list GB for 112 only according to a separate agreement.
-PARCEL_CONNECT_PLUS_COUNTRIES = [
-    "AT",
-    "BE",
-    "BG",
-    "CZ",
-    "DE",
-    "DK",
-    "EE",
-    "ES",
-    "FI",
-    "FR",
-    "GB",
-    "HR",
-    "HU",
-    "IE",
-    "IT",
-    "LT",
-    "LU",
-    "LV",
-    "NL",
-    "NO",
-    "PL",
-    "PT",
-    "RO",
-    "SI",
-    "SK",
-]
+def _countries(codes: str) -> typing.List[str]:
+    return codes.split()
+
+
+# Valid countries per product, from the "Valid countries" tables of product
+# manual v5.26 section 5. Product manual v5.26 lists GB for 109 and 112 only
+# according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200),
+# which the connector does not check. For 112 the manual requires the Print
+# and TransportInstruction APIs for FR, which the connector books through,
+# and excludes FR postal codes 97100-99999 (§5.3 p18, Appendix G p199).
+PARCEL_CONNECT_B2C_COUNTRIES = _countries(
+    "AT BE BG CZ DE DK EE ES FI FR GB HR HU IE IT LT LU LV NL NO PL PT RO SI SK"
+)  # §5.14 p63
+PARCEL_CONNECT_PLUS_COUNTRIES = _countries(
+    "AT BE BG CZ DE DK EE ES FI FR GB HR HU IE IT LT LU LV NL NO PL PT RO SI SK"
+)  # §5.3 p18
+PARCEL_RETURN_CONNECT_COUNTRIES = _countries(
+    "AT BE BG CZ DE DK EE ES FI FR HR HU IE IT LT LU LV NL NO PL PT RO SI SK"
+)  # §5.15 p66
+# 202 §5.4 p23, 205 §5.9 p43, SPI §5.11 p52.
+ROAD_FREIGHT_COUNTRIES = _countries(
+    "AD AL AM AT AZ BA BE BG CH CY CZ DE DK EE ES FI FR GB GE GI GR HR HU IE "
+    "IT KG KZ LI LT LU LV MA MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM TJ "
+    "TR UA UZ XK"
+)
+ROAD_FREIGHT_PRIORITY_COUNTRIES = _countries(
+    "AT BE BG CH CZ DE DK EE ES FI FR GB HR HU IE IT LI LT LU LV NL NO PL PT "
+    "RO SE SI SK"
+)  # §5.10 p47
+HOME_DELIVERY_INTERNATIONAL_COUNTRIES = _countries(
+    "AT BE BG CH CZ DE DK EE ES FI FR GB GR HR HU IE IT LT LU LV NL NO PL PT "
+    "RO SE SI SK"
+)  # §5.19 p82
+
+SWEDEN = frozenset(["SE"])
+
+
+class ProductLane(typing.NamedTuple):
+    """Shipper and recipient countries a product carries shipments between."""
+
+    origins: typing.FrozenSet[str]
+    destinations: typing.FrozenSet[str]
+
+
+def _from_sweden(countries: typing.Iterable[str]) -> typing.Tuple[ProductLane, ...]:
+    return (ProductLane(SWEDEN, frozenset(countries) - SWEDEN),)
+
+
+def _to_sweden(countries: typing.Iterable[str]) -> typing.Tuple[ProductLane, ...]:
+    return (ProductLane(frozenset(countries) - SWEDEN, SWEDEN),)
+
+
+def _to_and_from_sweden(countries: typing.Iterable[str]) -> typing.Tuple[ProductLane, ...]:
+    return (*_from_sweden(countries), *_to_sweden(countries))
+
+
+DOMESTIC_PRODUCTS = (
+    ShippingService.dhl_freight_sweden_paket,
+    ShippingService.dhl_freight_sweden_special,
+    ShippingService.dhl_freight_sweden_pall,
+    ShippingService.dhl_freight_sweden_stycke,
+    ShippingService.dhl_freight_sweden_parti,
+    ShippingService.dhl_freight_sweden_service_point_b2c,
+    ShippingService.dhl_freight_sweden_service_point_c2b,
+    ShippingService.dhl_freight_sweden_hemleverans_paket_b2c,
+    ShippingService.dhl_freight_sweden_home_delivery_b2c,
+    ShippingService.dhl_freight_sweden_home_delivery_c2b,
+    ShippingService.dhl_freight_sweden_home_delivery_c2b_502,
+)
+
+# Lanes per product. The overview classifies each product as domestic or
+# international (§5.1 p13), and the international products' lists include
+# SE as the Swedish end of a lane: 202, 205, 233, SPI, and 601 "can be used
+# to and from Sweden" (§5.4 p22, §5.9 p41, §5.10 p46, §5.11 p51, §5.19 p81),
+# and 107 returns a 109 shipment from its listed countries to the original
+# sender in SE (§5.15 p65).
+PRODUCT_LANES: typing.Dict[str, typing.Tuple[ProductLane, ...]] = {
+    **{product.value: (ProductLane(SWEDEN, SWEDEN),) for product in DOMESTIC_PRODUCTS},
+    ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: _from_sweden(
+        PARCEL_CONNECT_B2C_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_parcel_connect_plus.value: _from_sweden(
+        PARCEL_CONNECT_PLUS_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_parcel_return_connect_c2b.value: _to_sweden(
+        PARCEL_RETURN_CONNECT_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_road_freight_standard.value: _to_and_from_sweden(
+        ROAD_FREIGHT_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_road_freight_direct.value: _to_and_from_sweden(
+        ROAD_FREIGHT_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_standard_pallet_international.value: _to_and_from_sweden(
+        ROAD_FREIGHT_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_road_freight_priority.value: _to_and_from_sweden(
+        ROAD_FREIGHT_PRIORITY_COUNTRIES
+    ),
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: _to_and_from_sweden(
+        HOME_DELIVERY_INTERNATIONAL_COUNTRIES
+    ),
+}
+
+PRODUCT_LANE_CITATIONS: typing.Dict[str, str] = {
+    ShippingService.dhl_freight_sweden_paket.value: "§5.2 p15",
+    ShippingService.dhl_freight_sweden_parcel_connect_plus.value: "§5.3 p18",
+    ShippingService.dhl_freight_sweden_road_freight_standard.value: "§5.4 p23",
+    ShippingService.dhl_freight_sweden_special.value: "§5.5 p27",
+    ShippingService.dhl_freight_sweden_pall.value: "§5.6 p30",
+    ShippingService.dhl_freight_sweden_stycke.value: "§5.7 p34",
+    ShippingService.dhl_freight_sweden_parti.value: "§5.8 p38",
+    ShippingService.dhl_freight_sweden_road_freight_direct.value: "§5.9 p43",
+    ShippingService.dhl_freight_sweden_road_freight_priority.value: "§5.10 p47",
+    ShippingService.dhl_freight_sweden_standard_pallet_international.value: "§5.11 p52",
+    ShippingService.dhl_freight_sweden_service_point_b2c.value: "§5.12 p56",
+    ShippingService.dhl_freight_sweden_service_point_c2b.value: "§5.13 p59",
+    ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: "§5.14 p63",
+    ShippingService.dhl_freight_sweden_parcel_return_connect_c2b.value: "§5.15 p66",
+    ShippingService.dhl_freight_sweden_hemleverans_paket_b2c.value: "§5.16 p68",
+    ShippingService.dhl_freight_sweden_home_delivery_b2c.value: "§5.17 p72",
+    ShippingService.dhl_freight_sweden_home_delivery_c2b.value: "§5.18 p76",
+    ShippingService.dhl_freight_sweden_home_delivery_c2b_502.value: "§5.18 p76",
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: "§5.19 p82",
+}
+
+
+def lane_served(
+    product_code: str,
+    origin: typing.Optional[str],
+    destination: typing.Optional[str],
+) -> bool:
+    """Whether the product carries shipments from ``origin`` to ``destination``.
+
+    Country codes are compared as given, so territory codes must already be
+    replaced by their parent country (``with_parent_country``). A missing
+    country leaves that party unchecked, and a product absent from
+    ``PRODUCT_LANES`` serves every lane.
+    """
+    lanes = PRODUCT_LANES.get(product_code)
+    origin_code, destination_code = (origin or "").upper(), (destination or "").upper()
+    return lanes is None or any(
+        (not origin_code or origin_code in lane.origins)
+        and (not destination_code or destination_code in lane.destinations)
+        for lane in lanes
+    )
+
+
+def unserved_lane_message(
+    product_code: str,
+    origin: typing.Optional[str],
+    destination: typing.Optional[str],
+) -> str:
+    return (
+        f"Product {product_code} does not ship "
+        f"from {origin or 'an unknown country'} to {destination or 'an unknown country'} "
+        f"(product manual v5.26 {PRODUCT_LANE_CITATIONS[product_code]})"
+    )
+
+
 
 
 class PostalCodeFormat(typing.NamedTuple):
@@ -1260,6 +1341,33 @@ def excluded_party(
     )
 
 
+def _destinations(product: ShippingService) -> typing.List[str]:
+    """The recipient countries of a product's lanes from SE, sorted."""
+    return sorted(
+        country
+        for lane in PRODUCT_LANES[product.value]
+        if lane.origins == SWEDEN
+        for country in lane.destinations
+    )
+
+
+# The API Farm publishes no money-rate API for these products (the pricequote
+# API is not integrated); these defaults seed the rate-sheet catalog with the
+# carrier's service levels and zones so universal rating can present the
+# product set. The rate=0.0 placeholders are overridden by the merchant's
+# negotiated prices at runtime.
+#
+# The rating mixin classifies a lane by the recipient: delivery in the
+# account country (SE) counts as domicile. Zones list the recipient
+# countries of each product's export lane, and rating drops rates on lanes
+# outside PRODUCT_LANES, which also covers merchant rate sheets and the
+# shipper side the zones cannot express:
+# - Domestic products: domicile-only, Sweden zone.
+# - Export products (109, 112, 202, 205, 233, SPI, 601): international-only,
+#   a zone of their valid countries other than SE. Their import lanes into
+#   SE count as domicile, so they do not rate.
+# - Parcel Return Connect (107): its lanes end in SE, so its domicile flag
+#   and Sweden zone let it rate; PRODUCT_LANES restricts the shipper.
 DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
     models.ServiceLevel(
         service_name="Hemleverans Paket B2C",
@@ -1367,7 +1475,13 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         currency="SEK",
         domicile=False,
         international=True,
-        zones=[models.ServiceZone(label="International", rate=0.0)],
+        zones=[
+            models.ServiceZone(
+                label="International",
+                rate=0.0,
+                country_codes=_destinations(ShippingService.dhl_freight_sweden_road_freight_standard),
+            )
+        ],
     ),
     models.ServiceLevel(
         service_name="Road Freight Direct",
@@ -1376,7 +1490,13 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         currency="SEK",
         domicile=False,
         international=True,
-        zones=[models.ServiceZone(label="International", rate=0.0)],
+        zones=[
+            models.ServiceZone(
+                label="International",
+                rate=0.0,
+                country_codes=_destinations(ShippingService.dhl_freight_sweden_road_freight_direct),
+            )
+        ],
     ),
     models.ServiceLevel(
         service_name="Road Freight Priority",
@@ -1385,7 +1505,13 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         currency="SEK",
         domicile=False,
         international=True,
-        zones=[models.ServiceZone(label="International", rate=0.0)],
+        zones=[
+            models.ServiceZone(
+                label="International",
+                rate=0.0,
+                country_codes=_destinations(ShippingService.dhl_freight_sweden_road_freight_priority),
+            )
+        ],
     ),
     models.ServiceLevel(
         service_name="Home Delivery International B2C",
@@ -1394,14 +1520,20 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         currency="SEK",
         domicile=False,
         international=True,
-        zones=[models.ServiceZone(label="International", rate=0.0)],
+        zones=[
+            models.ServiceZone(
+                label="International",
+                rate=0.0,
+                country_codes=_destinations(ShippingService.dhl_freight_sweden_home_delivery_international_b2c),
+            )
+        ],
     ),
     models.ServiceLevel(
         service_name="Parcel Connect B2C",
         service_code="dhl_freight_sweden_parcel_connect_b2c",
         carrier_service_code="109",
         currency="SEK",
-        domicile=True,
+        domicile=False,
         international=True,
         zones=[
             models.ServiceZone(
@@ -1425,7 +1557,7 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         service_code="dhl_freight_sweden_parcel_connect_plus",
         carrier_service_code="112",
         currency="SEK",
-        domicile=True,
+        domicile=False,
         international=True,
         zones=[
             models.ServiceZone(
@@ -1442,6 +1574,12 @@ DEFAULT_SERVICES: typing.List[models.ServiceLevel] = [
         currency="SEK",
         domicile=False,
         international=True,
-        zones=[models.ServiceZone(label="International", rate=0.0)],
+        zones=[
+            models.ServiceZone(
+                label="International",
+                rate=0.0,
+                country_codes=_destinations(ShippingService.dhl_freight_sweden_standard_pallet_international),
+            )
+        ],
     ),
 ]
