@@ -239,8 +239,16 @@ class Session:
         self.booking_calls = 0
         self._install_transport_guard()
 
-    def gateway(self, connection_config: typing.Optional[dict] = None):
-        """Create a test-mode gateway on the connector's sandbox host."""
+    def gateway(
+        self,
+        connection_config: typing.Optional[dict] = None,
+        client_key: typing.Optional[str] = None,
+    ):
+        """Create a test-mode gateway on the connector's sandbox host.
+
+        ``client_key`` replaces the configured key, for a case that probes how
+        the sandbox answers a key it does not accept.
+        """
         if "server_url" in (connection_config or {}):
             raise SandboxConfigError("The sandbox suite does not accept a server_url")
         gateway = karrio.gateway["dhl_freight_sweden"].create(
@@ -248,7 +256,7 @@ class Session:
                 id="sandbox",
                 test_mode=True,
                 carrier_id="dhl_freight_sweden",
-                client_key=self.config.client_key,
+                client_key=client_key or self.config.client_key,
                 account_number=self.config.account_number,
                 config=connection_config or {},
             )

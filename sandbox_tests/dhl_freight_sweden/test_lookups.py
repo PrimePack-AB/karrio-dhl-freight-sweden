@@ -3,6 +3,7 @@
 No call in this segment books a shipment.
 """
 
+import typing
 import unittest
 import unittest.mock
 import urllib.parse
@@ -51,6 +52,9 @@ CH_ADDRESS = {
     "postal_code": "8001",
     "country_code": "CH",
 }
+# A client key no DHL application holds. The all-zeros UUID is not used:
+# the sandbox accepts it.
+FAKE_CLIENT_KEY = "not-a-real-key"
 OVERSIZED_PARCEL = {
     "weight": 500,
     "weight_unit": "KG",
@@ -73,17 +77,23 @@ class TestSandboxLookups(unittest.TestCase):
         self.maxDiff = None
 
     def validate(
-        self, label: str, postal_code: str, options: dict = {}, country_code: str = "SE"
+        self,
+        label: str,
+        postal_code: str,
+        options: dict = {},
+        country_code: str = "SE",
+        gateway=None,
     ):
+        gateway = gateway or self.gateway
         try:
             details, messages = karrio.Address.validate(
                 dict(
                     address=dict(postal_code=postal_code, country_code=country_code),
                     options=options,
                 )
-            ).from_(self.gateway).parse()
+            ).from_(gateway).parse()
         finally:
-            self.session.capture(self.gateway, label)
+            self.session.capture(gateway, label)
         self.session.capture_parsed(
             label,
             dict(details=lib.to_dict(details), messages=lib.to_dict(messages)),
@@ -195,6 +205,24 @@ class TestSandboxLookups(unittest.TestCase):
 
         self.assertIsNone(details)
         self.assertIn("16011", [message.code for message in messages])
+
+    def test_postal_code_route_without_api_access(self):
+        """A client key without PostalCode API access leaves the location unverified.
+
+        The sandbox answers an unknown key with 401; how it answers the key
+        of an application without the PostalCode API is not captured.
+        """
+        details, messages = self.validate(
+            "postal-code-se-11151-118-fake-key",
+            "11151",
+            dict(service="118"),
+            gateway=self.session.gateway(client_key=FAKE_CLIENT_KEY),
+        )
+
+        self.assertIsNone(details)
+        self.assertEqual(
+            [message.code for message in messages], ["postal_code_api_unavailable"]
+        )
 
     def test_product_matches_se_to_se(self):
         products, messages = self.match(
@@ -387,14 +415,22 @@ class TestSandboxPreflight(unittest.TestCase):
             raise unittest.SkipTest("KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER is not set")
         cls.gateway = cls.session.gateway(dict(address_validation="enforce"))
 
-    def refuse(self, label: str, postal_code: str, city: str) -> str:
+    def refuse(
+        self,
+        label: str,
+        postal_code: str,
+        city: str,
+        gateway=None,
+        error: typing.Type[Exception] = provider_address.PostalCodeNotServableError,
+    ) -> str:
+        gateway = gateway or self.gateway
         payload: dict = dict(
             service="118",
             shipper=booking.SHIPPER,
             recipient={**booking.RECIPIENTS["SE"], "postal_code": postal_code, "city": city},
             parcels=[booking.PARCEL],
         )
-        request = self.gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
+        request = gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
         urlopen = helpers.urlopen
         paths: list = []
 
@@ -408,10 +444,10 @@ class TestSandboxPreflight(unittest.TestCase):
 
         try:
             with unittest.mock.patch.object(helpers, "urlopen", no_booking):
-                with self.assertRaises(provider_address.PostalCodeNotServableError) as raised:
-                    harness.proxy_of(self.gateway).create_shipment(request)
+                with self.assertRaises(error) as raised:
+                    harness.proxy_of(gateway).create_shipment(request)
         finally:
-            self.session.capture(self.gateway, label)
+            self.session.capture(gateway, label)
         self.session.capture_parsed(
             label, dict(error=str(raised.exception), paths=paths)
         )
@@ -430,3 +466,16 @@ class TestSandboxPreflight(unittest.TestCase):
         message = self.refuse("preflight-118-se-98138", "98138", "Kiruna")
 
         self.assertIn("homeDeliveryParcel is false", message)
+
+    def test_enforce_refuses_without_api_access(self):
+        message = self.refuse(
+            "preflight-118-se-11151-fake-key",
+            "11151",
+            "Stockholm",
+            gateway=self.session.gateway(
+                dict(address_validation="enforce"), client_key=FAKE_CLIENT_KEY
+            ),
+            error=provider_address.PostalCodeApiUnavailableError,
+        )
+
+        self.assertIn("PostalCode API not available", message)
