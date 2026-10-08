@@ -15,10 +15,12 @@ import typing
 import unittest
 from unittest.mock import patch
 from .fixture import (
+    answers,
     as_dict,
     as_list,
     enforce_gateway,
     gateway,
+    http_error,
     proxy_of,
     serialize_request,
     settings_of,
@@ -30,7 +32,10 @@ from .fixture import (
 import karrio.sdk as karrio
 import karrio.lib as lib
 import karrio.core.models as models
-from karrio.providers.dhl_freight_sweden.address import PostalCodeNotServableError
+from karrio.providers.dhl_freight_sweden.address import (
+    PostalCodeApiUnavailableError,
+    PostalCodeNotServableError,
+)
 
 
 class TestDHLFreightShipment(unittest.TestCase):
@@ -1193,6 +1198,129 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].code, "address_validation_unavailable")
 
+    def test_preflight_enforce_servable_books_without_messages(self):
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.side_effect = [RouteResponseGoteborg, BookingResponse118, PrintResponse]
+            details, messages = (
+                karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload118))
+                .from_(enforce_gateway)
+                .parse()
+            )
+
+        self.assertEqual(messages, [])
+        self.assertEqual(details.tracking_number, "TI-118-0001")
+        self.assertEqual(len(self._called_urls(mock)), 3)
+
+    def test_preflight_warn_refusal_codes_book_with_dhl_error(self):
+        for code in (16009, 16010, 16011, 16012):
+            with self.subTest(code=code):
+                with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                    mock.side_effect = answers(
+                        http_error(400, RouteLookupError % code),
+                        BookingResponse118,
+                        PrintResponse,
+                    )
+                    details, messages = (
+                        karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload118))
+                        .from_(warn_gateway)
+                        .parse()
+                    )
+
+                self.assertEqual(details.tracking_number, "TI-118-0001")
+                self.assertEqual([m.code for m in messages], [str(code)])
+
+    def test_preflight_enforce_refusal_codes_block_booking(self):
+        request = enforce_gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(**ShipmentPayload118)
+        )
+        for code in (16009, 16010, 16011, 16012):
+            with self.subTest(code=code):
+                with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                    mock.side_effect = answers(http_error(400, RouteLookupError % code))
+                    with self.assertRaises(PostalCodeNotServableError) as context:
+                        proxy_of(enforce_gateway).create_shipment(request)
+
+                self.assertEqual(
+                    as_dict(context.exception.details)["recipient.postal_code"]["code"],
+                    "not_servable",
+                )
+                urls = self._called_urls(mock)
+                self.assertEqual(len(urls), 1)
+                self.assertTrue(urls[0].endswith("/postalcodes/SE/41103/route"))
+
+    def test_preflight_warn_api_unavailable_books_with_warning(self):
+        for status in (401, 403):
+            with self.subTest(status=status):
+                with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                    mock.side_effect = answers(
+                        http_error(status, MissingClientKeyResponse),
+                        BookingResponse118,
+                        PrintResponse,
+                    )
+                    details, messages = (
+                        karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload118))
+                        .from_(warn_gateway)
+                        .parse()
+                    )
+
+                self.assertEqual(details.tracking_number, "TI-118-0001")
+                self.assertListEqual(
+                    [lib.to_dict(m) for m in messages],
+                    [{**ApiUnavailableWarning, "details": {"http_status": status}}],
+                )
+
+    def test_preflight_enforce_api_unavailable_blocks_booking(self):
+        request = enforce_gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(**ShipmentPayload118)
+        )
+        for status in (401, 403):
+            with self.subTest(status=status):
+                with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                    mock.side_effect = answers(http_error(status, MissingClientKeyResponse))
+                    with self.assertRaises(PostalCodeApiUnavailableError) as context:
+                        proxy_of(enforce_gateway).create_shipment(request)
+
+                self.assertEqual(
+                    str(context.exception),
+                    "PostalCode API not available for this application; "
+                    "destination servability could not be verified",
+                )
+                self.assertEqual(
+                    as_dict(context.exception.details)["recipient.postal_code"]["code"],
+                    "postal_code_api_unavailable",
+                )
+                urls = self._called_urls(mock)
+                self.assertEqual(len(urls), 1)
+                self.assertTrue(urls[0].endswith("/postalcodes/SE/41103/route"))
+
+    def test_preflight_unverified_books_with_warning(self):
+        cases = {
+            "400 outside the refusal codes": http_error(400, RouteLookupError % 16001),
+            "404 not JSON": http_error(404, "Not Found"),
+            "500 error body": http_error(500, '{"error": "Internal Server Error"}'),
+            "503 empty body": http_error(503),
+            "200 not JSON": "<html>maintenance</html>",
+            "connection error": ConnectionError("route API unreachable"),
+        }
+        for mode, mode_gateway in (("warn", warn_gateway), ("enforce", enforce_gateway)):
+            for case, response in cases.items():
+                with self.subTest(mode=mode, case=case):
+                    with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                        mock.side_effect = answers(response, BookingResponse118, PrintResponse)
+                        details, messages = (
+                            karrio.Shipment.create(
+                                models.ShipmentRequest(**ShipmentPayload118)
+                            )
+                            .from_(mode_gateway)
+                            .parse()
+                        )
+
+                    self.assertEqual(details.tracking_number, "TI-118-0001")
+                    self.assertListEqual(
+                        [lib.to_dict(m) for m in messages], [UnverifiedWarning]
+                    )
+                    self.assertEqual(len(self._called_urls(mock)), 3)
+
     def test_preflight_enforce_non_118_service_skips_check(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.side_effect = [BookingResponse102, PrintResponse]
@@ -1911,6 +2039,35 @@ RouteLookupInvalidCode = dict(
     http_status=400,
     http_message="Bad Request",
 )
+
+RouteLookupError = """{"Status":400,"ErrorCode":%d,"UserMessage":"Post code '41103' not served."}"""
+
+# The sandbox answers a missing client key with this 401 body; the answer
+# for an application without PostalCode API access is not captured.
+MissingClientKeyResponse = """{"error":"Missing client key"}"""
+
+ApiUnavailableWarning = {
+    "carrier_id": "dhl_freight_sweden",
+    "carrier_name": "dhl_freight_sweden",
+    "code": "postal_code_api_unavailable",
+    "level": "warning",
+    "message": (
+        "Destination servability could not be verified: the PostalCode API "
+        "is not available for this application; the booking proceeded "
+        "without the check"
+    ),
+}
+
+UnverifiedWarning = {
+    "carrier_id": "dhl_freight_sweden",
+    "carrier_name": "dhl_freight_sweden",
+    "code": "address_validation_unavailable",
+    "level": "warning",
+    "message": (
+        "Destination servability could not be verified (address validation "
+        "API error); the booking proceeded without the check"
+    ),
+}
 
 # A 5xx body with the decoder's metadata is an infrastructure failure
 # rather than a definitive rejection, so bookings fail open.

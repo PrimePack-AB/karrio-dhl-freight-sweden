@@ -152,11 +152,9 @@ class Proxy(proxy.Proxy):
             provider_utils.to_dict,
             dict(service=destination["product"]),
         )
-        # A route-lookup failure (network error, timeout, unparseable error
-        # body) must not block the booking, so it fails open to a warning.
-        response = lib.failsafe(lambda: self.validate_address(lookup))
-
-        return provider_address.check_booking_route(response, self.settings, mode)
+        return provider_address.check_booking_route(
+            self.validate_address(lookup), self.settings, mode
+        )
 
     def find_product_matches(
         self, request: lib.Serializable
