@@ -29,12 +29,12 @@ The gateway always runs in test mode on the connector's sandbox host `test-api.f
 
 | Segment | Books | Covers |
 |---------|-------|--------|
-| `lookups` | nothing | PostalCode routes and the 118 home-delivery flag, the `enforce` pre-flight (including an unknown client key), product matches for SE, PL, CH, LI, and the [special territories](../../concepts/destinations.md#special-territories), and nearest service points with the parcel capacity filter and `location_types` |
-| `booking-approved` | 102, 401, 601, 118 | 102 and 401 within SE, 601 to DK, and 118 within SE behind the `enforce` pre-flight, with each label printed |
-| `booking-pudo` | 103, 109 | the first complete nearby service point as the AccessPoint party, 109 to PL with payer code 022 and SENT free |
-| `booking-export` | 109, 112, 202, 205, 233, 601 | parcel lanes to PL, RO, HU, NO, DK, FR, and GB, the special territories Åland and Northern Ireland, freight to DK and NO, customs handling to NO and CH, and the connector's Åland customs refusals checked without booking |
-| `booking-declarations` | 601, 202, 233 | EKAER to HU, UIT to RO, and SENT to PL, both the connector's free defaults and explicit numbers or not-free flags, asserting the serialized entries before booking |
-| `rejections` | nothing accepted | payloads DHL must reject, asserting the DHL error code |
+| `lookups` | nothing | PostalCode routes, `enforce` pre-flight, product matches including [special territories](../../concepts/destinations.md#special-territories), service points |
+| `booking-approved` | 102, 401, 601, 118 | SE and DK lanes, 118 pre-flight, labels |
+| `booking-pudo` | 103, 109 | service point as AccessPoint party |
+| `booking-export` | 109, 112, 202, 205, 233, 601 | export lanes, special territories, customs handling |
+| `booking-declarations` | 601, 202, 233 | SENT, EKAER, and UIT entries |
+| `rejections` | nothing accepted | expected DHL error codes |
 
 Before each booking a free product-match lookup, and for 109 a service-point lookup, checks that DHL offers the product on the lane, and the case skips otherwise; the few cases that book past this check exist to record DHL's answer.
 The `rejections` cases build a valid request through the connector and `harness.mutated_request` changes the serialized TransportInstruction just before the call, so connector validation stays intact, and a response carrying a shipment id fails the test and reports the id as a finding.
