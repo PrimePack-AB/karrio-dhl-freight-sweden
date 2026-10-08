@@ -292,7 +292,7 @@ The answer to a valid client key whose DHL application lacks the PostalCode API 
 
 ## Coverage
 
-The matrix gives each product's sandbox result per lane class, where not offered means the connector's service catalogue (`units.py`) has no lane of that class for the product.
+The matrix gives each product's sandbox result per lane class, where not offered means product manual v5.26 offers the product on no lane of that class.
 Every cell's evidence is in the tables above.
 
 | Product | Domestic SE | Intra-EU | Outside the EU VAT area and special territories |
@@ -300,7 +300,7 @@ Every cell's evidence is in the tables above.
 | 102 | booked | not offered | not offered |
 | 103 | booked; rejected with an id-only AccessPoint | not offered | not offered |
 | 104 | untested, matched to SE 41101 | not offered | not offered |
-| 107 | untested | untested | untested |
+| 107 | not offered | untested; returns from the EU countries the manual lists to SE | untested; returns from NO to SE |
 | 109 | not offered | booked to PL, RO, HU, and DK; rejected and later booked to PL without SENT entries | booked to NO and FI 22100 |
 | 112 | not offered | booked to PL, RO, HU, and FR; rejected to PL with an AccessPoint and with payer code 1 | booked to NO; rejected to GB and FI 22100 |
 | 118 | booked | not offered | not offered |
@@ -313,6 +313,8 @@ Every cell's evidence is in the tables above.
 | 402, 502 | untested, matched to SE 41101 | not offered | not offered |
 | 601 | not offered | booked to DK, HU, PL, and RO | booked to NO and CH |
 | SPI | not offered | untested, not matched to HU 1052 or RO 030031 | untested |
+
+Availability follows the valid countries of each product section of manual v5.26: SE only for 102 (§5.2 p15), 209 (§5.5 p27), 210 (§5.6 p30), 211 (§5.7 p34), 212 (§5.8 p38), 103 (§5.12 p56), 104 (§5.13 p59), 118 (§5.16 p68), 401 (§5.17 p72), and 402 and 502 (§5.18 p76); the EU countries other than SE, CY, GR, and MT, with NO and GB, for 112 (§5.3 p18) and 109 (§5.14 p63); the same countries without GB for 107, a return sent from those countries to the original sender in SE (§5.15 pp65-66); and EU and non-EU countries including SE, for traffic to and from Sweden, for 202 (§5.4 p23), 205 (§5.9 p43), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), which the products overview lists as international (§5.1 p13).
 
 These were never exercised:
 
