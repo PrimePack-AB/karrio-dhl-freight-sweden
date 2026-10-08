@@ -57,7 +57,7 @@ The `config` dict holds these settings.
 | --------- | --------- | -------- |
 | `label_type` | `PDF` | Only `PDF` is accepted, in any letter case; any other value fails every booking with `LabelTypeError`. |
 | `label_page_type` | `Label` | The Print API page layout: `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, or `LabelCompact2x2PortraitA4`. |
-| `address_validation` | `off` | `off`, `warn`, or `enforce` the PostalCodes check for 118 bookings, as described under home delivery below. |
+| `address_validation` | `off` | `off`, `warn`, or `enforce` the PostalCodes check for 118 bookings, which needs the PostalCode API on the DHL application, as described under home delivery below. |
 | `server_url` | | Overrides the host that `test_mode` selects. |
 | `shipping_services` | all | A list of karrio service codes; karrio returns only rates for these services. |
 | `shipping_options` | all | A list of option codes that the Karrio server offers on the connection; neither the connector nor the SDK reads it. |
@@ -137,10 +137,15 @@ Scoped to 118 through `options.service`, `details.success` reports `homeDelivery
 An unknown code returns DHL's error as a message, such as 16010 "post code not found" ([lookup-postal-code-se-99999-16010.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json)), and a country the route does not cover returns 16009 ([lookup-postal-code-ch-8001-16009.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json)).
 A Swedish code DHL knows but does not serve returns 16012 "post code not supported" ([lookup-postal-code-se-98060-16012.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98060-16012.json)), and a rural (Landsbygd) code returns 16011 ([lookup-postal-code-se-84094-16011.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json)).
 
-The `address_validation` setting runs the same check before a 118 booking to a Swedish recipient.
-With `warn` an unservable route or a DHL error adds a message and the shipment is booked, and with `enforce` it blocks the booking with `PostalCodeNotServableError`.
-`enforce` treats every DHL 4xx route error, 16009, 16010, 16011, and 16012 included, as a refusal.
-A lookup with no verdict, such as a timeout or a 5xx answer, adds a warning and books in both modes, so a PostalCodes outage cannot block bookings.
+DHL enables the PostalCode API per developer application, so a client key whose application lacks it cannot verify a location.
+`karrio.Address.validate` then returns no details and a `postal_code_api_unavailable` warning, which says the location was not verified rather than that the address is invalid.
+The sandbox answers an unknown client key with HTTP 401 ([lookup-postal-code-se-11151-401-unknown-client-key.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-401-unknown-client-key.json)); the answer to a valid key without the PostalCode API is not captured, so the connector treats 401 and 403 alike.
+Any other failed lookup, such as a timeout, a 5xx answer, a body that is not JSON, or a 4xx error outside 16009 to 16012, returns no details and an `address_validation_unavailable` warning.
+
+The `address_validation` setting runs the same check before a 118 booking to a Swedish recipient, and `off`, the default, makes no lookup.
+A refusal, meaning a route with `homeDeliveryParcel` `false` or the DHL error 16009, 16010, 16011, or 16012, adds DHL's message and books under `warn`, and blocks the booking with `PostalCodeNotServableError` under `enforce`.
+Missing PostalCode API access, an HTTP 401 or 403 answer, adds a `postal_code_api_unavailable` warning and books under `warn`, and blocks the booking with `PostalCodeApiUnavailableError` under `enforce`, with no booking call ([lookup-postal-code-se-11151-118-enforce-preflight-401.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-118-enforce-preflight-401.json)).
+Any other failed lookup adds an `address_validation_unavailable` warning and books in both modes, so a PostalCodes outage cannot block bookings.
 Values are read case-insensitively, a value that names no mode means `off`, and a connection can move from `off` to `warn` to `enforce`.
 
 ## Service-point (PUDO) delivery
@@ -416,6 +421,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `QrCodeEligibilityError` | a QR code outside 107 from the listed countries | `dhl_freight_sweden_qr_code` |
 | `AdditionalInformationError` | an entry without a code, or a SENT, EKAER, or UIT code where its option applies | `dhl_freight_sweden_additional_information` |
 | `PostalCodeNotServableError` | `enforce` validation of an unservable 118 postal code | `recipient.postal_code` |
+| `PostalCodeApiUnavailableError` | `enforce` validation with a client key whose DHL application lacks the PostalCode API | `recipient.postal_code` |
 | `ProductMatchPartiesError`, `UnexpectedPayloadKeysError` | a lookup without both parties, or with an unknown key | the party or key |
 
 DHL's own validation errors seen in the sandbox are these.
