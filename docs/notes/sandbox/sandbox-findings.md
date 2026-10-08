@@ -12,7 +12,8 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04, and its lookup, rejection, and approved booking segments at 08:11.
+The 08:11 run sent eight TransportInstruction requests, and this note cites only its 109 PL request without SENT entries.
 A manual capacity probe with the connector ran at 16:21.
 
 Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
@@ -28,7 +29,7 @@ The `label` files come from the suite's print calls of bookings 2906761222, 2906
 
 ## Bookings
 
-All 33 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 34 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg except 2906762477, which had one piece of 2 kg, and only those marked in the table carried customs data.
 None was cancelled, because the API Farm has no cancellation operation.
 
@@ -67,9 +68,10 @@ None was cancelled, because the API Farm has no cancellation operation.
 | 2906762592 | 2026-10-06 13:30:05 | 109 | SE → FI 22100 (Åland) | 022 | no service, CommercialInvoice | 8011-221003201 ParcelShop | 2LFI22100+70530000 | [booking-2906762592][b-592] |
 | 2906769555 | 2026-10-08 08:04:40 | 601 | SE → HU 1052 | DAP | none | none | 2LHU1052+00000000 | [booking-2906769555][b-555] |
 | 2906769563 | 2026-10-08 08:04:41 | 601 | SE → RO 030031 | DAP | none | none | 2LRO030031+00000000 | [booking-2906769563][b-563] |
+| 2906769613 | 2026-10-08 08:11:20 | 109 | SE → PL 30-079 | 022 | none | 8005-PL-4504339 ParcelShop | 2LPL30074+70530000 | [booking-2906769613][b-613] |
 
 The time is the response `Date` header, except for the three direct bookings whose captures carry no header, where it is the capture file's modification time.
-The 109 and 112 bookings to PL declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, 2906761347 sent `UIT_FREE` `"false"` without a number, 2906769555 sent `EKAER_FREE` `"true"` alone, and 2906769563 sent `UIT_FREE` `"true"` alone, and DHL echoed these entries in the responses.
+The 109 and 112 bookings to PL except 2906769613 declared `SENT_FREE` `"true"`; 2906761339 sent `EKAER_FREE` `"false"` with the placeholder `EKAER_NUMBER` `E0000SANDBOX0001`, 2906761347 sent `UIT_FREE` `"false"` without a number, 2906769555 sent `EKAER_FREE` `"true"` alone, and 2906769563 sent `UIT_FREE` `"true"` alone, and DHL echoed these entries in the responses.
 No other booking sent additional information entries.
 The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
 Every booking except 2906761073, 2906761081, and 2906761149 was followed by a Print API call that returned a PDF label (`label_<id>.pdf`).
@@ -80,18 +82,19 @@ The home-delivery labels of 102, 118, and 601, the 112 label to HU, and the 103 
 The 112 FR label of 2906761867, printed with page type `Label`, is one PDF page of 283.46 × 425.2 pt (100 × 150 mm) in a different layout from the other labels: it shows the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000, and no `Phn.` line ([label-2906761867][lb-867]).
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (§10.14.7 p235).
-The 103 and 109 bookings to RO, HU, NO, DK, and FI 22100 were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
+The 103 and 109 bookings to RO, HU, NO, DK, FI 22100, and, for 2906769613, PL were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
 The five service points nearest Mariehamn 22100 were Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 ([booking-2906761917][b-917]).
 
 ## Rejections
 
-The suite's rejection segment built a valid request through the connector and changed the serialized payload just before sending, and DHL answered each with HTTP 400, the first three with one validation error and the 103 case with four.
+The suite's rejection segment built a valid request through the connector and changed the serialized payload just before sending, and on 2026-10-05 DHL answered each with HTTP 400, the first three with one validation error and the 103 case with four.
+When the segment ran again on 2026-10-08, DHL accepted the unchanged 109 PL request without SENT entries as booking 2906769613 ([booking-2906769613][b-613]), described under [SENT for PL](#sent-for-pl).
 The booking-export segment's 112 GB case, sent without its product matches check, was answered with HTTP 400 and two validation errors, its 205 case, also sent without the check, with HTTP 400 and one, and its two 112 Åland cases, which passed the check, with HTTP 400 and one each.
-No booking was created by any of them.
+No booking was created by any of them on 2026-10-05.
 
 | Error code | Field | Message | Payload | Evidence |
 |------------|-------|---------|---------|----------|
-| 22001 | `AdditionalInformation` | SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true. | 109 SE → PL 30-079, payer code 022, ParcelShop 8005-PL-4504339, no SENT entries | [rejection-22001][r-22001] |
+| 22001 | `AdditionalInformation` | SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true. | 109 SE → PL 30-079, payer code 022, ParcelShop 8005-PL-4504339, no SENT entries, on 2026-10-05; accepted on 2026-10-08 | [rejection-22001][r-22001], [booking-2906769613][b-613] |
 | 22015 | `Parties[2]` | AccessPoint Party is not allowed for this product | 112 SE → PL 30-079, payer code 023, `SENT_FREE` `"true"`, added AccessPoint ParcelShop 8005-PL-4504339 | [rejection-22015][r-22015] |
 | 22020 | `PayerCode.Code` | Payercode 1 is not valid for product | 112 SE → PL 30-079, payer code 1, `SENT_FREE` `"true"` | [rejection-22020][r-22020] |
 | 22001 | `Parties[2].Address.Address` | Address is mandatory for party AccessPoint | 103 SE → SE 11151, AccessPoint SE-982000 with only id, type, and sub type | [rejection-22001-103][r-22001-103] |
@@ -198,7 +201,10 @@ No booking used an Incoterm as the payer code for 109 or 112.
 
 The manual makes `SENT_FREE` ("Is shipment SENT free?") mandatory for shipments to or from PL in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), with the SENT reference and carrier key mandatory when the shipment is not SENT free, and its API example sends `SENT_FREE` `"false"` with `SENT_REF` and `SENT_CARKEY`.
 It does not mention SENT in the sections of 109 (§5.14 pp62-64) or 112 (§5.3 pp17-20).
-The sandbox applied the same rule to 109: it rejected 109 to PL without SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." ([rejection-22001][r-22001]), and it accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123][b-123], [booking-2906761131][b-131]).
+On 2026-10-05 the sandbox applied the same rule to 109: it rejected 109 to PL without SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." ([rejection-22001][r-22001]).
+On 2026-10-08 it accepted the same request body, 109 to PL without SENT entries, as 2906769613 with routing code 2LPL30074+70530000 and printed its label ([booking-2906769613][b-613]).
+Whether this change in the sandbox is lasting is unknown, and the request was not retried.
+The sandbox accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123][b-123], [booking-2906761131][b-131]).
 The vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines an `AdditionalInformation` schema that no other schema references.
 No booking sent `SENT_REF` and `SENT_CARKEY`, so the sandbox's acceptance of real SENT identifiers is untested.
 
@@ -315,6 +321,7 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [b-592]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762592-109-se-fi-aland-customs.json
 [b-555]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769555-601-se-hu-default-ekaer-free.json
 [b-563]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769563-601-se-ro-default-uit-free.json
+[b-613]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json
 [b-303]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762303-401-se-se.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json

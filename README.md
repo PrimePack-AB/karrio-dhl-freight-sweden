@@ -420,7 +420,7 @@ DHL's own validation errors seen in the sandbox are these.
 
 | Code | Meaning | Evidence |
 | ------ | --------- | ---------- |
-| 22001 | a mandatory field is missing, such as the AccessPoint name and address or the SENT identifiers | [103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json), [109 PL](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json) |
+| 22001 | a mandatory field is missing, such as the AccessPoint name and address or the SENT identifiers | [103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json), [109 PL](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json) on 2026-10-05, [accepted](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json) on 2026-10-08 |
 | 22005, 22026 | no valid product for the countries | [112 GB](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json) |
 | 22006 | no linehaul for the AccessPoint postal code | [103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json) |
 | 22015 | an AccessPoint party on a product without one | [112 PL](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json) |

@@ -549,6 +549,13 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "without UIT_NUMBER, then printed.",
      "601", "SE 11143 -> RO 030031", "20261008-100438", ("008-booking-601", "009-booking-601"),
      "test_booking_declarations.test_book_601_ro_default_uit_free", 0),
+    ("booking-2906769613-109-se-pl-without-sent.json",
+     "109 SE to PL with payer code 022 and ParcelShop 8005-PL-4504339 but no SENT entries, the request "
+     "rejected with 22001 on 2026-10-05, was accepted, then printed.",
+     "109", "SE 11143 -> PL 30-079", "20261008-101104",
+     ("080-service-points-rejection-109-pl", "082-rejection-109-pl-without-sent",
+      "083-rejection-109-pl-without-sent"),
+     "test_rejections.test_109_pl_without_sent_is_rejected_with_22001", 1),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
