@@ -72,17 +72,24 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
             "209",
             "211",
         }
-        # Recipient footprints mirrored from the DHL Product API catalog:
-        # 109 and 112 cover the same 25 from-SE countries, GB included,
-        # which needs a separate agreement, per product manual v5.26
-        # §5.3 p18 and §5.14 p63; 107 is the reverse lane
-        # (EU -> SE), gated on the recipient, so Sweden only.
+        # Recipient footprints from product manual v5.26: 109 and 112 cover
+        # the same 25 from-SE countries, GB included, which needs a separate
+        # agreement (§5.3 p18, §5.14 p63); 107 is the reverse lane
+        # (EU -> SE), gated on the recipient, so Sweden only; the freight
+        # products list their valid countries other than SE (§5.4 p23,
+        # §5.9 p43, §5.10 p47, §5.11 p52, §5.19 p82).
         europe = {
             "109": ParcelConnectB2CCountries,
             "112": ParcelConnectPlusCountries,
         }
         return_lane = {"107"}
-        international = {"202", "205", "233", "601", "SPI"}
+        international = {
+            "202": RoadFreightCountries,
+            "205": RoadFreightCountries,
+            "SPI": RoadFreightCountries,
+            "233": RoadFreightPriorityCountries,
+            "601": HomeDeliveryInternationalCountries,
+        }
 
         for _, level in self.levels.items():
             code = level.carrier_service_code
@@ -96,7 +103,7 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
                     ["SE"],
                 )
             elif code in europe:
-                self.assertTrue(level.domicile)
+                self.assertFalse(level.domicile)
                 self.assertTrue(level.international)
                 self.assertEqual(
                     [z.label for z in level.zones],
@@ -116,8 +123,10 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
             elif code in international:
                 self.assertFalse(level.domicile)
                 self.assertTrue(level.international)
-                # Unrestricted zone: no country list, flags do the gating.
-                self.assertTrue(all(not z.country_codes for z in level.zones))
+                self.assertEqual(
+                    [c for z in level.zones for c in (z.country_codes or [])],
+                    sorted(set(international[code]) - {"SE"}),
+                )
             else:  # pragma: no cover
                 self.fail(f"unclassified product code: {code}")
 
@@ -192,6 +201,20 @@ ParcelConnectPlusCountries = [
     "SI",
     "SK",
 ]
+
+RoadFreightCountries = (
+    "AD AL AM AT AZ BA BE BG CH CY CZ DE DK EE ES FI FR GB GE GI GR HR HU IE "
+    "IT KG KZ LI LT LU LV MA MC MD ME MK MT NL NO PL PT RO RS SE SI SK SM TJ "
+    "TR UA UZ XK"
+).split()
+RoadFreightPriorityCountries = (
+    "AT BE BG CH CZ DE DK EE ES FI FR GB HR HU IE IT LI LT LU LV NL NO PL PT "
+    "RO SE SI SK"
+).split()
+HomeDeliveryInternationalCountries = (
+    "AT BE BG CH CZ DE DK EE ES FI FR GB GR HR HU IE IT LT LU LV NL NO PL PT "
+    "RO SE SI SK"
+).split()
 
 
 if __name__ == "__main__":

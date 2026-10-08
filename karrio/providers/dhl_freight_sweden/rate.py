@@ -6,10 +6,12 @@ live in the server-side RateSheet and are resolved against the connection's
 service levels by the universal rating mixin. No carrier call is made.
 
 Territory country codes are rated as their parent country
-(``units.TERRITORY_PARENTS``). Rate-sheet zones match whole countries, so rates of products that exclude
-a party's postal code (``units.POSTAL_CODE_EXCLUSIONS``) are removed after
-the universal resolution. A party without a postal code is not checked in
-rating; booking requires one.
+(``units.TERRITORY_PARENTS``). Rate-sheet zones match only the recipient
+country, so after the universal resolution the rates of products that do
+not serve the shipper-to-recipient lane (``units.PRODUCT_LANES``) or that
+exclude a party's postal code (``units.POSTAL_CODE_EXCLUSIONS``) are
+removed. A party without a postal code is not checked in rating; booking
+requires one.
 """
 
 import typing
@@ -54,15 +56,28 @@ def parse_rate_response(
     _response: lib.Deserializable,
     settings: provider_utils.Settings,
 ) -> typing.Tuple[typing.List[models.RateDetails], typing.List[models.Message]]:
-    rates, messages = universal_parse_rate_response(_response, settings)
+    universal_rates, messages = universal_parse_rate_response(_response, settings)
     ctx = _response.ctx or {}
     addresses = ctx.get("addresses") or {}
+    requested = ctx.get("services") or []
+    origin = (addresses.get("shipper") or {}).get("country_code")
+    destination = (addresses.get("recipient") or {}).get("country_code")
+    unserved = [
+        service
+        for service in requested
+        if not provider_units.lane_served(_product_code(service), origin, destination)
+    ]
+    rates = [
+        rate
+        for rate in universal_rates
+        if provider_units.lane_served(_product_code(rate.service), origin, destination)
+    ]
     excluded = {
         rate.service: hit
         for rate in rates
         for hit in [
             provider_units.excluded_party(
-                provider_units.ShippingService.map(rate.service).value_or_key,
+                _product_code(rate.service),
                 addresses,
                 skip_missing=True,
             )
@@ -73,13 +88,50 @@ def parse_rate_response(
     return (
         [rate for rate in rates if rate.service not in excluded],
         [
-            *messages,
+            *(
+                message
+                for message in messages
+                if message.message not in _universal_destination_messages(unserved)
+            ),
+            *(
+                _unserved_lane_message(service, origin, destination, settings)
+                for service in unserved
+            ),
             *(
                 _excluded_destination_message(service, hit, settings)
                 for service, hit in excluded.items()
-                if service in (ctx.get("services") or [])
+                if service in requested
             ),
         ],
+    )
+
+
+def _universal_destination_messages(services: typing.List[str]) -> typing.Set[str]:
+    """The rating mixin's messages superseded by an unserved-lane message."""
+    return {
+        f"the service {service} does not cover the requested destination"
+        for service in services
+    }
+
+
+def _product_code(service: str) -> str:
+    return provider_units.ShippingService.map(service).value_or_key
+
+
+def _unserved_lane_message(
+    service: str,
+    origin: typing.Optional[str],
+    destination: typing.Optional[str],
+    settings: provider_utils.Settings,
+) -> models.Message:
+    return models.Message(
+        carrier_id=settings.carrier_id,
+        carrier_name=settings.carrier_name,
+        code="destination_not_supported",
+        message=provider_units.unserved_lane_message(
+            _product_code(service), origin, destination
+        ),
+        details=dict(service=service, origin=origin, destination=destination),
     )
 
 
