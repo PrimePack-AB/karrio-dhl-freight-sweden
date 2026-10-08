@@ -564,6 +564,26 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "0000-0000-0000-0001, then printed.",
      "601", "SE 11143 -> RO 030031", "20261008-102655", ("013-booking-601", "014-booking-601"),
      "test_booking_declarations.test_book_601_ro_uit_number", 0),
+    ("booking-2906769969-202-se-hu-default-ekaer-free.json",
+     "202 SE to HU with payer code DAP and no EKAER option, so the connector sent EKAER_FREE true "
+     "without EKAER_NUMBER, then printed.",
+     "202", "SE 11143 -> HU 1052", "20261008-104807", ("003-booking-202", "004-booking-202"),
+     "test_booking_declarations.test_book_202_hu_default_ekaer_free", 0),
+    ("booking-2906769977-202-se-ro-default-uit-free.json",
+     "202 SE to RO with payer code DAP and no UIT option, so the connector sent UIT_FREE true "
+     "without UIT_NUMBER, then printed.",
+     "202", "SE 11143 -> RO 030031", "20261008-104807", ("008-booking-202", "009-booking-202"),
+     "test_booking_declarations.test_book_202_ro_default_uit_free", 0),
+    ("booking-2906769985-233-se-hu-default-ekaer-free.json",
+     "233 SE to HU with payer code DAP and no EKAER option, so the connector sent EKAER_FREE true "
+     "without EKAER_NUMBER, then printed.",
+     "233", "SE 11143 -> HU 1052", "20261008-104807", ("013-booking-233", "014-booking-233"),
+     "test_booking_declarations.test_book_233_hu_default_ekaer_free", 0),
+    ("booking-2906769993-233-se-ro-default-uit-free.json",
+     "233 SE to RO with payer code DAP and no UIT option, so the connector sent UIT_FREE true "
+     "without UIT_NUMBER, then printed.",
+     "233", "SE 11143 -> RO 030031", "20261008-104807", ("018-booking-233", "019-booking-233"),
+     "test_booking_declarations.test_book_233_ro_default_uit_free", 0),
     ("booking-2906769613-109-se-pl-without-sent.json",
      "109 SE to PL with payer code 022 and ParcelShop 8005-PL-4504339 but no SENT entries, the request "
      "rejected with 22001 on 2026-10-05, was accepted, then printed.",
@@ -771,6 +791,28 @@ def _(b: Builder) -> Json:
         "so the booking-export case 205 to NO skipped without booking.",
         None, "SE 11143 -> NO 0154", None, None, f"{SUITE_RUN}: test_booking_export",
         [reduce_product_matches(b.suite_exchange("20261006-123912", "025-product-matches-205-no"))],
+    )
+
+
+@evidence("lookup-product-matches-se-hu-1052.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Product matches for a 1 kg piece from SE 11143 to HU 1052 returned HDI, 109, 202, 112, 601, and 233, "
+        "without 205 or SPI, before the booking-declarations case 202 to HU booked.",
+        None, "SE 11143 -> HU 1052", None, None, f"{SUITE_RUN}: test_booking_declarations",
+        [reduce_product_matches(b.suite_exchange("20261008-104807", "001-product-matches-202-hu"))],
+    )
+
+
+@evidence("lookup-product-matches-se-ro-030031.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Product matches for a 1 kg piece from SE 11143 to RO 030031 returned HDI, 109, 202, 112, 601, and 233, "
+        "without 205 or SPI, before the booking-declarations case 202 to RO booked.",
+        None, "SE 11143 -> RO 030031", None, None, f"{SUITE_RUN}: test_booking_declarations",
+        [reduce_product_matches(b.suite_exchange("20261008-104807", "006-product-matches-202-ro"))],
     )
 
 
