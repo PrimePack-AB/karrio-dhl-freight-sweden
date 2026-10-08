@@ -1,0 +1,43 @@
+{
+ "kind": "lookup",
+ "summary": "The enforce pre-flight of a 118 booking to SE 98138 Kiruna sent only this PostalCode route lookup, which answered homeDeliveryParcel false, and raised PostalCodeNotServableError without a TransportInstruction call.",
+ "captured_at": "2026-10-08T15:12:13Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98138/route",
+ "product": "118",
+ "route": "SE 11143 -> SE 98138",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.TestSandboxPreflight.test_enforce_refuses_without_home_delivery",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98138/route",
+   "http_status": 200,
+   "date": "2026-10-08T15:12:13Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/019-preflight-118-se-98138.request.json",
+    "sha256": "b5ffb3198afbd9f970e0bce404603933afbc779730445a4d1c97389d7250d7f8"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/019-preflight-118-se-98138.response.json",
+    "sha256": "d987a04b1095a60c0e0f0610f6e71b540f022c7f9a24ab35ea8d51af92c6f80b"
+   },
+   "request": null,
+   "response": {
+    "countryCode": "SE",
+    "postalCode": "98138",
+    "city": "KIRUNA",
+    "lineHaul": "950",
+    "terminalId": "4850",
+    "deviating": "0",
+    "updatedDate": "2026-07-02T22:00:03",
+    "bookable": true,
+    "homeDeliveryParcel": false
+   }
+  }
+ ]
+}
