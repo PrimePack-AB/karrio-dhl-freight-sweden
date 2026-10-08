@@ -1,0 +1,35 @@
+{
+ "kind": "lookup",
+ "summary": "The enforce pre-flight of a 118 booking to SE 11151 with the client key 'not-a-real-key' sent only this PostalCode route lookup, which answered 401, and raised PostalCodeApiUnavailableError without a TransportInstruction call.",
+ "captured_at": "2026-10-08T15:27:39Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/11151/route",
+ "product": "118",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 401,
+ "captured_by": "sandbox_tests suite: test_lookups.TestSandboxPreflight.test_enforce_refuses_without_api_access",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/11151/route",
+   "http_status": 401,
+   "date": "2026-10-08T15:27:39Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-172738-postal-code-api-access/003-preflight-118-se-11151-fake-key.request.json",
+    "sha256": "6fe764bab9b43fb312e81d01fdabd2d8e8c2d74e248670c22f6fb91bc1b1488c"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-172738-postal-code-api-access/003-preflight-118-se-11151-fake-key.response.json",
+    "sha256": "2d534da13ea94351e92227d509cdf07ba1fa7dfef6affd6118c79db9713eeb5f"
+   },
+   "request": null,
+   "response": {
+    "error": "No valid application matching client key"
+   }
+  }
+ ]
+}

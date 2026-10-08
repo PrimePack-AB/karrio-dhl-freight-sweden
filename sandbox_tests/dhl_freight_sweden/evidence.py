@@ -779,6 +779,35 @@ def _(b: Builder) -> Json:
     )
 
 
+POSTAL_CODE_ACCESS_RUN = "20261008-172738-postal-code-api-access"
+
+
+@evidence("lookup-postal-code-se-11151-401-unknown-client-key.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "PostalCode route for SE 11151 with the client key 'not-a-real-key' answered 401 "
+        "\"No valid application matching client key\", which Address.validate reported as "
+        "postal_code_api_unavailable without validation details.",
+        None, "SE 11151", None, None,
+        f"{SUITE_RUN}: test_lookups.test_postal_code_route_without_api_access",
+        [b.suite_exchange(POSTAL_CODE_ACCESS_RUN, "001-postal-code-se-11151-118-fake-key")],
+    )
+
+
+@evidence("lookup-postal-code-se-11151-118-enforce-preflight-401.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "The enforce pre-flight of a 118 booking to SE 11151 with the client key 'not-a-real-key' sent only "
+        "this PostalCode route lookup, which answered 401, and raised PostalCodeApiUnavailableError without "
+        "a TransportInstruction call.",
+        "118", "SE 11143 -> SE 11151", None, None,
+        f"{SUITE_RUN}: test_lookups.TestSandboxPreflight.test_enforce_refuses_without_api_access",
+        [b.suite_exchange(POSTAL_CODE_ACCESS_RUN, "003-preflight-118-se-11151-fake-key")],
+    )
+
+
 @evidence("lookup-postal-code-pl-route-16009.json")
 def _(b: Builder) -> Json:
     return b.document(

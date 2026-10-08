@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04, its lookup, rejection, and approved booking segments at 08:11, its 601 PL and RO bookings with default SENT free, placeholder SENT identifiers, and a placeholder UIT number at 08:26, its 202 and 233 HU and RO bookings without EKAER or UIT options at 08:48, and its PostalCode route lookups and `enforce` pre-flights at 15:12.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04, its lookup, rejection, and approved booking segments at 08:11, its 601 PL and RO bookings with default SENT free, placeholder SENT identifiers, and a placeholder UIT number at 08:26, its 202 and 233 HU and RO bookings without EKAER or UIT options at 08:48, its PostalCode route lookups and `enforce` pre-flights at 15:12, and its PostalCode route lookup and `enforce` pre-flight with an unknown client key at 15:27.
 The 08:11 run sent eight TransportInstruction requests, and this note cites only its 109 PL request without SENT entries.
 A manual capacity probe with the connector ran at 16:21.
 
@@ -91,6 +91,8 @@ Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (§10.14.7 p235).
 On 2026-10-08 the route for SE 98138 Kiruna answered `bookable` `true` and `homeDeliveryParcel` `false`, so `karrio.Address.validate` reports success unscoped and failure scoped to 118 ([lookup-postal-code-se-98138-no-home-delivery.json][l-pc-98138]).
 With `address_validation` `enforce`, a 118 request to SE 98138 and one to SE 99999 each sent only the route lookup and raised `PostalCodeNotServableError`, the first for `homeDeliveryParcel` `false` and the second for 16010, with no TransportInstruction call ([98138 pre-flight][l-pf-98138], [99999 pre-flight][l-pf-99999]).
+On 2026-10-08 the route lookup for SE 11151 with the client key `not-a-real-key` answered HTTP 401 `{"error": "No valid application matching client key"}`, which `karrio.Address.validate` reported as `postal_code_api_unavailable` without validation details ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
+With the same key and `address_validation` `enforce`, a 118 request to SE 11151 sent only the route lookup, which answered 401, and raised `PostalCodeApiUnavailableError` with no TransportInstruction call ([401 pre-flight][l-pf-401]).
 The 103 and 109 bookings to RO, HU, NO, DK, FI 22100, and, for 2906769613, PL were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
 The five service points nearest Mariehamn 22100 were Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 ([booking-2906761917][b-917]).
 
@@ -292,6 +294,8 @@ The 103 service-point label prints a `Phn.` line with no number ([label-29067612
 
 The README does not list PostalCode error 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), and 16012 appeared on 2026-10-08 for the Swedish code 98060 ([lookup-postal-code-se-98060-16012.json][l-pc-98060]).
 
+The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
+
 ## Untested
 
 No booking used the freight products 205, 209, 210, 211, 212, or SPI, or the parcel and home delivery products 104, 107, 402, and 502; 202 was booked to GB BT1 1AA without customs data, to DK, and to NO with customs handling full service, and 233 to DK and to NO with customs handling full service; both were also booked to HU and RO without EKAER or UIT options.
@@ -363,6 +367,8 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [l-pc-84094]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json
 [l-pf-98138]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98138-118-enforce-preflight.json
 [l-pf-99999]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-118-enforce-preflight.json
+[l-pc-401]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-401-unknown-client-key.json
+[l-pf-401]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-118-enforce-preflight-401.json
 [l-pc-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-pl-route-16009.json
 [l-pc-ch]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json
 [l-sp-ch]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-ch-8001-none.json
