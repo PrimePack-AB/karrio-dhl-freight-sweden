@@ -1,13 +1,16 @@
-"""Sandbox segment ``booking-declarations``: EKAER and UIT declarations on 601.
+"""Sandbox segment ``booking-declarations``: SENT, EKAER, and UIT declarations on 601.
 
-Each test books 601 (payer code DAP) from SE to HU or RO. Two cases declare
+Each test books 601 (payer code DAP) from SE to PL, HU, or RO. Two cases declare
 a transport declaration that is not free: to HU with an EKAER number, which
 sends ``EKAER_FREE`` "false" and ``EKAER_NUMBER``, and to RO with
 ``dhl_freight_sweden_uit_free`` false and no number, which sends
-``UIT_FREE`` "false" alone. Two cases set no declaration option, so the
-connector's default for a shipment below 500 kg applies and sends
-``EKAER_FREE`` "true" or ``UIT_FREE`` "true" alone; these assert the
-serialized request before booking. Before spending a booking each test
+``UIT_FREE`` "false" alone. Two cases carry placeholder identifiers: to PL
+with a SENT reference and carrier key, which sends ``SENT_FREE`` "false",
+``SENT_REF``, and ``SENT_CARKEY``, and to RO with a UIT number, which sends
+``UIT_FREE`` "false" and ``UIT_NUMBER``. Three cases set no declaration
+option, so the connector's default applies and sends ``SENT_FREE`` "true",
+or below 500 kg ``EKAER_FREE`` "true" or ``UIT_FREE`` "true", alone. Every
+case except the first two asserts the serialized request before booking. Before spending a booking each test
 checks for free that product matches offer 601 for the lane, and skips
 otherwise.
 """
@@ -24,11 +27,36 @@ PRODUCT = "601"
 # Sandbox-only placeholder within the EKAER number format (AN..20); it is
 # not issued by the Hungarian tax authority.
 EKAER_NUMBER = "E0000SANDBOX0001"
+# Sandbox-only placeholders within the SENT reference and carrier key
+# (AN..20) and UIT code (AN..19) formats of product manual v5.26 §5.19 p82;
+# none is issued by the Polish or Romanian tax authority.
+SENT_REF = "SENT20261008000001"
+SENT_CARKEY = "SANDBOXCARKEY0001"
+UIT_NUMBER = "0000-0000-0000-0001"
 DECLARATIONS = {
     "HU": {"dhl_freight_sweden_ekaer_number": EKAER_NUMBER},
     "RO": {"dhl_freight_sweden_uit_free": False},
 }
+IDENTIFIERS = {
+    "PL": {
+        "dhl_freight_sweden_sent_ref": SENT_REF,
+        "dhl_freight_sweden_sent_carkey": SENT_CARKEY,
+    },
+    "RO": {"dhl_freight_sweden_uit_number": UIT_NUMBER},
+}
+IDENTIFIER_INFORMATION = {
+    "PL": [
+        {"code": "SENT_FREE", "stringValue": "false"},
+        {"code": "SENT_REF", "stringValue": SENT_REF},
+        {"code": "SENT_CARKEY", "stringValue": SENT_CARKEY},
+    ],
+    "RO": [
+        {"code": "UIT_FREE", "stringValue": "false"},
+        {"code": "UIT_NUMBER", "stringValue": UIT_NUMBER},
+    ],
+}
 DEFAULT_INFORMATION = {
+    "PL": [{"code": "SENT_FREE", "stringValue": "true"}],
     "HU": [{"code": "EKAER_FREE", "stringValue": "true"}],
     "RO": [{"code": "UIT_FREE", "stringValue": "true"}],
 }
@@ -103,3 +131,12 @@ class TestSandboxBookingDeclarations(unittest.TestCase):
 
     def test_book_601_ro_default_uit_free(self):
         self.declare("RO", {}, DEFAULT_INFORMATION["RO"])
+
+    def test_book_601_pl_default_sent_free(self):
+        self.declare("PL", {}, DEFAULT_INFORMATION["PL"])
+
+    def test_book_601_pl_sent_identifiers(self):
+        self.declare("PL", IDENTIFIERS["PL"], IDENTIFIER_INFORMATION["PL"])
+
+    def test_book_601_ro_uit_number(self):
+        self.declare("RO", IDENTIFIERS["RO"], IDENTIFIER_INFORMATION["RO"])
