@@ -349,7 +349,10 @@ class TestDHLFreightTransportDeclarations(unittest.TestCase):
 
     def test_other_products_from_hu_do_not_require_a_declaration(self):
         serialized = self._serialize(
-            {**_parcel_connect(_recipient_se), "shipper": _shipper_hu}
+            {
+                **_payload("dhl_freight_sweden_parcel_return_connect_c2b", _recipient_se),
+                "shipper": _shipper_hu,
+            }
         )
 
         self.assertNotIn("additionalInformation", serialized)

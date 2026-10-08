@@ -8,7 +8,7 @@ from karrio.providers.dhl_freight_sweden.shipment.create import (
 )
 
 from .fixture import detail_keys, gateway, serialize_request
-from .test_shipment import _payload, _recipient_pl, _recipient_se
+from .test_shipment import _payload, _recipient_de, _recipient_pl, _recipient_se
 
 
 class TestDHLFreightAdditionalInformation(unittest.TestCase):
@@ -119,7 +119,7 @@ class TestDHLFreightAdditionalInformation(unittest.TestCase):
     def test_declaration_code_off_its_lane_is_passed_through(self):
         serialized = self._serialize(
             _parcel_connect(
-                _recipient_se,
+                _recipient_de,
                 {
                     "dhl_freight_sweden_additional_information": [
                         {"code": "EKAER_FREE", "stringValue": "true"}

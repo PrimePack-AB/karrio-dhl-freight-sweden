@@ -15,7 +15,10 @@ import karrio.core.models as models
 import karrio.lib as lib
 from karrio.providers.dhl_freight_sweden import product_matches, service_points, units
 
-from karrio.providers.dhl_freight_sweden.shipment.create import AlandCustomsServiceError
+from karrio.providers.dhl_freight_sweden.shipment.create import (
+    AlandCustomsServiceError,
+    ProductLaneError,
+)
 
 from .fixture import as_dict, detail_keys, gateway, proxy_of, serialize_request, settings_of
 from .test_shipment import Customs, _payload, _recipient_se
@@ -125,12 +128,12 @@ class TestDHLFreightTerritoryBooking(unittest.TestCase):
                 self.assertEqual(_consignee(serialized)["postalCode"], postal_code)
                 self.assertIn("customsInformation", serialized)
 
-    def test_caribbean_netherlands_codes_pass_through_on_freight_products(self):
+    def test_caribbean_netherlands_codes_fail_on_freight_products(self):
+        # No product lists them among its valid countries (§5.9 p43 for 205).
         for country in ["BQ", "CW", "AW", "SX"]:
             with self.subTest(country=country):
-                serialized = _booked(ROAD_FREIGHT_DIRECT, _recipient(country, "1234"), Customs)
-
-                self.assertEqual(_consignee(serialized)["countryCode"], country)
+                with self.assertRaises(ProductLaneError):
+                    _booked(ROAD_FREIGHT_DIRECT, _recipient(country, "1234"), Customs)
 
 
 class TestDHLFreightAlandCustomsServices(unittest.TestCase):
@@ -175,7 +178,7 @@ class TestDHLFreightAlandCustomsServices(unittest.TestCase):
             gateway.mapper.create_shipment_request(
                 models.ShipmentRequest(
                     **self._payload(
-                        _recipient("NO", "0154"),
+                        _recipient("SE", "11143"),
                         {"dhl_freight_sweden_customs_handling_standard": True},
                         shipper=_recipient("AX", "22100"),
                     )

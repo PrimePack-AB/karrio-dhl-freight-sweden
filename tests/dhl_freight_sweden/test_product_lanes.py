@@ -14,9 +14,11 @@ import typing
 import unittest
 
 import karrio.core.models as models
+import karrio.lib as lib
 from karrio.providers.dhl_freight_sweden import units
+from karrio.providers.dhl_freight_sweden.shipment.create import ProductLaneError
 
-from .fixture import gateway, members, proxy_of
+from .fixture import detail_keys, gateway, members, proxy_of, serialize_request
 
 Lane = typing.Tuple[str, str]
 
@@ -188,6 +190,67 @@ class TestDHLFreightProductLaneRating(unittest.TestCase):
         self.assertEqual([rate.meta["carrier_service_code"] for rate in rates], ["109"])
 
 
+# One allowed lane per product that books without further options.
+BOOKABLE: typing.Dict[str, Lane] = {
+    **{code: ("SE", "SE") for code in DOMESTIC},
+    "109": ("SE", "DE"),
+    "112": ("SE", "FR"),
+    "107": ("DE", "SE"),
+    "202": ("SE", "LI"),
+    "205": ("SE", "LI"),
+    "SPI": ("SE", "LI"),
+    "233": ("SE", "LI"),
+    "601": ("SE", "CH"),
+}
+
+
+class TestDHLFreightProductLaneBooking(unittest.TestCase):
+    def test_allowed_lanes_book(self):
+        for product, (origin, destination) in BOOKABLE.items():
+            with self.subTest(product=product, lane=(origin, destination)):
+                serialized = _book(product, origin, destination)
+
+                self.assertEqual(serialized["productCode"], product)
+
+    def test_excluded_lanes_fail_before_the_booking_request(self):
+        for product, (_, excluded) in LANES.items():
+            for origin, destination in excluded:
+                with self.subTest(product=product, lane=(origin, destination)):
+                    with self.assertRaises(ProductLaneError) as context:
+                        _book(product, origin, destination)
+
+                    self.assertEqual(
+                        str(context.exception),
+                        units.unserved_lane_message(product, origin, destination),
+                    )
+
+    def test_error_names_the_party_outside_the_lanes(self):
+        cases = [
+            ("107", "CH", "SE", {"shipper.country_code"}),
+            ("107", "SE", "SE", {"shipper.country_code"}),
+            ("109", "DE", "PL", {"shipper.country_code"}),
+            ("233", "SE", "GR", {"recipient.country_code"}),
+            ("102", "SE", "DE", {"recipient.country_code"}),
+        ]
+        for product, origin, destination, keys in cases:
+            with self.subTest(product=product, lane=(origin, destination)):
+                with self.assertRaises(ProductLaneError) as context:
+                    _book(product, origin, destination)
+
+                self.assertEqual(detail_keys(context.exception), keys)
+
+    def test_territory_codes_are_checked_as_their_parent_country(self):
+        serialized = _book("109", "SE", "AX", postal_code="22100")
+
+        self.assertEqual(serialized["productCode"], "109")
+
+        # Jersey (JE) is booked as GB, which 107 does not return from.
+        with self.assertRaises(ProductLaneError) as context:
+            _book("107", "JE", "SE", postal_code="JE2 3AB", shipper=True)
+
+        self.assertIn("from GB to SE", str(context.exception))
+
+
 def _rates(
     product: typing.Optional[str],
     origin: str,
@@ -208,13 +271,67 @@ def _rates(
     return gateway.mapper.parse_rate_response(proxy_of(gateway).get_rates(request))
 
 
+PAYER_CODES = {"402": "3", "502": "3", "104": "3"}
+FREIGHT = {"202", "205", "233", "SPI", "601"}
+CUSTOMS = {
+    "commodities": [
+        {
+            "description": "Cotton T-shirt",
+            "quantity": 1,
+            "weight": 0.5,
+            "value_amount": 20.0,
+            "value_currency": "EUR",
+            "origin_country": "SE",
+            "hs_code": "610910",
+        }
+    ],
+    "incoterm": "DAP",
+    "invoice": "INV-2026-001",
+    "commercial_invoice": True,
+}
+
+
+def _book(
+    product: str,
+    origin: str,
+    destination: str,
+    postal_code: typing.Optional[str] = None,
+    shipper: bool = False,
+) -> dict:
+    """Serialize a booking; ``postal_code`` replaces the recipient's, or the shipper's."""
+    shipper_address = _address(origin, postal_code if shipper and postal_code else POSTAL_CODES.get(origin, ""))
+    recipient_address = _address(
+        destination,
+        postal_code if postal_code and not shipper else POSTAL_CODES.get(destination, ""),
+    )
+    within_eu_vat_area = all(
+        units.in_eu_vat_area(
+            units.parent_country(address.country_code), address.postal_code
+        )
+        for address in (shipper_address, recipient_address)
+    )
+    payer_code = "DAP" if product in FREIGHT else PAYER_CODES.get(product)
+    payload = models.ShipmentRequest(
+        service=units.ShippingService.map(product).name_or_key,
+        shipper=shipper_address,
+        recipient=recipient_address,
+        parcels=[models.Parcel(weight=5.0, weight_unit="KG", length=30, width=20, height=15, dimension_unit="CM")],
+        options=lib.identity({"dhl_freight_sweden_payer_code": payer_code} if payer_code else {}),
+        customs=None if within_eu_vat_area else models.Customs(**CUSTOMS),  # pyright: ignore[reportArgumentType]
+    )
+    return serialize_request(gateway.mapper.create_shipment_request(payload))
+
+
 def _address(country: str, postal_code: str) -> models.Address:
     return models.Address(
         company_name="Test Party",
+        person_name="Test Person",
         address_line1="Street 1",
         city="City",
         postal_code=postal_code,
         country_code=country,
+        phone_number="+46 8 123 456",
+        email="party@example.com",
     )
 
 

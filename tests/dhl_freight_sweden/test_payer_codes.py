@@ -174,16 +174,18 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
         self.assertIn("3, 4", str(error))
 
     def test_products_with_derived_defaults(self):
+        # 107 returns from abroad to SE (§5.15 p66), so it ships from DE.
         cases = [
-            ("dhl_freight_sweden_service_point_c2b", "3"),
-            ("dhl_freight_sweden_parcel_return_connect_c2b", "001"),
-            ("dhl_freight_sweden_hemleverans_paket_b2c", "1"),
+            ("dhl_freight_sweden_service_point_c2b", _shipper, "3"),
+            ("dhl_freight_sweden_parcel_return_connect_c2b", _shipper_de, "001"),
+            ("dhl_freight_sweden_hemleverans_paket_b2c", _shipper, "1"),
         ]
 
-        for service, payer_code in cases:
+        for service, shipper, payer_code in cases:
             with self.subTest(service=service):
                 self.assertEqual(
-                    self._payer_code(_payload(service, _recipient_se)), payer_code
+                    self._payer_code({**_payload(service, _recipient_se), "shipper": shipper}),
+                    payer_code,
                 )
 
     def test_road_freight_direct_import_accepts_import_terms_only(self):

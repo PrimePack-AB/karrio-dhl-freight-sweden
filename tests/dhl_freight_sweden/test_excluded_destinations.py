@@ -388,7 +388,8 @@ class TestDHLFreightParcelReturnConnectExclusions(ExclusionCases, unittest.TestC
     missing = [("IT", None), ("NO", "")]
 
     def test_recipient_postal_code_is_not_checked(self):
-        serialized = _book(self.product, "recipient", "SE", "11143")
+        # Booked from DE 10115, a listed origin, to the SE recipient 11143.
+        serialized = _book(self.product, "shipper", "DE", "10115")
 
         self.assertEqual(serialized["productCode"], "107")
 
