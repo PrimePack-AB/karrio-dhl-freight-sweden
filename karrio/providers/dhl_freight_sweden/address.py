@@ -6,6 +6,7 @@ flag to product 118 availability. The unified ``validate_address`` protocol
 method and the booking pre-flight share this evaluation.
 """
 
+import attr
 import enum
 import typing
 import karrio.lib as lib
@@ -86,7 +87,7 @@ def check_booking_route(
 ) -> typing.List[models.Message]:
     """Apply the booking pre-flight verdict to a route lookup.
 
-    ``warn`` returns the verdict as shipment messages. ``enforce`` raises
+    ``warn`` returns the verdict as shipment warnings. ``enforce`` raises
     ``PostalCodeNotServableError`` on a refusal (an unservable product flag
     or a ``REFUSAL_ERROR_CODES`` error) and ``PostalCodeApiUnavailableError``
     when the client key's application has no PostalCode API access, so the
@@ -135,7 +136,7 @@ def check_booking_route(
             },
         )
 
-    return messages
+    return [attr.evolve(message, level="warning") for message in messages]
 
 
 def _error_code(route: dict) -> typing.Optional[int]:
