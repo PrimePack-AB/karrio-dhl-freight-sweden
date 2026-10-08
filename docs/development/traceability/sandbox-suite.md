@@ -43,8 +43,15 @@ Results, with every booking, rejection, and deviation from the product manual, a
 ## Booking budget and narrowing
 
 Each booking attempt, rejections included, is counted before the TransportInstruction call, and once the budget is spent the remaining booking tests skip.
-To book a single product or lane, narrow the selectors, for example `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-approved DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=102 DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1`.
-The selectors cannot separate two cases that share a product and country, so add `unittest -k <method name>` per case (repeatable, matched as a substring of the test id) to rerun exactly one case, for example `-k test_book_112_no_customs_standard`.
+To book a single product, lane, or case, narrow the selectors and add `-k`, which is repeatable and matches a substring of the test id:
+
+```bash
+DHL_FREIGHT_SWEDEN_SANDBOX=1 DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS=booking-export \
+  DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS=112 DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES=NO DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS=1 \
+  .venv/bin/python -m unittest discover -v -s sandbox_tests -k test_book_112_no_customs_standard
+```
+
+The selectors alone cannot separate two cases that share a product and country, so `-k` pins exactly one case.
 
 ## Captures
 
