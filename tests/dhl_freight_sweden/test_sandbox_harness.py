@@ -349,6 +349,51 @@ class TestSandboxDeclarationPayloads(unittest.TestCase):
                 self.assertEqual(serialized["additionalInformation"], expected)
                 self.assertEqual(declarations.DEFAULT_INFORMATION[country], expected)
 
+    def test_601_pl_without_sent_options_serializes_as_sent_free(self):
+        serialized = _serialize(
+            gateway.mapper.create_shipment_request(
+                shipment_request(**declarations.payload("PL", {}))
+            )
+        )
+
+        self.assertEqual(
+            serialized["additionalInformation"],
+            [{"code": "SENT_FREE", "stringValue": "true"}],
+        )
+        self.assertEqual(
+            declarations.DEFAULT_INFORMATION["PL"], serialized["additionalInformation"]
+        )
+
+    def test_601_identifiers_serialize_as_not_free_with_the_identifiers(self):
+        cases = {
+            "PL": [
+                {"code": "SENT_FREE", "stringValue": "false"},
+                {"code": "SENT_REF", "stringValue": "SENT20261008000001"},
+                {"code": "SENT_CARKEY", "stringValue": "SANDBOXCARKEY0001"},
+            ],
+            "RO": [
+                {"code": "UIT_FREE", "stringValue": "false"},
+                {"code": "UIT_NUMBER", "stringValue": "0000-0000-0000-0001"},
+            ],
+        }
+
+        for country, expected in cases.items():
+            with self.subTest(country=country):
+                serialized = _serialize(
+                    gateway.mapper.create_shipment_request(
+                        shipment_request(
+                            **declarations.payload(
+                                country, declarations.IDENTIFIERS[country]
+                            )
+                        )
+                    )
+                )
+
+                self.assertEqual(serialized["additionalInformation"], expected)
+                self.assertEqual(
+                    declarations.IDENTIFIER_INFORMATION[country], expected
+                )
+
 class TestSandboxExportPayloads(unittest.TestCase):
     def test_aland_customs_without_service_carries_customs_information(self):
         serialized = _serialize(
