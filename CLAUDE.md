@@ -25,4 +25,4 @@
 - `karrio.Shipment.create` refuses non-SE shippers, so inbound-product tests (107) call the mapper/proxy directly
 
 ## Current State
-- 2026-10-08: docs-site work in flight on branch `docs-site-design`; the plan is `docs/notes/architecture/2026-10-08-docs-site-harness-plan.md`, the harness lives at `~/projects/starlight-docs-harness` (not pushed until its Task 4), and this repository will gain only `.github/workflows/docs-pages.yml` and a preview command in CLAUDE.md
+- 2026-10-08: docs site live at https://primepack-ab.github.io/karrio-dhl-freight-sweden/ via `.github/workflows/docs-pages.yml` and the external harness PrimePack-AB/starlight-docs-harness pinned at v1.1 (commit 14fdd00); the docs-site-design branch is merged and deleted; design, plan with closure notes, and the deferred-maintenance register are in docs/notes/architecture/

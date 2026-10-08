@@ -21,13 +21,23 @@ created: 2026-10-08
 
 ---
 
+## Closure
+
+Implemented on 2026-10-08 via subagent-driven development, with spec-compliance and code-quality reviews per task.
+
+Ten review-driven amendments supersede the reference code below; the harness repository at tag v1.1 (commit 14fdd00) is the authoritative implementation: the action's SITE_URL default uses the Pages origin rather than GITHUB_SERVER_URL; CI assertions use grep with errexit-safe guard forms; the sample docs are a consumer-repo mock with its own root fixture; the consumer workflow pins the harness by SHA with the v1.1 comment, uses checkout@v5, scopes pages permissions to the deploy job, and sets a build timeout; the preview command uses the working bun flag order (`bun run --cwd <dir> dev`) and includes SITE_BASE; the mounted-set derivation lives in the shared src/mounts.mjs; route slugs use github-slugger's stateless slug exactly as Astro's generateId does; failed link rewrites surface as `[rehype-repo-links]` warnings in build output; and excluded-directory links rewrite to GitHub blob URLs.
+
+Live verification: docs-pages run 37809584915 at main 381b11b deployed https://primepack-ab.github.io/karrio-dhl-freight-sweden/ (notes 404, fixture blob URLs, route hrefs); the offline suite passed unchanged (369 tests, OK, skipped=3).
+
+Deferred maintenance items, deliberately not blocking: migrate the harness's markdown.rehypePlugins to Astro's markdown.processor API before Astro removes the legacy path; update the harness README deploy example from checkout@v4 to v5; harden the harness CI guards for .md#fragment, .mdx, and uppercase .MD survivors; Node-20 annotations on the artifact actions in harness CI; monitor both repos' first ubuntu-latest→26 runs after 2026-10-19; the SITE_URL canonical preserves owner letter case (documented, cosmetic); the v1 tag predates the v1.1 fixes and stays unmoved per the no-force-move policy, so v1.1 is the only consumer pin.
+
 ### Task 1: Scaffold the harness repository
 
 **Files (all in `/home/joaqim/projects/starlight-docs-harness`, a fresh clone):**
 
 - Create: `package.json`, `.gitignore`, `tsconfig.json`, `biome.json`, `astro.config.mjs`, `src/content.config.ts`, `src/content/docs/index.md`
 
-- [ ] **Step 1: Create the repository and clone it**
+- [x] **Step 1: Create the repository and clone it**
 
 ```bash
 cd /home/joaqim/projects
@@ -40,7 +50,7 @@ git status --short --branch
 
 Expected: empty tree on branch `main`, origin set to the new repository.
 
-- [ ] **Step 2: Write `package.json`**
+- [x] **Step 2: Write `package.json`**
 
 ```json
 {
@@ -67,7 +77,7 @@ Expected: empty tree on branch `main`, origin set to the new repository.
 
 (`scripts/link-content.sh` arrives in Task 2; until then `bun run build` is not used — the Task 1 verification calls `bunx astro build` directly.)
 
-- [ ] **Step 3: Write `.gitignore`**
+- [x] **Step 3: Write `.gitignore`**
 
 ```
 node_modules/
@@ -79,7 +89,7 @@ src/content/docs/*
 
 (The negation works because only the children of `src/content/docs` are ignored, not the directory itself. Symlinked content directories from Task 2 never get committed; the harness-owned `index.md` does.)
 
-- [ ] **Step 4: Write `tsconfig.json`**
+- [x] **Step 4: Write `tsconfig.json`**
 
 ```json
 {
@@ -89,7 +99,7 @@ src/content/docs/*
 }
 ```
 
-- [ ] **Step 5: Write `biome.json`**
+- [x] **Step 5: Write `biome.json`**
 
 ```json
 {
@@ -112,7 +122,7 @@ src/content/docs/*
 }
 ```
 
-- [ ] **Step 6: Write `astro.config.mjs` (minimal static core; generalized in Task 2)**
+- [x] **Step 6: Write `astro.config.mjs` (minimal static core; generalized in Task 2)**
 
 ```js
 import { defineConfig } from 'astro/config';
@@ -130,7 +140,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 7: Write `src/content.config.ts` (stock Starlight collection)**
+- [x] **Step 7: Write `src/content.config.ts` (stock Starlight collection)**
 
 ```ts
 import { defineCollection } from 'astro:content';
@@ -142,7 +152,7 @@ export const collections = {
 };
 ```
 
-- [ ] **Step 8: Write `src/content/docs/index.md` (the harness-owned landing page)**
+- [x] **Step 8: Write `src/content/docs/index.md` (the harness-owned landing page)**
 
 ```markdown
 ---
@@ -154,7 +164,7 @@ This site renders the `docs/` tree of its source repository.
 Use the sidebar to browse the documentation sections.
 ```
 
-- [ ] **Step 9: Install, format, build**
+- [x] **Step 9: Install, format, build**
 
 ```bash
 bun install
@@ -165,7 +175,7 @@ bunx astro build
 
 Expected: `bun install` creates `bun.lock`; `check` passes; build succeeds with `dist/index.html` present (verify with `test -f dist/index.html`).
 
-- [ ] **Step 10: Commit**
+- [x] **Step 10: Commit**
 
 ```bash
 git add -A
@@ -181,7 +191,7 @@ git commit -m "feat: scaffold the static starlight harness"
 - Create: `scripts/link-content.sh`
 - Modify: `astro.config.mjs` (replaced wholesale)
 
-- [ ] **Step 1: Write `scripts/link-content.sh`**
+- [x] **Step 1: Write `scripts/link-content.sh`**
 
 ```bash
 #!/usr/bin/env bash
@@ -223,7 +233,7 @@ done
 chmod +x scripts/link-content.sh
 ```
 
-- [ ] **Step 2: Replace `astro.config.mjs` with the generalized version**
+- [x] **Step 2: Replace `astro.config.mjs` with the generalized version**
 
 ```js
 import fs from 'node:fs';
@@ -263,7 +273,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 3: Verify linking against the real docs tree**
+- [x] **Step 3: Verify linking against the real docs tree**
 
 ```bash
 DOCS_DIR=/home/joaqim/projects/karrio-dhl-freight-sweden/docs bash scripts/link-content.sh
@@ -277,7 +287,7 @@ linked development -> /home/joaqim/projects/karrio-dhl-freight-sweden/docs/devel
 linked guides -> /home/joaqim/projects/karrio-dhl-freight-sweden/docs/guides
 ```
 
-- [ ] **Step 4: Verify a full build**
+- [x] **Step 4: Verify a full build**
 
 ```bash
 DOCS_DIR=/home/joaqim/projects/karrio-dhl-freight-sweden/docs \
@@ -291,7 +301,7 @@ test ! -e dist/notes
 
 Expected: build succeeds; `development/index.md` renders as the section root at `dist/development/index/`; `dist/notes` does not exist. (Internal links are still wrong — Task 3 fixes them.)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A
@@ -307,7 +317,7 @@ git commit -m "feat: link external docs directories into the content root"
 - Create: `vitest.config.ts`, `tests/rehype-repo-links.test.mjs`, `src/plugins/rehype-repo-links.mjs`
 - Modify: `astro.config.mjs` (add the plugin wiring)
 
-- [ ] **Step 1: Add vitest config**
+- [x] **Step 1: Add vitest config**
 
 `bun add -d vitest` (already declared in Task 1; idempotent if present), then write `vitest.config.ts`:
 
@@ -322,7 +332,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 2: Write the failing tests `tests/rehype-repo-links.test.mjs`**
+- [x] **Step 2: Write the failing tests `tests/rehype-repo-links.test.mjs`**
 
 ```js
 import fs from 'node:fs';
@@ -399,7 +409,7 @@ it('leaves absolute, fragment-only, and mailto links untouched', () => {
 });
 ```
 
-- [ ] **Step 3: Run tests to verify they fail**
+- [x] **Step 3: Run tests to verify they fail**
 
 ```bash
 bun run test
@@ -407,7 +417,7 @@ bun run test
 
 Expected: FAIL — cannot resolve `../src/plugins/rehype-repo-links.mjs`.
 
-- [ ] **Step 4: Implement `src/plugins/rehype-repo-links.mjs`**
+- [x] **Step 4: Implement `src/plugins/rehype-repo-links.mjs`**
 
 ```js
 import fs from 'node:fs';
@@ -482,7 +492,7 @@ export function rehypeRepoLinks({ docsDir, excludeDirs = ['notes'], baseUrl = ''
 
 (The `fs.realpathSync` call is what makes repo-relative links resolve correctly: the vfile path is the symlink path under `src/content/docs/`, whose depth differs from the real file's depth inside the consumer repository's `docs/` tree.)
 
-- [ ] **Step 5: Run tests to verify they pass**
+- [x] **Step 5: Run tests to verify they pass**
 
 ```bash
 bun run test
@@ -490,7 +500,7 @@ bun run test
 
 Expected: 4 passed.
 
-- [ ] **Step 6: Wire the plugin into `astro.config.mjs`**
+- [x] **Step 6: Wire the plugin into `astro.config.mjs`**
 
 Add the import at the top:
 
@@ -517,7 +527,7 @@ Add between `base` and `integrations`:
   },
 ```
 
-- [ ] **Step 7: Rebuild against the real docs and inspect the rewritten links**
+- [x] **Step 7: Rebuild against the real docs and inspect the rewritten links**
 
 ```bash
 bun run format && bun run check
@@ -532,7 +542,7 @@ rg -o 'href="/karrio-dhl-freight-sweden/concepts/[a-z-]+/"' dist/guides/lookups/
 
 Expected: the first `rg` lists the `sandbox-suite` page (fixture citations now point at GitHub blob URLs); the second shows route-style hrefs. If the fixture `rg` finds nothing, the plugin is not running — check the `markdown` block placement.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add -A
@@ -547,7 +557,7 @@ git commit -m "feat: rewrite content and repository links in docs pages"
 
 - Create: `action.yml`, `.github/workflows/ci.yml`, `README.md`, `tests/sample-docs/docs/concepts/sample-concept.md`, `tests/sample-docs/docs/guides/sample-guide.md`, `tests/sample-docs/docs/notes/internal-note.md`
 
-- [ ] **Step 1: Write the three sample docs**
+- [x] **Step 1: Write the three sample docs**
 
 `tests/sample-docs/docs/concepts/sample-concept.md`:
 
@@ -579,7 +589,7 @@ title: "Internal note"
 Must not render.
 ```
 
-- [ ] **Step 2: Write `action.yml`**
+- [x] **Step 2: Write `action.yml`**
 
 ```yaml
 name: starlight-docs-harness
@@ -630,7 +640,7 @@ runs:
         path: ${{ github.action_path }}/dist
 ```
 
-- [ ] **Step 3: Write `.github/workflows/ci.yml`**
+- [x] **Step 3: Write `.github/workflows/ci.yml`**
 
 ```yaml
 name: ci
@@ -666,7 +676,7 @@ jobs:
           rg -q 'blob/main/package.json' dist/concepts/sample-concept/index.html
 ```
 
-- [ ] **Step 4: Write `README.md`**
+- [x] **Step 4: Write `README.md`**
 
 ```markdown
 ---
@@ -702,7 +712,7 @@ REPO_URL=https://github.com/owner/consumer bun run dev
 Inputs: `docs-dir` (default `docs`), `exclude` (default `notes`), `title`, `base`, `repo-url`, `repo-ref` (default `main`). The action uploads the `github-pages` artifact; the consumer workflow runs `actions/deploy-pages` after it.
 ```
 
-- [ ] **Step 5: Run the CI smoke block locally**
+- [x] **Step 5: Run the CI smoke block locally**
 
 ```bash
 bun run format && bun run check && bun run test
@@ -719,7 +729,7 @@ rg -q 'blob/main/package.json' dist/concepts/sample-concept/index.html
 
 Expected: every assertion passes. (The local run links `tests/sample-docs/docs` into `src/content/docs`, replacing the karrio links from Task 2; rerunning Task 2's link command restores them.)
 
-- [ ] **Step 6: Commit, push, tag**
+- [x] **Step 6: Commit, push, tag**
 
 ```bash
 git add -A
@@ -739,7 +749,7 @@ git push origin v1
 
 - Create: `.github/workflows/docs-pages.yml`
 
-- [ ] **Step 1: Write `.github/workflows/docs-pages.yml`**
+- [x] **Step 1: Write `.github/workflows/docs-pages.yml`**
 
 ```yaml
 name: docs-pages
@@ -780,7 +790,7 @@ jobs:
         uses: actions/deploy-pages@v4
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add .github/workflows/docs-pages.yml
@@ -797,13 +807,13 @@ git commit -m "ci: publish the docs tree to github pages via the starlight harne
 
 - Modify: `CLAUDE.md` (Commands section)
 
-- [ ] **Step 1: Add to the Commands list**
+- [x] **Step 1: Add to the Commands list**
 
 ```markdown
 - Docs site preview: `DOCS_DIR=$PWD/docs REPO_URL=https://github.com/PrimePack-AB/karrio-dhl-freight-sweden bun --cwd ../starlight-docs-harness run dev` — renders ./docs minus docs/notes/; publishing is automatic on push to main via docs-pages
 ```
 
-- [ ] **Step 2: Verify the command works from this repository**
+- [x] **Step 2: Verify the command works from this repository**
 
 ```bash
 DOCS_DIR=$PWD/docs SITE_BASE=/karrio-dhl-freight-sweden \
@@ -816,7 +826,7 @@ kill %1
 
 Expected: the curl succeeds (page HTML served). Dev-server live-reload through symlinks may not pick up every edit; a dev-server restart always reflects the tree.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add CLAUDE.md
@@ -829,7 +839,7 @@ git commit -m "docs: add the docs site preview command"
 
 **Repository:** karrio. One-time repository settings change, then integration.
 
-- [ ] **Step 1: Enable Pages with the workflow build source**
+- [x] **Step 1: Enable Pages with the workflow build source**
 
 ```bash
 gh api repos/PrimePack-AB/karrio-dhl-freight-sweden/pages --jq .build_type \
@@ -839,7 +849,7 @@ gh api repos/PrimePack-AB/karrio-dhl-freight-sweden/pages --jq .build_type
 
 Expected: final command prints `workflow`.
 
-- [ ] **Step 2: Merge the branch and push**
+- [x] **Step 2: Merge the branch and push**
 
 ```bash
 git checkout main
@@ -847,7 +857,7 @@ git merge --ff-only docs-site-design
 git push origin main
 ```
 
-- [ ] **Step 3: Watch the deployment**
+- [x] **Step 3: Watch the deployment**
 
 ```bash
 gh run watch --repo PrimePack-AB/karrio-dhl-freight-sweden $(gh run list --repo PrimePack-AB/karrio-dhl-freight-sweden --workflow docs-pages --limit 1 --json databaseId --jq '.[0].databaseId')
@@ -855,7 +865,7 @@ gh run watch --repo PrimePack-AB/karrio-dhl-freight-sweden $(gh run list --repo 
 
 Expected: `docs-pages` completes successfully (both build and deploy jobs).
 
-- [ ] **Step 4: Verify the live site**
+- [x] **Step 4: Verify the live site**
 
 ```bash
 curl -fsSL https://primepack-ab.github.io/karrio-dhl-freight-sweden/ | rg '<title>'
@@ -866,7 +876,7 @@ curl -o /dev/null -w '%{http_code}\n' https://primepack-ab.github.io/karrio-dhl-
 
 Expected: the title contains `karrio-dhl-freight-sweden`; the sandbox-suite page links fixtures as GitHub blob URLs; the notes URL returns `404` (excluded from the site by design).
 
-- [ ] **Step 5: Confirm zero repository-side regressions**
+- [x] **Step 5: Confirm zero repository-side regressions**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests
@@ -874,7 +884,7 @@ Expected: the title contains `karrio-dhl-freight-sweden`; the sandbox-suite page
 
 Expected: the offline suite passes exactly as before (nothing under `docs/` moved, renamed, or changed format).
 
-- [ ] **Step 6: Clean up the branch**
+- [x] **Step 6: Clean up the branch**
 
 ```bash
 git branch -d docs-site-design
