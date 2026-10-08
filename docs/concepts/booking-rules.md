@@ -72,8 +72,10 @@ Lanes with the shipper or the recipient in PL carry SENT entries under the shipm
 
 Both identifiers send `SENT_FREE` `"false"` followed by `SENT_REF` and `SENT_CARKEY`, as in the manual's API example (§5.4 p23); one identifier without the other fails, and `dhl_freight_sweden_sent_free` `true` together with either identifier fails as contradictory.
 `dhl_freight_sweden_sent_free` `true` without identifiers sends `SENT_FREE` `"true"`, and `false` without identifiers fails.
-A shipment with neither the free flag nor the identifiers fails and asks for an explicit SENT declaration.
-The connector does not declare a shipment SENT free by itself: like EKAER and UIT, SENT free is a legal declaration made on the shipper's or the consignee's behalf, and the connector cannot verify the facts it rests on, such as the risk class of the goods or the aggregation of goods per vehicle.
+A shipment with neither the free flag nor the identifiers sends `SENT_FREE` `"true"`, whatever its weight.
+Like EKAER and UIT, SENT free is a legal declaration made on the shipper's or the consignee's behalf, and the connector makes it by default only because it suits typical e-commerce shipments.
+DHL describes SENT from 17 March 2026 as covering B2B shipments of clothing (CN 61, 62, and 6309) over 10 kg gross per shipment and of footwear (CN 64) over 20 items, declared by the receiver in PL, and states "B2C = no SENT ever" ([DHL Global Forwarding Poland](https://www.dhl.com/pl-en/home/global-forwarding/latest-news-and-webinars/poland_sent_2026.html), [DHL Express Poland](https://dhlexpress.pl/en/sent-2/)).
+Those sources do not cover the older SENT goods categories, such as fuels; a shipment of such goods, or a B2B shipment above those thresholds, needs `dhl_freight_sweden_sent_ref` and `dhl_freight_sweden_sent_carkey`, and identifying it is the consumer's responsibility.
 The opt-in sandbox suite declares its 109 and 112 bookings to PL SENT free with `dhl_freight_sweden_sent_free`.
 The related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82) make the question "Is shipment SENT free?" (`SENT_FREE`) mandatory for shipments to or from PL, and the SENT reference and carrier key mandatory when the answer is no; the sections of 109 and 112 do not mention SENT.
 The live API rejects a PL booking without either identifier unless `SENT_FREE` is `"true"` (22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true.", sandbox 2026-10-05: [rejection-22001-109-se-pl-without-sent.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json)).
@@ -102,11 +104,21 @@ The sandbox accepted 601 to HU with `EKAER_FREE` `"false"` and the made-up `EKAE
 `dhl_freight_sweden_uit_free` `false` without a number sends `UIT_FREE` `"false"` alone, because the same tables mark the UIT code conditional for a shipment that is not UIT free, with "Code should be provided if possible" (e.g. §5.4 p23).
 The sandbox accepted 601 to RO with `UIT_FREE` `"false"` and no `UIT_NUMBER` (2026-10-05: [booking-2906761347-601-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761347-601-se-ro.json)).
 
-On products 202, 205, 233, SPI, and 601, a shipment with the shipper or the recipient in HU or RO without the free flag or the number fails and asks for an explicit declaration, following the manual's "to/from" wording in the same tables.
-The connector does not declare a shipment EKAER or UIT free by itself: these are legal declarations made on the shipper's or the consignee's behalf, and the connector cannot verify the facts they rest on, such as the risk class of the goods or the aggregation of goods per vehicle.
+On products 202, 205, 233, SPI, and 601, a shipment with the shipper or the recipient in HU or RO without the free flag or the number is declared free, following the manual's "to/from" wording in the same tables: it sends `EKAER_FREE` or `UIT_FREE` `"true"` when its total gross weight, the sum of its parcel weights in kilograms, is below 500 kg.
+At or above 500 kg such a shipment fails with `TransportDeclarationError` and asks for `dhl_freight_sweden_ekaer_number` or `dhl_freight_sweden_uit_number`, or an explicit `dhl_freight_sweden_ekaer_free` or `dhl_freight_sweden_uit_free`.
+An explicit free flag `true` is sent at any weight.
+EKAER and UIT free are legal declarations made on the shipper's or the consignee's behalf, and the connector makes them by default only because they suit typical e-commerce shipments.
+The UIT exception covers goods with a value less than 10,000 RON and a weight less than 500 kg ([DHL Denmark](https://www.dhl.com/dk-en/home/about-us/local-news/071024.html)); the connector checks the weight only, not the value.
+The EKAER thresholds for risky products, a fiscal-risk product list that is distinct from ADR dangerous goods, are 500 kg and HUF 1,000,000 ([RSM Hungary](https://www.rsm.hu/tax-to-know/ekaer-obligation)); the connector checks the weight only and cannot detect whether goods are risky products.
 On other products the options are optional and sent when given.
 The sandbox accepted 109 and 112 bookings to HU and RO without these entries (2026-10-05: [booking-2906761263-109-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761271-112-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761271-112-se-ro.json), [booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json), [booking-2906761297-112-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761297-112-se-hu.json)).
 601 to HU or RO without these entries has not been sent to the sandbox.
+
+## Transport declaration defaults
+
+The SENT, EKAER, and UIT defaults are not customs or tax advice.
+They suit typical e-commerce shipments, and the consumer of the connector, the integrator or the shipper, is responsible for every declaration sent, including the defaults, and for the consequences of misconfigured usage.
+DHL charges fines and missing-information fees to the booking party.
 
 ## VAT number/TIN for GR
 

@@ -261,7 +261,9 @@ Whether a shipment carries customs data depends on the EU VAT area for goods, no
 ### Inside the EU VAT area
 
 Within the area the connector drops customs data and customs services and adds a `customs_omitted_intra_eu` warning, so a shop can send the same customs data on every order.
-Three lanes need an explicit transport declaration that the connector never makes on the shipper's behalf: SENT to or from PL, and EKAER and UIT to or from HU and RO on the products that require them.
+Three lanes carry a transport declaration: SENT to or from PL, and EKAER and UIT to or from HU and RO on the products that require them.
+Without a declaration option the connector declares SENT free, and EKAER or UIT free below 500 kg total gross weight; at or above 500 kg it refuses an undeclared EKAER or UIT shipment.
+These defaults suit typical e-commerce and are not customs or tax advice: the integrator or shipper is responsible for every declaration sent, including the defaults, and DHL charges fines and missing-information fees to the booking party.
 Products 202, SPI, and 601 to or from GR need a VAT number or TIN for both parties.
 [Booking rules](docs/concepts/booking-rules.md) describes the options for each.
 
@@ -373,8 +375,8 @@ An excluded booking fails with `ExcludedDestinationError` keyed by the party's `
 | `dhl_freight_sweden_customs_handling_full_service`, `..._standard` | boolean | Customs services, see customs services |
 | `dhl_freight_sweden_customs_own_declaration`, `..._joint_declaration` | boolean | Customs services, with the identifier in `..._id` |
 | `dhl_freight_sweden_customs_procedure_code` | string, 4 characters | The commodity procedure code, 1042 by default |
-| `dhl_freight_sweden_sent_free`, `..._sent_ref`, `..._sent_carkey` | boolean, string | SENT for PL |
-| `dhl_freight_sweden_ekaer_free`, `..._ekaer_number`, `..._uit_free`, `..._uit_number` | boolean, string | EKAER for HU and UIT for RO |
+| `dhl_freight_sweden_sent_free`, `..._sent_ref`, `..._sent_carkey` | boolean, string | SENT for PL, declared free when none is given |
+| `dhl_freight_sweden_ekaer_free`, `..._ekaer_number`, `..._uit_free`, `..._uit_number` | boolean, string | EKAER for HU and UIT for RO, declared free below 500 kg when none is given and required at or above |
 | `dhl_freight_sweden_additional_information` | list | Further `additionalInformation` entries |
 | `dhl_freight_sweden_qr_code` | boolean | A print QR code for 107 returns from BE, BG, CZ, DE, ES, LU, and PT |
 | `dhl_freight_sweden_label_page_type` | string | The page layout for one shipment |
@@ -407,7 +409,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
-| `SentInformationError`, `TransportDeclarationError` | a missing or contradictory SENT, EKAER, or UIT declaration | the option |
+| `SentInformationError`, `TransportDeclarationError` | a missing or contradictory SENT, EKAER, or UIT declaration, including an undeclared EKAER or UIT shipment at or above 500 kg | the option |
 | `PartyTaxIdError` | 202, SPI, or 601 to or from GR without both VAT numbers or TINs | `shipper.federal_tax_id` or `recipient.federal_tax_id` |
 | `QrCodeEligibilityError` | a QR code outside 107 from the listed countries | `dhl_freight_sweden_qr_code` |
 | `AdditionalInformationError` | an entry without a code, or a SENT, EKAER, or UIT code where its option applies | `dhl_freight_sweden_additional_information` |
