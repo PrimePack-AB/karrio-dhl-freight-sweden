@@ -40,6 +40,13 @@ flowchart TD
 ```
 
 Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](../../../tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256.
+Evidence files are named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
+A file's metadata names the endpoint, product, route, booking id or error code, and the capturing script or suite test, and each call records the path of its original capture relative to `$XDG_STATE_HOME` and the sha256 of that capture, so the original can be checked against the committed copy.
+The committed copies drop the `client-key` header and the response headers, and replace label and document base64 with a length marker.
+The earliest captures masked the account number in the Consignor party id; their evidence files restore it and record the masked placeholders under `account_number_restored`.
+Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
+A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
+`tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
 A new sandbox finding gets its own evidence file and `CATALOG` entry, naming the capture files relative to the state directory, before anything cites it.
 Rebuilding over the same captures reproduces the committed files byte for byte, so `git diff` after a rebuild shows only new or changed findings:
 

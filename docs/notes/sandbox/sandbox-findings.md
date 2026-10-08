@@ -2,30 +2,48 @@
 title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-08"
 ---
 
-## Environment and method
+## Method
 
-All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com` on 2026-10-05, except the suite runs on 2026-10-06 and 2026-10-08 named below, and all times below are UTC.
+All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com`, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
 The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
 
-The calls came from three sources.
-A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
-Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04, its lookup, rejection, and approved booking segments at 08:11, its 601 PL and RO bookings with default SENT free, placeholder SENT identifiers, and a placeholder UIT number at 08:26, its 202 and 233 HU and RO bookings without EKAER or UIT options at 08:48, its PostalCode route lookups and `enforce` pre-flights at 15:12, and its PostalCode route lookup and `enforce` pre-flight with an unknown client key at 15:27.
-The 08:11 run sent eight TransportInstruction requests, and this note cites only its 109 PL request without SENT entries.
-A manual capacity probe with the connector ran at 16:21.
+The calls came from three sources: a read-only probe script, two booking scripts, one direct against TransportInstruction and one through the connector, and the opt-in sandbox suite in `sandbox_tests/`.
+A manual capacity probe with the connector also ran once.
 
-Each finding has one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`, named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
-An evidence file holds the request and response bodies of the calls behind the finding, with metadata naming the endpoint, product, route, booking id or error code, and the capturing script or suite test.
-Each call records the path of its original capture relative to `$XDG_STATE_HOME` (`~/.local/state`) and the sha256 of that capture file, so the original can be checked against the committed copy.
-The committed copies drop the `client-key` header and the response headers, and replace label base64 with a length marker.
-The original captures masked the customer number in the Consignor party id; the evidence files restore it and record the restored placeholder under `account_number_restored`.
-Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
-A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
+| Date | Time | Source | Calls |
+|------|------|--------|-------|
+| 2026-10-05 | 14:14 | probe script | Product, AdditionalService, ServicePointLocator, and PostalCode APIs, read only |
+| 2026-10-05 | 14:31 | direct script | bookings sent directly to TransportInstruction |
+| 2026-10-05 | 14:48 | connector script | bookings through the connector |
+| 2026-10-05 | 16:20-16:31 | suite | lookup and booking segments |
+| 2026-10-05 | 16:21 | manual probe | capacity probe with the connector |
+| 2026-10-05 | 16:53 | suite | rejection and declaration segments |
+| 2026-10-05 | 17:14 | suite | 109 DK ParcelShop case |
+| 2026-10-05 | 17:31 | suite | 103 id-only AccessPoint rejection |
+| 2026-10-06 | 08:10 | suite | 112 FR case |
+| 2026-10-06 | 08:29 | suite | 112 GB case, skipped by the product matches check |
+| 2026-10-06 | 08:39 | suite | 112 GB case without the product matches check |
+| 2026-10-06 | 08:52 | suite | thirteen special-territory product matches probes |
+| 2026-10-06 | 09:07 | suite | 112 and 109 Åland and 202 Northern Ireland cases |
+| 2026-10-06 | 09:12 | suite | 112 Åland case with customs handling Standard |
+| 2026-10-06 | 10:39 | suite | freight and Standard customs bookings |
+| 2026-10-06 | 11:12 | suite | 401 domestic booking |
+| 2026-10-06 | 11:26 | suite | 205 booking forced past the product matches check |
+| 2026-10-06 | 12:27 | suite | CH and LI lookups |
+| 2026-10-06 | 12:41 | suite | 601 CH booking |
+| 2026-10-06 | 13:30 | suite | 109 Åland booking with customs data |
+| 2026-10-08 | 08:04 | suite | 601 HU and RO bookings without EKAER or UIT options |
+| 2026-10-08 | 08:11 | suite | lookup, rejection, and approved booking segments, with eight TransportInstruction requests of which this note cites only the 109 PL request without SENT entries |
+| 2026-10-08 | 08:26 | suite | 601 PL and RO bookings with default SENT free, placeholder SENT identifiers, and a placeholder UIT number |
+| 2026-10-08 | 08:48 | suite | 202 and 233 HU and RO bookings without EKAER or UIT options |
+| 2026-10-08 | 15:12 | suite | PostalCode route lookups and `enforce` pre-flights |
+| 2026-10-08 | 15:27 | suite | PostalCode route lookup and `enforce` pre-flight with an unknown client key |
+
+Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
+[Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
 The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, and 2906761867.
-`tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.
-`sandbox_tests/dhl_freight_sweden/evidence.py` builds the files from the captures, and rebuilding over the same captures reproduces them byte for byte.
 
 ## Bookings
 
