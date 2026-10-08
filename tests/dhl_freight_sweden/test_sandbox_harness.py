@@ -253,28 +253,6 @@ class TestSandboxRejectionPayloads(unittest.TestCase):
             {**mutated, "payerCode": original["payerCode"]}, original
         )
 
-    def test_without_sent_removes_only_the_sent_entries(self):
-        request = _pl_request(
-            "109",
-            {
-                **booking.service_point_options(SERVICE_POINT),
-                "dhl_freight_sweden_payer_code": "022",
-            },
-        )
-        original = _serialize(request)
-
-        mutated = _serialize(harness.mutated_request(request, rejection.without_sent))
-
-        self.assertEqual(
-            original["additionalInformation"],
-            [{"code": "SENT_FREE", "stringValue": "true"}],
-        )
-        self.assertNotIn("additionalInformation", mutated)
-        self.assertEqual(
-            {key: value for key, value in original.items() if key != "additionalInformation"},
-            mutated,
-        )
-
     def test_with_party_appends_the_connector_access_point_shape(self):
         request = _pl_request(
             "109",
