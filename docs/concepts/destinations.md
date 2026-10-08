@@ -55,7 +55,7 @@ The connector therefore rates, books, and looks up product matches and service p
 The Customs column applies the [EU VAT area](#the-eu-vat-area) check to the parent country and postal code, and the Excluded from column applies the [excluded postal codes](#excluded-postal-codes) after the mapping; the Faroe Islands' three-digit codes fall under the DK 3800-3999 entry for 109 and 112 and under the catalog's `???` for the others.
 The sandbox booked 202 to GB BT1 1AA (Northern Ireland) with payer code DAP and no customs data ([booking-2906761925-202-se-gb-northern-ireland.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761925-202-se-gb-northern-ireland.json)).
 202 to GB JE2 3AB was not sent: the connector refuses it before the booking request under the catalog's `JE*` exclude, and product matches did not offer 202 for that postcode ([lookup-product-matches-se-gb-je23ab.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json)).
-The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given; no product lists them among its valid countries, so rating offers no product for them, and booking refuses them for 109, 112, and 107 as excluded areas and passes them through on the other products.
+The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given; no product lists them among its valid countries, so rating offers no product for them, and booking refuses them for 109, 112, and 107 as excluded areas with `ExcludedDestinationError` and for the other products with `ProductLaneError`.
 The [findings note](../notes/sandbox/sandbox-findings.md#product-matches) lists the products matched for each territory.
 
 ## Åland

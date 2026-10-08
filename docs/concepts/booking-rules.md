@@ -7,6 +7,11 @@ The README's errors reference lists every such error.
 Manual references are to [product manual v5.26](../development/index.md#product-manual-citations), written `§x.y pN`.
 Customs rules are in the README's exporting section, and destination rules (the EU VAT area, special territories, and excluded postal codes) are in [Destinations](destinations.md).
 
+## Product lanes
+
+A product books only from the shipper's country to the recipient's on a lane its valid countries in the manual allow, comparing territory codes as their parent country; [Products](products.md#lanes) lists the lanes.
+Another lane fails with `ProductLaneError`, for example "Product 107 does not ship from CH to SE (product manual v5.26 §5.15 p66)", keyed by `shipper.country_code` when no lane starts in the shipper's country and by `recipient.country_code` otherwise.
+
 ## Payer codes
 
 `payerCode` carries the product's terms-of-delivery code, validated against the product's "Payer codes" table.

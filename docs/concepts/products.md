@@ -45,7 +45,8 @@ Home Delivery B2C (401) is delivered through the `doorstepDelivery` additional s
 The manual lists each product's valid countries and classifies the product as domestic or international (§5.1 p13).
 Rating offers a product only on a lane from the shipper's country to the recipient's that the table allows, comparing territory codes as their parent country (see [Special territories](destinations.md#special-territories)).
 An explicitly requested product on another lane adds a `destination_not_supported` message, such as "Product 107 does not ship from CH to SE (product manual v5.26 §5.15 p66)", instead of a rate.
-Booking does not check the lane before the request.
+A booking on another lane fails before the booking request with `ProductLaneError`, whose message is the same and whose `details` are keyed by `shipper.country_code` when no lane starts in the shipper's country and by `recipient.country_code` otherwise.
+The excluded postal codes are checked first, so a code in an excluded area fails with `ExcludedDestinationError` instead.
 
 | Product | Lanes | Manual |
 |---------|-------|--------|
@@ -58,7 +59,7 @@ Booking does not check the lane before the request.
 
 202, 205, 233, SPI, and 601 list SE among their valid countries as the Swedish end of a lane, since each "can be used to and from Sweden" (§5.4 p22, §5.9 p41, §5.10 p46, §5.11 p51, §5.19 p81), so none of them, and none of 109, 112, and 107, serves a lane within SE.
 107 returns a 109 shipment to its original sender in SE (§5.15 p65).
-Karrio's rating classifies a delivery into the account country SE as domestic, so it offers no import lane into SE of 202, 205, 233, SPI, and 601.
+Karrio's rating classifies a delivery into the account country SE as domestic, so it offers no import lane into SE of 202, 205, 233, SPI, and 601, while booking accepts those import lanes.
 Karrio's unified rating and shipping calls accept only shippers in SE, so they refuse a 107 shipment, whose shipper is abroad, before it reaches the connector.
 
 ## FR, GB, CH, and LI
