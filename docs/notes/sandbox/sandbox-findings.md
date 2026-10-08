@@ -293,6 +293,7 @@ The answer to a valid client key whose DHL application lacks the PostalCode API 
 ## Coverage
 
 The matrix gives each product's sandbox result per lane class, where not offered means product manual v5.26 offers the product on no lane of that class.
+The connector rates a product only on the lanes the manual offers ([products.md#lanes](../../concepts/products.md#lanes)).
 Every cell's evidence is in the tables above.
 
 | Product | Domestic SE | Intra-EU | Outside the EU VAT area and special territories |

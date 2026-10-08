@@ -243,20 +243,21 @@ Product matches decide what DHL offers on a lane; this catalogue maps karrio ser
 
 | Karrio service code | DHL code | Product | Lane | Default payer code |
 | --------------------- | ---------- | --------- | ------ | -------------------- |
-| `dhl_freight_sweden_paket` | 102 | DHL Paket | SE | 1 |
-| `dhl_freight_sweden_service_point_b2c` | 103 | Service Point B2C | SE | 1 |
-| `dhl_freight_sweden_service_point_c2b` | 104 | Service Point C2B | SE | 3 |
-| `dhl_freight_sweden_hemleverans_paket_b2c` | 118 | Hemleverans Paket B2C | SE | 1 |
-| `dhl_freight_sweden_home_delivery_b2c` | 401 | Home Delivery B2C | SE | 1 |
-| `dhl_freight_sweden_home_delivery_c2b`, `..._c2b_502` | 402, 502 | Home Delivery Return C2B | SE | none |
-| `dhl_freight_sweden_special`, `_pall`, `_stycke`, `_parti` | 209, 210, 211, 212 | Special, Pall, Stycke, Parti | SE | 1 |
-| `dhl_freight_sweden_parcel_connect_b2c` | 109 | Parcel Connect B2C | international | 022 |
-| `dhl_freight_sweden_parcel_connect_plus` | 112 | Parcel Connect Plus | international | 023 |
-| `dhl_freight_sweden_home_delivery_international_b2c` | 601 | Home Delivery International B2C | international | none |
+| `dhl_freight_sweden_paket` | 102 | DHL Paket | within SE | 1 |
+| `dhl_freight_sweden_service_point_b2c` | 103 | Service Point B2C | within SE | 1 |
+| `dhl_freight_sweden_service_point_c2b` | 104 | Service Point C2B | within SE | 3 |
+| `dhl_freight_sweden_hemleverans_paket_b2c` | 118 | Hemleverans Paket B2C | within SE | 1 |
+| `dhl_freight_sweden_home_delivery_b2c` | 401 | Home Delivery B2C | within SE | 1 |
+| `dhl_freight_sweden_home_delivery_c2b`, `..._c2b_502` | 402, 502 | Home Delivery Return C2B | within SE | none |
+| `dhl_freight_sweden_special`, `_pall`, `_stycke`, `_parti` | 209, 210, 211, 212 | Special, Pall, Stycke, Parti | within SE | 1 |
+| `dhl_freight_sweden_parcel_connect_b2c` | 109 | Parcel Connect B2C | from SE | 022 |
+| `dhl_freight_sweden_parcel_connect_plus` | 112 | Parcel Connect Plus | from SE | 023 |
+| `dhl_freight_sweden_home_delivery_international_b2c` | 601 | Home Delivery International B2C | to and from SE | none |
 | `dhl_freight_sweden_parcel_return_connect_c2b` | 107 | Parcel Return Connect C2B | returns to SE | 001 |
-| `dhl_freight_sweden_road_freight_standard`, `_direct`, `_priority` | 202, 205, 233 | Road Freight Standard, Direct, Priority | international | none |
-| `dhl_freight_sweden_standard_pallet_international` | SPI | Standard Pallet International | international | none |
+| `dhl_freight_sweden_road_freight_standard`, `_direct`, `_priority` | 202, 205, 233 | Road Freight Standard, Direct, Priority | to and from SE | none |
+| `dhl_freight_sweden_standard_pallet_international` | SPI | Standard Pallet International | to and from SE | none |
 
+Rating offers each product only on the lanes the manual's valid countries allow, so none of 109, 112, 107, 202, 205, 233, SPI, and 601 rates within SE; [Products](docs/concepts/products.md#lanes) lists the countries.
 Each product section of the manual states minimum piece dimensions, for example 15 × 11 × 2 cm for 102 and 112 and 15 × 11 × 3 cm for 601, and DHL checks them at booking; [Products](docs/concepts/products.md) lists them all.
 Home Delivery B2C (401) takes its door access code through `dhl_freight_sweden_doorstep_access_code`.
 
