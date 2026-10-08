@@ -3,6 +3,7 @@
 This package is a [karrio](https://pypi.org/project/karrio) carrier plugin for DHL Freight Sweden.
 It books shipments through the DHL Freight (Sweden) API Farm, which authenticates with a single `client-key` header, and returns each shipment with its printed label.
 This guide is for a developer or operator integrating Karrio for a Swedish shipper, and its worked examples follow a B2C e-commerce shop that sends single parcels within Sweden, to the EU, and to Norway and Switzerland.
+The reference pages behind this guide are published at <https://primepack-ab.github.io/karrio-dhl-freight-sweden/>.
 
 ## What it does and does not do
 
