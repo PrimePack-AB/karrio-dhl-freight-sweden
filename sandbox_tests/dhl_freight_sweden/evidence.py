@@ -539,6 +539,16 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "109", "SE 11143 -> FI 22100", "20261006-153003-109-fi-aland-customs",
      ("003-service-points-109-fi-22100", "005-booking-109", "006-booking-109"),
      "test_booking_export.test_book_109_fi_aland_customs_without_service", 1),
+    ("booking-2906769555-601-se-hu-default-ekaer-free.json",
+     "601 SE to HU with payer code DAP and no EKAER option, so the connector sent EKAER_FREE true "
+     "without EKAER_NUMBER, then printed.",
+     "601", "SE 11143 -> HU 1052", "20261008-100438", ("003-booking-601", "004-booking-601"),
+     "test_booking_declarations.test_book_601_hu_default_ekaer_free", 0),
+    ("booking-2906769563-601-se-ro-default-uit-free.json",
+     "601 SE to RO with payer code DAP and no UIT option, so the connector sent UIT_FREE true "
+     "without UIT_NUMBER, then printed.",
+     "601", "SE 11143 -> RO 030031", "20261008-100438", ("008-booking-601", "009-booking-601"),
+     "test_booking_declarations.test_book_601_ro_default_uit_free", 0),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
