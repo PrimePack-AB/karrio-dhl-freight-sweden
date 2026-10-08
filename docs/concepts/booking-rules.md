@@ -27,14 +27,23 @@ Customs rules are in the README's exporting section, and destination rules (the 
 A lane is an import when the recipient is in SE and the shipper is not; the import column applies only to the products that list one.
 The code resolves in this order:
 
-1. The `dhl_freight_sweden_payer_code` option, which must be a valid code.
-2. `customs.incoterm` when it is a valid code. For 109 and 112, which accept only Combiterms, the Incoterm is translated per §7.6 p163 (CPT, CIP, DAP, DPU to 022; DDP to 023) and the result must be valid. For other products an Incoterm outside the product's codes is not used.
-3. The product default from the table. A product without a default needs an explicit payer code.
+```mermaid
+flowchart TD
+  known{"Product in the table?"} -- no --> fallback["Option, else customs.incoterm, else 1"]
+  known -- yes --> option{"dhl_freight_sweden_payer_code set?"}
+  option -- yes --> valid["Must be a valid code for the lane"]
+  option -- no --> incoterm{"customs.incoterm is a valid code, or the product accepts only Combiterms?"}
+  incoterm -- yes --> translate["Use the Incoterm, translated to its Combiterm for 109 and 112"]
+  incoterm -- no --> default["Product default; error when the product has none"]
+  translate --> valid
+  default --> valid
+```
+
+The Combiterm translation follows §7.6 p163: CPT, CIP, DAP, and DPU become 022, and DDP becomes 023.
 
 Payer code 023 on 109 additionally requires the `dhl_freight_sweden_customs_joint_declaration` option.
 The manual conflicts with itself here: the 109 section requires the joint declaration for 023 (§5.14 p63), while the joint declaration section says such bookings must not be sent for 109 and 112 (§6.8 p98).
 The connector follows §5.14, and the question is open with DHL.
-Product codes the connector does not define keep the previous fallback of option, then Incoterm, then `1`.
 
 For 112 the connector accepts 022 as well as the manual's 023, because the sandbox accepted both while rejecting payer code 1, and the Product API catalog's Incoterm codes for 112 reach it only through the Combiterm translation ([022 accepted](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json), [023 accepted](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761131-112-se-pl.json), [1 rejected](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json), [catalog](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json)).
 
