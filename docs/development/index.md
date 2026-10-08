@@ -32,3 +32,7 @@ The offline suite includes `tests/dhl_freight_sweden/test_examples.py`, which ru
 The connector and its documentation cite the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, as `§x.y pN`.
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 The manual is cited rather than vendored, and a new manual version means re-mapping every citation, because section numbers shift when products are removed.
+
+## Known limitations
+
+The README is also the PyPI long description (`readme = "README.md"` in `pyproject.toml`), and its relative links to `docs/`, `examples/`, and the evidence files do not resolve on PyPI; fixing them is deferred until the package is published.
