@@ -4,13 +4,17 @@ No call in this segment books a shipment.
 """
 
 import unittest
+import unittest.mock
+import urllib.parse
 
 import karrio.core.models as models
+import karrio.core.utils.helpers as helpers
 import karrio.lib as lib
 import karrio.sdk as karrio
+import karrio.providers.dhl_freight_sweden.address as provider_address
 import karrio.providers.dhl_freight_sweden.product_matches as product_matches
 import karrio.providers.dhl_freight_sweden.service_points as service_points
-from . import harness
+from . import booking, harness
 
 SE_ADDRESS = {
     "street": "Kungsgatan 1",
@@ -142,12 +146,55 @@ class TestSandboxLookups(unittest.TestCase):
         self.assertEqual(lib.to_dict(messages), [])
         assert isinstance(details, models.AddressValidationDetails)
         self.assertTrue(details.success)
+        assert details.complete_address is not None
+        self.assertEqual(
+            (
+                details.complete_address.city,
+                details.complete_address.postal_code,
+                details.complete_address.country_code,
+            ),
+            ("STOCKHOLM", "11151", "SE"),
+        )
+
+    def test_postal_code_route_kiruna_bookable_without_home_delivery(self):
+        """Kiruna 98138 is bookable, but its homeDeliveryParcel flag is false.
+
+        The unscoped lookup reports ``bookable`` and the 118-scoped lookup
+        reports ``homeDeliveryParcel``, so the same route answers both ways.
+        """
+        unscoped, unscoped_messages = self.validate("postal-code-se-98138", "98138")
+        scoped, scoped_messages = self.validate(
+            "postal-code-se-98138-118", "98138", dict(service="118")
+        )
+
+        self.assertEqual(lib.to_dict(unscoped_messages), [])
+        self.assertEqual(lib.to_dict(scoped_messages), [])
+        assert isinstance(unscoped, models.AddressValidationDetails)
+        assert isinstance(scoped, models.AddressValidationDetails)
+        self.assertTrue(unscoped.success)
+        self.assertFalse(scoped.success)
+        assert scoped.complete_address is not None
+        self.assertEqual(scoped.complete_address.city, "KIRUNA")
 
     def test_postal_code_route_invalid(self):
         details, messages = self.validate("postal-code-se-99999", "99999")
 
         self.assertIsNone(details)
         self.assertIn("16010", [message.code for message in messages])
+
+    def test_postal_code_route_not_supported(self):
+        """A known SE code DHL does not serve answers 16012."""
+        details, messages = self.validate("postal-code-se-98060", "98060")
+
+        self.assertIsNone(details)
+        self.assertIn("16012", [message.code for message in messages])
+
+    def test_postal_code_route_rural_not_supported(self):
+        """A rural (Landsbygd) SE code DHL does not serve answers 16011."""
+        details, messages = self.validate("postal-code-se-84094", "84094")
+
+        self.assertIsNone(details)
+        self.assertIn("16011", [message.code for message in messages])
 
     def test_product_matches_se_to_se(self):
         products, messages = self.match(
@@ -322,3 +369,64 @@ class TestSandboxLookups(unittest.TestCase):
         self.assertEqual(lib.to_dict(messages), [])
         self.assertTrue(points)
         self.assertEqual({point.get("type") for point in points}, {"locker"})
+
+
+class TestSandboxPreflight(unittest.TestCase):
+    """The ``enforce`` pre-flight refuses a 118 booking before it is sent.
+
+    Each case looks up the route only; a booking call raises inside the
+    test, on top of the harness budget guard, so no shipment is booked.
+    """
+
+    session: harness.Session
+
+    @classmethod
+    def setUpClass(cls):
+        cls.session = harness.require_segment("lookups")
+        if not cls.session.config.account_number:
+            raise unittest.SkipTest("KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER is not set")
+        cls.gateway = cls.session.gateway(dict(address_validation="enforce"))
+
+    def refuse(self, label: str, postal_code: str, city: str) -> str:
+        payload: dict = dict(
+            service="118",
+            shipper=booking.SHIPPER,
+            recipient={**booking.RECIPIENTS["SE"], "postal_code": postal_code, "city": city},
+            parcels=[booking.PARCEL],
+        )
+        request = self.gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
+        urlopen = helpers.urlopen
+        paths: list = []
+
+        def no_booking(call, *args, **kwargs):
+            url = call.full_url if hasattr(call, "full_url") else str(call)
+            path = urllib.parse.urlparse(url).path
+            paths.append(path)
+            if path.endswith(harness.BOOKING_PATH):
+                raise AssertionError("the pre-flight let a booking call through")
+            return urlopen(call, *args, **kwargs)
+
+        try:
+            with unittest.mock.patch.object(helpers, "urlopen", no_booking):
+                with self.assertRaises(provider_address.PostalCodeNotServableError) as raised:
+                    harness.proxy_of(self.gateway).create_shipment(request)
+        finally:
+            self.session.capture(self.gateway, label)
+        self.session.capture_parsed(
+            label, dict(error=str(raised.exception), paths=paths)
+        )
+
+        self.assertEqual(
+            paths, [f"/postalcodeapi/v1/postalcodes/SE/{postal_code}/route"]
+        )
+        return str(raised.exception)
+
+    def test_enforce_refuses_unknown_postal_code(self):
+        message = self.refuse("preflight-118-se-99999", "99999", "Stockholm")
+
+        self.assertIn("99999", message)
+
+    def test_enforce_refuses_without_home_delivery(self):
+        message = self.refuse("preflight-118-se-98138", "98138", "Kiruna")
+
+        self.assertIn("homeDeliveryParcel is false", message)
