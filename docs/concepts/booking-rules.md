@@ -71,8 +71,10 @@ Lanes with the shipper or the recipient in PL carry SENT entries under the shipm
 | `dhl_freight_sweden_sent_free` | boolean | `SENT_FREE` |
 
 Both identifiers send `SENT_FREE` `"false"` followed by `SENT_REF` and `SENT_CARKEY`, as in the manual's API example (§5.4 p23); one identifier without the other fails, and `dhl_freight_sweden_sent_free` `true` together with either identifier fails as contradictory.
+The sandbox accepted 601 to PL with `SENT_FREE` `"false"` and the made-up `SENT_REF` `SENT20261008000001` and `SENT_CARKEY` `SANDBOXCARKEY0001` (2026-10-08: [booking-2906769654-601-se-pl-sent-identifiers.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769654-601-se-pl-sent-identifiers.json)).
 `dhl_freight_sweden_sent_free` `true` without identifiers sends `SENT_FREE` `"true"`, and `false` without identifiers fails.
 A shipment with neither the free flag nor the identifiers sends `SENT_FREE` `"true"`, whatever its weight.
+The sandbox accepted 601 to PL booked this way (2026-10-08: [booking-2906769647-601-se-pl-default-sent-free.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769647-601-se-pl-default-sent-free.json)).
 Like EKAER and UIT, SENT free is a legal declaration made on the shipper's or the consignee's behalf, and the connector makes it by default only because it suits typical e-commerce shipments.
 DHL describes SENT from 17 March 2026 as covering B2B shipments of clothing (CN 61, 62, and 6309) over 10 kg gross per shipment and of footwear (CN 64) over 20 items, declared by the receiver in PL, and states "B2C = no SENT ever" ([DHL Global Forwarding Poland](https://www.dhl.com/pl-en/home/global-forwarding/latest-news-and-webinars/poland_sent_2026.html), [DHL Express Poland](https://dhlexpress.pl/en/sent-2/)).
 Those sources do not cover the older SENT goods categories, such as fuels; a shipment of such goods, or a B2B shipment above those thresholds, needs `dhl_freight_sweden_sent_ref` and `dhl_freight_sweden_sent_carkey`, and identifying it is the consumer's responsibility.
@@ -100,6 +102,7 @@ The "Related fields" tables of products 202 (§5.4 p23), 205 (§5.9 p42), 233 (�
 A free flag `true` sends `EKAER_FREE` or `UIT_FREE` `"true"`.
 A number sends the free code `"false"` followed by `EKAER_NUMBER` or `UIT_NUMBER`.
 A free flag `true` together with a number fails as contradictory, and a number over its length limit fails.
+The sandbox accepted 601 to RO with `UIT_FREE` `"false"` and the made-up `UIT_NUMBER` `0000-0000-0000-0001` (2026-10-08: [booking-2906769662-601-se-ro-uit-number.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769662-601-se-ro-uit-number.json)).
 `dhl_freight_sweden_ekaer_free` `false` without a number fails, because the manual marks the EKAER number mandatory for a shipment that is not EKAER free.
 The sandbox accepted 601 to HU with `EKAER_FREE` `"false"` and the made-up `EKAER_NUMBER` `E0000SANDBOX0001` (2026-10-05: [booking-2906761339-601-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761339-601-se-hu.json)).
 `dhl_freight_sweden_uit_free` `false` without a number sends `UIT_FREE` `"false"` alone, because the same tables mark the UIT code conditional for a shipment that is not UIT free, with "Code should be provided if possible" (e.g. §5.4 p23).
