@@ -1,0 +1,364 @@
+{
+ "kind": "booking",
+ "summary": "109 SE to PL with payer code 022 and ParcelShop 8005-PL-4504339 but no SENT entries, the request rejected with 22001 on 2026-10-05, was accepted, then printed.",
+ "captured_at": "2026-10-08T08:11:20Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> PL 30-079",
+ "booking_id": "2906769613",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_rejections.test_109_pl_without_sent_is_rejected_with_22001",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-08T08:11:20Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-101104/080-service-points-rejection-109-pl.request.json",
+    "sha256": "061d97ba3763e73dc467c5c2ddacbab94d9561fb39f14c783abadbd7be70b724"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-101104/080-service-points-rejection-109-pl.response.json",
+    "sha256": "473c629cd629b40a88edb7e8d9a69b1015cdabd661f0987c07175aeec5070285"
+   },
+   "request": {
+    "address": {
+     "cityName": "Kraków",
+     "countryCode": "PL",
+     "postalCode": "30-079",
+     "street": "ul. Królewska 10"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 10.0,
+     "length": 30.0,
+     "weight": 1.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "servicePoints": [
+     {
+      "id": "102",
+      "servicePointId": "8005-PL-4504339",
+      "street": "Kazimierza Wielkiego 82",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "KRAKÓW",
+      "postalCode": "30-074",
+      "countryCode": "PL",
+      "distance": 0.09,
+      "routeDistance": 0.09,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 50.073899,
+      "longitude": 19.917509,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4506934",
+      "street": "Racławicka 26",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "KRAKÓW",
+      "postalCode": "30-075",
+      "countryCode": "PL",
+      "distance": 0.18,
+      "routeDistance": 0.18,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 50.076002,
+      "longitude": 19.919426,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "103",
+      "servicePointId": "8005-PL-4518614",
+      "street": "KAZIMIERZA WIELKIEGO 51",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "KRAKÓW",
+      "postalCode": "30-074",
+      "countryCode": "PL",
+      "distance": 0.2,
+      "routeDistance": 0.2,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 50.073245,
+      "longitude": 19.920198,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "101",
+      "servicePointId": "8005-PL-4508939",
+      "street": "Królewska 57",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "KRAKÓW",
+      "postalCode": "30-081",
+      "countryCode": "PL",
+      "distance": 0.22,
+      "routeDistance": 0.22,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 50.073743,
+      "longitude": 19.91548,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "107",
+      "servicePointId": "8005-PL-4530384",
+      "street": "Królewska 82",
+      "name": "DHL Parcelshop",
+      "shopName": "ŻABKA",
+      "cityName": "Kraków",
+      "postalCode": "30-079",
+      "countryCode": "PL",
+      "distance": 0.27,
+      "routeDistance": 0.27,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 50.072269,
+      "longitude": 19.917248,
+      "clickAndCollectId": ""
+     }
+    ],
+    "residentialAddressing": true
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-08T08:11:20Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-101104/082-rejection-109-pl-without-sent.request.json",
+    "sha256": "37ac2bc70866a20ddd8d82a5059e10cf0fa07f4a9ad706851165fe7e55742f54"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-101104/082-rejection-109-pl-without-sent.response.json",
+    "sha256": "eac06ee3a8655bee567ae6232ca709d48ec159444b7eb05653a2e092b844eb3c"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kraków",
+       "countryCode": "PL",
+       "postalCode": "30-079",
+       "street": "ul. Królewska 10"
+      },
+      "contactName": "Jan Kowalski",
+      "email": "jan.kowalski@example.pl",
+      "name": "Jan Kowalski",
+      "phone": "+48 600 000 000",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "KRAKÓW",
+       "countryCode": "PL",
+       "postalCode": "30-074",
+       "street": "Kazimierza Wielkiego 82"
+      },
+      "id": "8005-PL-4504339",
+      "name": "DHL Parcelshop",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906769613",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Jan Kowalski",
+       "contactName": "Jan Kowalski",
+       "address": {
+        "street": "ul. Królewska 10",
+        "cityName": "Kraków",
+        "postalCode": "30-079",
+        "countryCode": "PL"
+       },
+       "phone": "+48 600 000 000",
+       "email": "jan.kowalski@example.pl"
+      },
+      {
+       "id": "8005-PL-4504339",
+       "type": "AccessPoint",
+       "name": "DHL Parcelshop",
+       "address": {
+        "street": "Kazimierza Wielkiego 82",
+        "cityName": "KRAKÓW",
+        "postalCode": "30-074",
+        "countryCode": "PL"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525035819"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LPL30074+70530000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-08T08:11:20Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-101104/083-rejection-109-pl-without-sent.request.json",
+    "sha256": "89c7955708f2d15b8a2f0caa890382df7f181ca2897fd90e272b02b3f4f90146"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-101104/083-rejection-109-pl-without-sent.response.json",
+    "sha256": "c069f5e597eab9e8e9405f7acf803eebbb5beccc20299adea72eb4791e94ecbf"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906769613"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906769613.pdf",
+      "content": "<base64 omitted: 107140 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}
