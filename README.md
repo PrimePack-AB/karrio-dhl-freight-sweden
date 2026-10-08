@@ -338,7 +338,7 @@ The manual lists each service as one that cannot be combined with the other thre
 A selected service's missing identifier fails with `CustomsServiceIdentifierError`, and payer code 023 on 109 requires the joint declaration.
 VOEC (VAT on e-commerce, NO) is sent from `customs.options.voec_number` and has not been booked in the sandbox.
 The manual lists NO as the joint declaration's only valid country (§6.8 p98), while product matches on account 116768 list `customsJointDeclaration` among the customs services of 601 to NO 0154 ([NO 0154](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-no-0154-customs.json)) and to CH ([CH 8001](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json), [CH 8001, 20 kg](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001-20kg.json), [CH 1201](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-1201.json), [CH 3011](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-3011.json), [CH 6900](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-6900.json)), so the table names both destinations.
-No booking has sent the service, and the connector does not check the destination of a joint declaration.
+No booking has sent the service; across the EU VAT area border the connector refuses it before booking to any recipient country other than NO and CH, compared after the territory mapping, with `JointDeclarationDestinationError`.
 
 To or from Åland the connector refuses full service and Standard with `AlandCustomsServiceError`, because DHL rejected both with 24003 ([full service](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json), [Standard](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json)) although the manual lists Åland for Standard.
 An Åland shipment therefore sends its customs data without a customs service, which DHL accepted for 109 as booking 2906762592 ([booking-2906762592-109-se-fi-aland-customs.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762592-109-se-fi-aland-customs.json)); the evidence shows that DHL stored the customs data, not how DHL clears it.
@@ -419,6 +419,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `CustomsServiceCombinationError` | more than one customs service across the EU VAT area border | each selected option |
 | `CustomsServiceIdentifierError` | a customs service without its EORI, MRN, or SFID | the missing field |
 | `AlandCustomsServiceError` | full service or Standard to or from Åland | the option |
+| `JointDeclarationDestinationError` | the joint declaration across the EU VAT area border to a recipient country other than NO or CH | `dhl_freight_sweden_customs_joint_declaration` |
 | `PayerCodeError` | no valid payer code, or 023 on 109 without the joint declaration | the option, `customs.incoterm`, or `dhl_freight_sweden_customs_joint_declaration` |
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |

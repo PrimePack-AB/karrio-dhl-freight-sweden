@@ -237,6 +237,13 @@ EXCLUSIVE_CUSTOMS_SERVICES: typing.Dict[str, str] = {
 }
 EXCLUSIVE_CUSTOMS_SERVICES_CITATION = "§6.5 p92, §6.6 p94, §6.7 p96, §6.8 p98"
 
+# Product manual v5.26 lists NO as the only valid country of Customs, joint
+# declaration (§6.8 p98); product matches on account 116768 list
+# customsJointDeclaration among 601's customs services to CH (tests/
+# dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json).
+JOINT_DECLARATION_OPTION = "dhl_freight_sweden_customs_joint_declaration"
+JOINT_DECLARATION_COUNTRIES: typing.Tuple[str, ...] = ("NO", "CH")
+
 # DHL rejected customs handling full service and standard for SE to FI
 # 22100 with 24003 "... is not available for this country combination"
 # (tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json,
