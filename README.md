@@ -143,7 +143,7 @@ The sandbox answers an unknown client key with HTTP 401 ([lookup-postal-code-se-
 Any other failed lookup, such as a timeout, a 5xx answer, a body that is not JSON, or a 4xx error outside 16009 to 16012, returns no details and an `address_validation_unavailable` warning.
 
 The `address_validation` setting runs the same check before a 118 booking to a Swedish recipient, and `off`, the default, makes no lookup.
-A refusal, meaning a route with `homeDeliveryParcel` `false` or the DHL error 16009, 16010, 16011, or 16012, adds DHL's message and books under `warn`, and blocks the booking with `PostalCodeNotServableError` under `enforce`.
+A refusal, meaning a route with `homeDeliveryParcel` `false` or the DHL error 16009, 16010, 16011, or 16012, adds DHL's message as a warning and books under `warn`, and blocks the booking with `PostalCodeNotServableError` under `enforce`.
 Missing PostalCode API access, an HTTP 401 or 403 answer, adds a `postal_code_api_unavailable` warning and books under `warn`, and blocks the booking with `PostalCodeApiUnavailableError` under `enforce`, with no booking call ([lookup-postal-code-se-11151-118-enforce-preflight-401.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-118-enforce-preflight-401.json)).
 Any other failed lookup adds an `address_validation_unavailable` warning and books in both modes, so a PostalCodes outage cannot block bookings.
 Values are read case-insensitively, a value that names no mode means `off`, and a connection can move from `off` to `warn` to `enforce`.

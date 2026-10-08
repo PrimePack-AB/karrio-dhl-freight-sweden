@@ -1133,6 +1133,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         self.assertEqual(details.tracking_number, "TI-118-0001")
         self.assertEqual(len(messages), 1)
         self.assertEqual(messages[0].code, "postal_code_not_servable")
+        self.assertEqual(messages[0].level, "warning")
         self.assertEqual(
             messages[0].details, dict(postal_code="98138", product="118")
         )
@@ -1227,7 +1228,9 @@ class TestDHLFreightShipment(unittest.TestCase):
                     )
 
                 self.assertEqual(details.tracking_number, "TI-118-0001")
-                self.assertEqual([m.code for m in messages], [str(code)])
+                self.assertEqual(
+                    [(m.code, m.level) for m in messages], [(str(code), "warning")]
+                )
 
     def test_preflight_enforce_refusal_codes_block_booking(self):
         request = enforce_gateway.mapper.create_shipment_request(
