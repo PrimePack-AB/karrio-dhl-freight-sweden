@@ -36,6 +36,7 @@ from karrio.providers.dhl_freight_sweden.address import (
     PostalCodeApiUnavailableError,
     PostalCodeNotServableError,
 )
+from karrio.providers.dhl_freight_sweden.shipment.create import ProductLaneError
 
 
 class TestDHLFreightShipment(unittest.TestCase):
@@ -428,14 +429,12 @@ class TestDHLFreightShipment(unittest.TestCase):
 
                 self.assertNotIn("customsInformation", serialized)
 
-    def test_create_shipment_request_transport_movement_from_shipper_country(self):
-        request = gateway.mapper.create_shipment_request(
-            models.ShipmentRequest(**ShipmentPayload202CustomsWithinNO)
-        )
-        serialized = serialize_request(request)
-
-        document = serialized["customsInformation"]["customsDocuments"][0]
-        self.assertNotIn("transportMovement", document)
+    def test_create_shipment_request_lane_within_one_foreign_country_fails(self):
+        # 202 runs to and from SE (§5.4 p22), so NO to NO is not a lane.
+        with self.assertRaises(ProductLaneError):
+            gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(**ShipmentPayload202CustomsWithinNO)
+            )
 
     def test_create_shipment_request_customs_without_service_option(self):
         request = gateway.mapper.create_shipment_request(
@@ -1341,7 +1340,7 @@ class TestDHLFreightShipment(unittest.TestCase):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.side_effect = [BookingResponse118, PrintResponse]
             details, messages = (
-                karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload118De))
+                karrio.Shipment.create(models.ShipmentRequest(**ShipmentPayload109De))
                 .from_(enforce_gateway)
                 .parse()
             )
@@ -1523,8 +1522,8 @@ ShipmentPayload118Kiruna = _payload(
 ShipmentPayload118Invalid = _payload(
     "dhl_freight_sweden_hemleverans_paket_b2c", _recipient_invalid_postal
 )
-ShipmentPayload118De = _payload(
-    "dhl_freight_sweden_hemleverans_paket_b2c", _recipient_de
+ShipmentPayload109De = _payload(
+    "dhl_freight_sweden_parcel_connect_b2c", _recipient_de
 )
 ShipmentPayload401 = _payload(
     "dhl_freight_sweden_home_delivery_b2c",

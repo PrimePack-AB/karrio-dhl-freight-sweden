@@ -38,7 +38,7 @@ class TestDHLFreightSent(unittest.TestCase):
     def test_lanes_to_and_from_pl_without_sent_declaration_send_sent_free(self):
         cases = [
             ("to PL", _parcel_connect(_recipient_pl)),
-            ("from PL", {**_parcel_connect(_recipient_se), "shipper": _shipper_pl}),
+            ("from PL", {**_parcel_return_connect(), "shipper": _shipper_pl}),
             ("dangerous goods", _parcel_connect(_recipient_pl, {"dangerous_good": True})),
         ]
 
@@ -63,7 +63,7 @@ class TestDHLFreightSent(unittest.TestCase):
     def test_lane_from_pl_with_explicit_sent_free_is_sent(self):
         serialized = self._serialize(
             {
-                **_parcel_connect(_recipient_se, {"dhl_freight_sweden_sent_free": True}),
+                **_parcel_return_connect({"dhl_freight_sweden_sent_free": True}),
                 "shipper": _shipper_pl,
             }
         )
@@ -175,6 +175,11 @@ class TestDHLFreightSent(unittest.TestCase):
 
 def _parcel_connect(recipient: dict, options: typing.Optional[dict] = None) -> dict:
     return _payload("dhl_freight_sweden_parcel_connect_b2c", recipient, options)
+
+
+def _parcel_return_connect(options: typing.Optional[dict] = None) -> dict:
+    """107 returns from PL to SE, a lane from PL the manual allows (§5.15 p66)."""
+    return _payload("dhl_freight_sweden_parcel_return_connect_c2b", _recipient_se, options)
 
 
 _shipper_pl = {

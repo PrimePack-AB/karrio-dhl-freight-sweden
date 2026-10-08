@@ -102,6 +102,12 @@ class TransportDeclarationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class ProductLaneError(errors.ShippingSDKDetailedError):
+    """Raised when the product does not ship from the shipper's to the recipient's country."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class ExcludedDestinationError(errors.ShippingSDKDetailedError):
     """Raised when the product excludes the shipper or recipient postal code."""
 
@@ -306,6 +312,7 @@ def shipment_request(
     )
 
     _check_destination(service, dict(shipper=shipper, recipient=recipient))
+    _check_lane(service, shipper.country_code, recipient.country_code)
     _check_aland_customs_services(options, dict(shipper=shipper, recipient=recipient))
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
     payer_code = _payer_code(
@@ -781,6 +788,32 @@ def _qr_code(
         )
 
     return True
+
+
+def _check_lane(
+    product_code: str,
+    origin: typing.Optional[str],
+    destination: typing.Optional[str],
+) -> None:
+    if provider_units.lane_served(product_code, origin, destination):
+        return
+
+    party = lib.identity(
+        "recipient"
+        if provider_units.lane_served(product_code, origin, None)
+        else "shipper"
+    )
+    raise ProductLaneError(
+        provider_units.unserved_lane_message(product_code, origin, destination),
+        details={
+            f"{party}.country_code": dict(
+                code="invalid",
+                message=f"product {product_code} does not ship "
+                f"{'to' if party == 'recipient' else 'from'} "
+                f"{destination if party == 'recipient' else origin}",
+            )
+        },
+    )
 
 
 def _check_destination(product_code: str, addresses: typing.Dict[str, typing.Any]) -> None:
