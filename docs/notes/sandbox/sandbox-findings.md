@@ -211,7 +211,7 @@ The sandbox accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment lev
 The vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines an `AdditionalInformation` schema that no other schema references.
 On 2026-10-08 it accepted 601 to PL booked without a SENT option, for which the connector sent `SENT_FREE` `"true"` alone, as 2906769647 with routing code 2LPL30079+00000000 ([booking-2906769647][b-647]).
 It also accepted 601 to PL with `SENT_FREE` `"false"`, `SENT_REF` `SENT20261008000001`, and `SENT_CARKEY` `SANDBOXCARKEY0001` as 2906769654 with the same routing code and echoed the three entries ([booking-2906769654][b-654]).
-Both identifiers are placeholders made up for the suite and not issued by the Polish SENT system, so the sandbox did not check SENT identifiers against that system at booking, and a booking with real ones is untested.
+Both identifiers are placeholders made up for the suite and not issued by the Polish SENT system, so the sandbox did not check SENT identifiers against that system at booking.
 
 ### EKAER and UIT for HU and RO
 
@@ -288,7 +288,8 @@ The README no longer lists PostalCode error 16012 as "not supported", because no
 No booking used the freight products 205, 209, 210, 211, 212, or SPI, or the parcel and home delivery products 104, 107, 402, and 502; 202 was booked to GB BT1 1AA without customs data, to DK, and to NO with customs handling full service, and 233 to DK and to NO with customs handling full service.
 The booking-export 205 cases to DK 1620 and NO 0154 skip, because product matches for both lanes returned HDI, 109, 202, 112, 601, and 233 and not 205 ([lookup-product-matches-se-dk-1620][l-pm-205-dk], [lookup-product-matches-se-no-0154][l-pm-205-no]).
 The NO case sent past the check with a 1 kg piece was rejected with 22020 'ChargeableWeight is lower than product min 2500.0' ([rejection-22020-205-no][r-22020-205-no]), so a 205 booking at or above that chargeable-weight minimum is untested.
-601 was booked only to CH, DK, HU, NO, PL, and RO; 601 to HU or RO without EKAER or UIT entries, which the connector never sends, and 601 with real SENT identifiers or a real UIT number are untested.
+601 was booked only to CH, DK, HU, NO, PL, and RO; 601 to HU or RO without EKAER or UIT entries, which the connector never sends, is untested.
+The sandbox accepted placeholder SENT, EKAER, and UIT identifiers, so whether DHL production checks them is unknown; the connector checks only their length and combination and passes them through.
 109 with home addressing and no AccessPoint party is untested.
 112 to GB was not booked: product matches for SE 11143 to GB W1D 1AN returned HDI, 202, 601, and 233 but neither 109 nor 112 ([lookup-product-matches-se-gb.json][l-pm-gb]), and the 112 booking sent regardless was rejected with 22005 and 22026 ([rejection-22005-112-gb][r-22005-gb]); the manual lists GB for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200), and 109 to GB was not sent.
 Customs was tested only as Customs handling - Full service and Customs handling - Standard to NO, Customs handling - Full service to CH, and both to FI 22100, where both were rejected with 24003, and customs information without a customs service was sent only to FI 22100, where it booked; the customer's own declaration, the joint declaration (including 109 with payer code 023), VOEC, and other destinations outside the EU VAT area are untested.
