@@ -319,14 +319,13 @@ customs=models.Customs(
 
 The manual offers four customs services, and the connector sends none unless an option selects it; each carries a DHL fee, and the manual allows only one per shipment.
 
-| Service | Option | Requires | Manual | Sandbox bookings |
-| --------- | -------- | ---------- | -------- | ------------------ |
-| Customs handling - Full service | `dhl_freight_sweden_customs_handling_full_service` | nothing further | §6.5 p92 | NO with 109, 112, 202, 233, and 601; CH with 601 |
-| Customs handling - Standard | `dhl_freight_sweden_customs_handling_standard` | `customs.options.eori_number`; valid to NO and Åland only | §6.6 p94 | NO with 109 and 112 |
-| Customs, customers own declaration | `dhl_freight_sweden_customs_own_declaration` | the MRN in `..._own_declaration_id`; a separate agreement | §6.7 p96 | none |
-| Customs, joint declaration | `dhl_freight_sweden_customs_joint_declaration` | the SFID in `..._joint_declaration_id`; a separate agreement; NO only | §6.8 p98 | none |
+| Service | Option | Requires | Manual |
+| --------- | -------- | ---------- | -------- |
+| Customs handling - Full service | `dhl_freight_sweden_customs_handling_full_service` | nothing further | §6.5 p92 |
+| Customs handling - Standard | `dhl_freight_sweden_customs_handling_standard` | `customs.options.eori_number`; valid to NO and Åland only | §6.6 p94 |
+| Customs, customers own declaration | `dhl_freight_sweden_customs_own_declaration` | the MRN in `..._own_declaration_id`; a separate agreement | §6.7 p96 |
+| Customs, joint declaration | `dhl_freight_sweden_customs_joint_declaration` | the SFID in `..._joint_declaration_id`; a separate agreement; NO only | §6.8 p98 |
 
-The NO bookings are [109](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json), [112](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761313-112-se-no.json), [202](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762139-202-se-no.json), [233](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762154-233-se-no.json), and [601](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762162-601-se-no.json) with full service, and [109](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762105-109-se-no-standard-customs.json) and [112](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762113-112-se-no-standard-customs.json) with Standard; the CH booking is [601](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762477-601-se-ch.json).
 The manual lists each service as one that cannot be combined with the other three (§6.5 p92, §6.6 p94, §6.7 p96, §6.8 p98), and the connector enforces this before booking: across the EU VAT area border, more than one selected service fails with `CustomsServiceCombinationError` keyed by every selected option.
 A selected service's missing identifier fails with `CustomsServiceIdentifierError`, and payer code 023 on 109 requires the joint declaration.
 VOEC (VAT on e-commerce, NO) is sent from `customs.options.voec_number` and has not been booked in the sandbox.
