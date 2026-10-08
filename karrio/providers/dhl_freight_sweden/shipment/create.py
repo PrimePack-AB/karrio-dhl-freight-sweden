@@ -132,6 +132,12 @@ class PartyTaxIdError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class JointDeclarationDestinationError(errors.ShippingSDKDetailedError):
+    """Raised when the customs joint declaration is requested to a recipient country other than NO or CH."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class CommercialInvoiceRequiredError(errors.ShippingSDKDetailedError):
     """Raised before booking when an export of goods for sale lacks a commercial invoice."""
 
@@ -381,6 +387,7 @@ def shipment_request(
         _refuse_without_customs_data(shipper, recipient)
     if not within_eu_vat_area:
         _check_customs_service_combination(options)
+        _check_joint_declaration_destination(options, recipient.country_code)
         _check_customs_service_identifiers(options, customs_options)
     if has_customs_data and not within_eu_vat_area:
         _check_commercial_invoice(
@@ -873,6 +880,23 @@ def _check_aland_customs_services(
             option: dict(code="invalid", message="not available to or from Åland (DHL 24003)")
             for option in requested
         },
+    )
+
+
+def _check_joint_declaration_destination(
+    options: units.ShippingOptions,
+    destination: typing.Optional[str],
+) -> None:
+    option = provider_units.JOINT_DECLARATION_OPTION
+    countries = provider_units.JOINT_DECLARATION_COUNTRIES
+    if not options[option].state or destination in countries:
+        return
+
+    raise JointDeclarationDestinationError(
+        "Customs, joint declaration is valid only to NO, the manual's only valid "
+        "country (§6.8 p98), and CH, which product matches offer; "
+        f"got recipient country {destination}",
+        details={option: dict(code="invalid", message=f"valid only to {' and '.join(countries)}")},
     )
 
 
