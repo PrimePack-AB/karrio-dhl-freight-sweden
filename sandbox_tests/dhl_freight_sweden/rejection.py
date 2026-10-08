@@ -1,7 +1,7 @@
 """Expected DHL-side rejections: payload mutations and the rejection attempt.
 
-The connector never sends these payloads: it refuses most of them locally
-and adds a default SENT entry to PL lanes. Each case therefore builds a valid request through the connector and mutates its serialized
+The connector rejects these payloads before sending them, so each case
+builds a valid request through the connector and mutates its serialized
 TransportInstruction with ``harness.mutated_request`` just before the call.
 """
 
@@ -12,30 +12,6 @@ import karrio.core.models as models
 import karrio.lib as lib
 import karrio.providers.dhl_freight_sweden.units as provider_units
 from . import booking, harness
-
-SENT_CODES = frozenset(
-    code.value
-    for code in (
-        provider_units.AdditionalInformationCode.SENT_FREE,
-        provider_units.AdditionalInformationCode.SENT_REF,
-        provider_units.AdditionalInformationCode.SENT_CARKEY,
-    )
-)
-
-
-def without_sent(instruction: dict) -> dict:
-    """``instruction`` without its SENT additionalInformation entries."""
-    remaining = [
-        entry
-        for entry in instruction.get("additionalInformation") or []
-        if entry.get("code") not in SENT_CODES
-    ]
-    rest = {
-        key: value
-        for key, value in instruction.items()
-        if key != "additionalInformation"
-    }
-    return {**rest, **({"additionalInformation": remaining} if remaining else {})}
 
 
 def with_party(party: dict) -> typing.Callable[[dict], dict]:

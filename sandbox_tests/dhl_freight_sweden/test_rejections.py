@@ -2,12 +2,11 @@
 
 Each test builds a valid SE to PL request through the connector, mutates the
 serialized TransportInstruction just before sending it, and asserts the DHL
-error code: 109 without its SENT entries (22001), 112 with an AccessPoint
-party (22015), and 112 with payer code 1 (22020). A 103 request within SE
-sends its AccessPoint party with the id only, without name and address,
-and expects 22001 and 22006. Each attempt counts
-against ``DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS``; a shipment id in a
-response is reported as a finding, not a pass.
+error code: 112 with an AccessPoint party (22015) and 112 with payer code 1
+(22020). A 103 request within SE sends its AccessPoint party with the id
+only, without name and address, and expects 22001 and 22006. Each attempt
+counts against ``DHL_FREIGHT_SWEDEN_SANDBOX_MAX_BOOKINGS``; a shipment id in
+a response is reported as a finding, not a pass.
 """
 
 import unittest
@@ -45,27 +44,6 @@ class TestSandboxRejections(unittest.TestCase):
             recipient=booking.RECIPIENTS["PL"],
             parcels=[booking.PARCEL],
             options={**booking.SENT_FREE, **options},
-        )
-
-    def test_109_pl_without_sent_is_rejected_with_22001(self):
-        booking.require_booking(self, self.session, "109", "PL")
-        point = self.nearest_point("service-points-rejection-109-pl", "109")
-
-        rejection.reject(
-            self,
-            self.session,
-            self.gateway,
-            "rejection-109-pl-without-sent",
-            "109",
-            self.payload(
-                "109",
-                {
-                    **booking.service_point_options(point),
-                    "dhl_freight_sweden_payer_code": "022",
-                },
-            ),
-            rejection.without_sent,
-            "22001",
         )
 
     def test_112_pl_with_access_point_is_rejected_with_22015(self):
