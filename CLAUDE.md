@@ -8,6 +8,7 @@
 - Docs site preview: `DOCS_DIR=$PWD/docs SITE_BASE=/karrio-dhl-freight-sweden REPO_URL=https://github.com/PrimePack-AB/karrio-dhl-freight-sweden bun run --cwd ../starlight-docs-harness dev` - renders ./docs minus docs/notes/ at http://localhost:4321/karrio-dhl-freight-sweden/; publishing is automatic on docs pushes to main via docs-pages
 
 ## Docs site
+- Architecture, link classes, and the deferred-maintenance register: docs/development/architecture/docs-site.md
 - Site behavior (mounting, link rewriting, rendering) lives in ../starlight-docs-harness; consume a new harness tag by editing the SHA pin (`# vN.N` comment) in .github/workflows/docs-pages.yml
 - Failed builds keep the last deployment serving; do not add required reviewers to the github-pages environment - deploys would pend silently instead of failing
 - docs/notes/-only pushes still trigger a rebuild (the paths filter matches docs/**) - a harmless redeploy of unchanged content
@@ -30,4 +31,4 @@
 - `karrio.Shipment.create` refuses non-SE shippers, so inbound-product tests (107) call the mapper/proxy directly
 
 ## Current State
-- 2026-10-08: docs site live at https://primepack-ab.github.io/karrio-dhl-freight-sweden/ via `.github/workflows/docs-pages.yml` and the external harness PrimePack-AB/starlight-docs-harness pinned at v1.1 (commit 14fdd00); the docs-site-design branch is merged and deleted; design, plan with closure notes, and the deferred-maintenance register are in docs/notes/architecture/
+- 2026-10-08: docs site live at https://primepack-ab.github.io/karrio-dhl-freight-sweden/ via `.github/workflows/docs-pages.yml` and the external harness PrimePack-AB/starlight-docs-harness pinned at v1.1 (commit 14fdd00); architecture and deferred maintenance in docs/development/architecture/docs-site.md
