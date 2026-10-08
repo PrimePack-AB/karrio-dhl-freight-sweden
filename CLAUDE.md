@@ -22,3 +22,6 @@
 - karrio/providers/dhl_freight_sweden/units.py - product country lists, payer/Incoterm tables, access points, POSTAL_CODE_EXCLUSIONS, EU VAT-area tables, TERRITORY_PARENTS (territory codes sent as parent country; DHL matches nothing for AX/JE/GG/FO)
 - shipment/create.py - up-front booking validation (SENT/EKAER/UIT, GR tax ids, excluded postcodes, QR eligibility) as ShippingSDKDetailedError subclasses
 - `karrio.Shipment.create` refuses non-SE shippers, so inbound-product tests (107) call the mapper/proxy directly
+
+## Current State
+- 2026-10-08: docs-site work in flight on branch `docs-site-design`; the plan is `docs/notes/architecture/2026-10-08-docs-site-harness-plan.md`, the harness lives at `~/projects/starlight-docs-harness` (not pushed until its Task 4), and this repository will gain only `.github/workflows/docs-pages.yml` and a preview command in CLAUDE.md
