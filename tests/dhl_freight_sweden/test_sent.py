@@ -2,10 +2,12 @@
 
 Lanes to or from PL carry SENT entries under the shipment's
 additionalInformation: SENT_FREE "false" with SENT_REF and SENT_CARKEY, or
-SENT_FREE "true" (product manual v5.26 §5.4 p23). The live API requires
-SENT_FREE "true" when neither identifier is sent (validation error 22001,
-fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json). Without
-either, the connector declares the shipment SENT free.
+SENT_FREE "true" (product manual v5.26 §5.4 p23). The sandbox rejected 109
+to PL with neither identifier nor SENT_FREE "true" on 2026-10-05 (validation
+error 22001, fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json)
+and accepted the same request on 2026-10-08
+(fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json). Without
+either identifier, the connector declares the shipment SENT free.
 """
 
 import typing

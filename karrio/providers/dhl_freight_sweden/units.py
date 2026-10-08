@@ -707,11 +707,13 @@ class ShippingOption(lib.Enum):
     # sent under the shipment's additionalInformation. Product manual v5.26
     # makes SENT_FREE mandatory and, for a shipment that is not SENT free,
     # SENT_REF and SENT_CARKEY (AN..20), which its API example sends after
-    # SENT_FREE "false" (§5.4 p23). The live API rejects a PL shipment
-    # without the identifiers unless SENT_FREE is "true" (validation error
-    # 22001, tests/dhl_freight_sweden/fixtures/sandbox/
-    # rejection-22001-109-se-pl-without-sent.json). Without SENT_FREE or
-    # either identifier, the connector declares the shipment SENT free.
+    # SENT_FREE "false" (§5.4 p23). The sandbox rejected a 109 shipment to PL
+    # without the identifiers or SENT_FREE "true" on 2026-10-05 (validation
+    # error 22001, tests/dhl_freight_sweden/fixtures/sandbox/
+    # rejection-22001-109-se-pl-without-sent.json) and accepted the same
+    # request on 2026-10-08 (booking-2906769613-109-se-pl-without-sent.json).
+    # Without SENT_FREE or either identifier, the connector declares the
+    # shipment SENT free.
     dhl_freight_sweden_sent_free = lib.OptionEnum("SENT_FREE", bool)
     dhl_freight_sweden_sent_ref = lib.OptionEnum("SENT_REF", str)
     dhl_freight_sweden_sent_carkey = lib.OptionEnum("SENT_CARKEY", str)
