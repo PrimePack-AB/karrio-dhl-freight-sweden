@@ -74,4 +74,11 @@ Rebuilding over the same captures reproduces the committed files byte for byte, 
 
 ## Coverage gaps
 
-Still unbooked: SPI, a 205 booking at or above its 2500.0 chargeable-weight minimum, the customer's own declaration, the joint declaration including 109 with payer code 023, VOEC, and destinations outside the EU VAT area other than NO and CH.
+No sandbox booking yet covers:
+
+- SPI
+- 205 at or above its 2500.0 chargeable-weight minimum
+- the customer's own declaration
+- the joint declaration, including 109 with payer code 023
+- VOEC
+- destinations outside the EU VAT area other than NO and CH
