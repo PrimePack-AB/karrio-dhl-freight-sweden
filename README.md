@@ -7,7 +7,7 @@ This guide is for a developer or operator integrating Karrio for a Swedish shipp
 ## What it does and does not do
 
 | Capability | How |
-|------------|-----|
+| ------------ | ----- |
 | Shipping | `karrio.Shipment.create` books a transport instruction and prints its label by id in one call. |
 | Rating | A static rate sheet through karrio's universal rating; no carrier call is made. |
 | Address validation | `karrio.Address.validate` over the DHL PostalCodes route lookup. |
@@ -16,7 +16,7 @@ This guide is for a developer or operator integrating Karrio for a Swedish shipp
 
 The plugin has these limits.
 The API Farm has no tracking endpoint, so karrio advertises no tracking capability; `meta.carrier_tracking_link` is a link to DHL's public tracking web page.
-The API Farm has no cancel endpoint either, so a booked shipment can only be cancelled through DHL Freight customer service.
+You cannot cancel transports via API or EDI. Cancel in your system and contact DHL Customer Service with your shipment number.
 The connector sends customs data inside the booking and nothing else: it uploads no documents and sends no email, and the Print call returns only the label.
 Labels are PDF only.
 The rate sheet's prices are placeholders at 0.0 that a merchant's own prices replace, and product matches, not the rate sheet, tell which products DHL offers for a lane.
@@ -54,7 +54,7 @@ gateway = karrio.gateway["dhl_freight_sweden"].create(
 The `config` dict holds these settings.
 
 | Setting | Default | Effect |
-|---------|---------|--------|
+| --------- | --------- | -------- |
 | `label_type` | `PDF` | Only `PDF` is accepted, in any letter case; any other value fails every booking with `LabelTypeError`. |
 | `label_page_type` | `Label` | The Print API page layout: `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, or `LabelCompact2x2PortraitA4`. |
 | `address_validation` | `off` | `off`, `warn`, or `enforce` the PostalCodes check for 118 bookings, as described under home delivery below. |
@@ -63,7 +63,6 @@ The `config` dict holds these settings.
 | `shipping_options` | all | A list of option codes that the Karrio server offers on the connection; neither the connector nor the SDK reads it. |
 
 With `test_mode` true the connector calls `https://test-api.freight-logistics.dhl.com`, and otherwise `https://api.freight-logistics.dhl.com`.
-Sandbox bookings create real transport instructions in DHL's test system and cannot be cancelled through the API.
 
 ## Your first domestic shipment
 
@@ -229,7 +228,7 @@ When DHL rejects the AccessPoint party, take the next candidate, but only when t
 Product matches decide what DHL offers on a lane; this catalogue maps karrio service codes to DHL products.
 
 | Karrio service code | DHL code | Product | Lane | Default payer code |
-|---------------------|----------|---------|------|--------------------|
+| --------------------- | ---------- | --------- | ------ | -------------------- |
 | `dhl_freight_sweden_paket` | 102 | DHL Paket | SE | 1 |
 | `dhl_freight_sweden_service_point_b2c` | 103 | Service Point B2C | SE | 1 |
 | `dhl_freight_sweden_service_point_c2b` | 104 | Service Point C2B | SE | 3 |
@@ -312,7 +311,7 @@ customs=models.Customs(
 The manual offers four customs services, and the connector sends none unless an option selects it; each carries a DHL fee, and the manual allows only one per shipment.
 
 | Service | Option | Requires | Manual | Sandbox bookings |
-|---------|--------|----------|--------|------------------|
+| --------- | -------- | ---------- | -------- | ------------------ |
 | Customs handling - Full service | `dhl_freight_sweden_customs_handling_full_service` | nothing further | §6.5 p92 | NO with 109, 112, 202, 233, and 601; CH with 601 |
 | Customs handling - Standard | `dhl_freight_sweden_customs_handling_standard` | `customs.options.eori_number`; valid to NO and Åland only | §6.6 p94 | NO with 109 and 112 |
 | Customs, customers own declaration | `dhl_freight_sweden_customs_own_declaration` | the MRN in `..._own_declaration_id`; a separate agreement | §6.7 p96 | none |
@@ -336,7 +335,7 @@ This is the connector's rule, not DHL's, because DHL accepted a proforma invoice
 ### Sending the invoice copy to DHL
 
 The manual asks for more than the booking carries.
-For 109, 112, 202, and 601 it says that customs documents and invoices must be sent by email to dhlfreight.int.se@dhl.com (§5.14 p62, §5.3 p18, §5.4 p22, §5.19 p81), and for 109 it asks for two copies of the customs documents on the outside of the package (§5.14 p62).
+For 109, 112, 202, and 601 it says that customs documents and invoices must be sent by email to <dhlfreight.int.se@dhl.com> (§5.14 p62, §5.3 p18, §5.4 p22, §5.19 p81), and for 109 it asks for two copies of the customs documents on the outside of the package (§5.14 p62).
 Each customs handling service also says that the commercial invoice must be sent to DHL (§6.5 p92, §6.6 p94, §6.7 p96).
 DHL has not said whether this still applies to API bookings that carry full customs data, and the connector neither emails nor uploads anything, so the shipper must arrange these steps.
 
@@ -352,7 +351,7 @@ The manual lists GB for 109 and 112 only under a separate agreement with DHL (§
 DHL product matches answered nothing for the territory codes AX, JE, GG, and FO ([AX 22100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json)), so the connector sends a territory under its parent country with the postal code as given.
 
 | Territory | Code | Sent as | Outside the EU VAT area | Excluded from |
-|-----------|------|---------|-------------------------|---------------|
+| ----------- | ------ | --------- | ------------------------- | --------------- |
 | Åland | AX | FI | yes | none |
 | Jersey, Guernsey | JE, GG | GB | yes | 109, 112, 202, 601 |
 | Isle of Man | IM | GB | yes | none |
@@ -368,7 +367,7 @@ An excluded booking fails with `ExcludedDestinationError` keyed by the party's `
 ## Options reference
 
 | Option | Type | Purpose |
-|--------|------|---------|
+| -------- | ------ | --------- |
 | `dhl_freight_sweden_payer_code` | string | The terms-of-delivery code, see payer codes above |
 | `dhl_freight_sweden_service_point`, `..._type`, `..._name`, `..._street`, `..._city`, `..._postal_code`, `..._country_code` | string | The AccessPoint party, see service-point delivery |
 | `dhl_freight_sweden_customs_handling_full_service`, `..._standard` | boolean | Customs services, see customs services |
@@ -394,7 +393,7 @@ No additional service other than the customs services has been sent to the sandb
 The connector checks these rules before it sends a booking, and each fails with a `SHIPPING_SDK_FIELD_ERROR` whose `details` name the field to fix.
 
 | Error | Raised when | `details` key |
-|-------|-------------|---------------|
+| ------- | ------------- | --------------- |
 | `LabelTypeError` | a label type other than PDF | `label_type` or `config.label_type` |
 | `OptionValueError` | a boolean option that spells neither true nor false | each such option |
 | `CustomsInformationRequiredError` | no customs data across the EU VAT area border | `customs` |
@@ -418,7 +417,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 DHL's own validation errors seen in the sandbox are these.
 
 | Code | Meaning | Evidence |
-|------|---------|----------|
+| ------ | --------- | ---------- |
 | 22001 | a mandatory field is missing, such as the AccessPoint name and address or the SENT identifiers | [103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json), [109 PL](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json) |
 | 22005, 22026 | no valid product for the countries | [112 GB](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json) |
 | 22006 | no linehaul for the AccessPoint postal code | [103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json) |
