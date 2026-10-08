@@ -294,8 +294,15 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                                 [item["response"]["errorMessage"]],
                             )
                     elif item["endpoint"].endswith("/route"):
+                        # The evidence drops the HTTP status lib.error_decoder adds to an
+                        # error body; it is restored so the parser sees the live input.
+                        body = lib.identity(
+                            item["response"]
+                            if item["http_status"] == 200
+                            else {**item["response"], "http_status": item["http_status"]}
+                        )
                         # attrs drops the leading underscore of Deserializable._ctx, so the init parameter is ctx.
-                        route = lib.Deserializable(item["response"], ctx={})  # pyright: ignore[reportCallIssue]
+                        route = lib.Deserializable(body, ctx={})  # pyright: ignore[reportCallIssue]
                         details, messages = address.parse_address_validation_response(
                             route, settings_of(gateway)
                         )
@@ -305,7 +312,12 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                         else:
                             self.assertIsNone(details)
                             self.assertEqual(
-                                [message.code for message in messages], [evidence["error_code"]]
+                                [message.code for message in messages],
+                                [
+                                    "postal_code_api_unavailable"
+                                    if item["http_status"] in (401, 403)
+                                    else evidence["error_code"]
+                                ],
                             )
                     else:
                         self.assertEqual(
