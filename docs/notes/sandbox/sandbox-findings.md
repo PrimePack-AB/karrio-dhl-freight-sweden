@@ -113,6 +113,15 @@ The response to 2906761867 (112 to FR) carried three `additionalInformation` ent
 | 2026-10-06 | 601 | SE → CH 8001 | DAP, customs handling full service, one commodity, `CommercialInvoice` with `invoiceAmount` 200.0 SEK, consignee phone and e-mail address | 2906762477 | [booking][b-477] |
 | 2026-10-06 | 109 | SE → FI 22100 (Åland) | 022, Posti ParcelShop 8011-221003201, customs data without a customs service, `CommercialInvoice` | 2906762592 | [booking][b-592] |
 
+Booking 2906762592 sent an export `CommercialInvoice` document SANDBOX-INV-1 with invoice amount 200 SEK and one commodity, HS code 610910, origin SE, customs value 200 SEK, procedure code 1042, net weight 0.5 kg, and one unit, and no customs service.
+DHL echoed the document and the commodity unchanged except for the invoice date, returned as `2026-10-06T00:00:00`, echoed empty `additionalServices`, and returned the same routing code as booking 2906761917 without customs data.
+The response shows only that DHL accepted and stored the customs information; the evidence does not show what DHL does with it after booking.
+Booking 2906762477 sent the consignee phone and e-mail address the manual makes mandatory for 601 (§5.19 p81), and its response echoed `customsHandlingFullService` `true` and the `CommercialInvoice` document with its amount and currency, returning the invoice date as `2026-10-06T00:00:00` and the routing code 2LCH8001+00000001, which ends in the routing barcode 001 that the manual lists for Customs handling - Full service (§6.5 p92).
+No documents were e-mailed to DHL for the NO and CH bookings, so the evidence does not show what DHL does after booking with the commercial invoice it asks for, or whether DHL would act on a missing one.
+The catalog marks GB `customs` `true` for 202 ([se-gb-bt11aa][l-t-gb-bt]), while booking 2906761925 to Northern Ireland carried no customs data.
+202 to GB JE2 3AB was not sent, because the connector refuses it under the catalog's `JE*` exclude and product matches did not offer 202 there ([se-gb-je23ab][l-t-gb-je]).
+No booking was sent to LI, and no CH booking used 202, 233, HDI, or customs handling Standard, which the manual limits to NO and Åland (§6.6 p94).
+
 ## Labels
 
 All eight labels with evidence files were printed with page type `Label`.
@@ -189,30 +198,49 @@ The PL route answer matches the manual, which lists the route service only for d
 | 2026-10-05 | ServicePointLocator | Budapest 1052, before booking 2906761289 | the locker 8013-118530, whose entry lists only the service type `parcel:pick-up-unregistered` | [booking-2906761289][b-289] |
 | 2026-10-06 | ServicePointLocator, five points | Mariehamn 22100, before booking 2906761917 | five Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 | [booking-2906761917][b-917] |
 
-## Special territories in product matches
+## Product matches
 
-The lookup segment asked product matches which products ship a 2.5 kg piece of 40 × 30 × 15 cm from SE 11143 to thirteen recipients, each sent with the country code and postal code as given.
-Every call answered HTTP 200 without an error message.
+Every product matches call answered HTTP 200 without an error message, each with one piece, from SE 11143, and with the recipient country code and postal code as given.
 
-| Recipient | Area | Products matched | Evidence |
-|-----------|------|------------------|----------|
-| FI 00100 | mainland Finland (control) | HDI, 109, 202, 112, 601, 233 | [se-fi-00100][l-t-fi-00100] |
-| FI 22100 | Åland under FI | HDI, 109, 202, 112, 601, 233 | [se-fi-22100][l-t-fi-22100] |
-| AX 22100 | Åland under AX | none | [se-ax-22100][l-t-ax] |
-| GB W1D 1AN | London (control) | HDI, 202, 601, 233 | [se-gb-w1d1an][l-t-gb-w1d] |
-| GB BT1 1AA | Northern Ireland under GB | HDI, 202, 601, 233 | [se-gb-bt11aa][l-t-gb-bt] |
-| GB IM1 1AA | Isle of Man under GB | HDI, 202, 601, 233 | [se-gb-im11aa][l-t-gb-im] |
-| GB JE2 3AB | Jersey under GB | HDI, 233 | [se-gb-je23ab][l-t-gb-je] |
-| GB GY1 1AA | Guernsey under GB | HDI, 233 | [se-gb-gy11aa][l-t-gb-gy] |
-| JE JE2 3AB | Jersey under JE | none | [se-je-je23ab][l-t-je] |
-| GG GY1 1AA | Guernsey under GG | none | [se-gg-gy11aa][l-t-gg] |
-| DK 3900 | Greenland under DK | HDI, 109 | [se-dk-3900][l-t-dk] |
-| FO 100 | Faroe Islands under FO | none | [se-fo-100][l-t-fo] |
-| ES 35001 | Canary Islands under ES | HDI | [se-es-35001][l-t-es] |
+| Lane | Piece | Products matched | Date | Evidence |
+|------|-------|------------------|------|----------|
+| SE → SE 41101 | 2.5 kg, 40 × 30 × 15 cm | 502, 118, 104, 102, 402, 211, 401, 103 | 2026-10-05 | [se-se][l-pm-se] |
+| SE → PL 00-251 | 2.5 kg, 40 × 30 × 15 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-05 | [se-pl][l-pm-pl] |
+| SE → GB W1D 1AN | 1 kg, 30 × 20 × 10 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-gb][l-pm-gb] |
+| SE → FI 00100, mainland Finland (control) | 2.5 kg, 40 × 30 × 15 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-06 | [se-fi-00100][l-t-fi-00100] |
+| SE → FI 22100, Åland under FI | 2.5 kg, 40 × 30 × 15 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-06 | [se-fi-22100][l-t-fi-22100] |
+| SE → AX 22100, Åland under AX | 2.5 kg, 40 × 30 × 15 cm | none | 2026-10-06 | [se-ax-22100][l-t-ax] |
+| SE → GB W1D 1AN, London (control) | 2.5 kg, 40 × 30 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-gb-w1d1an][l-t-gb-w1d] |
+| SE → GB BT1 1AA, Northern Ireland under GB | 2.5 kg, 40 × 30 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-gb-bt11aa][l-t-gb-bt] |
+| SE → GB IM1 1AA, Isle of Man under GB | 2.5 kg, 40 × 30 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-gb-im11aa][l-t-gb-im] |
+| SE → GB JE2 3AB, Jersey under GB | 2.5 kg, 40 × 30 × 15 cm | HDI, 233 | 2026-10-06 | [se-gb-je23ab][l-t-gb-je] |
+| SE → GB GY1 1AA, Guernsey under GB | 2.5 kg, 40 × 30 × 15 cm | HDI, 233 | 2026-10-06 | [se-gb-gy11aa][l-t-gb-gy] |
+| SE → JE JE2 3AB, Jersey under JE | 2.5 kg, 40 × 30 × 15 cm | none | 2026-10-06 | [se-je-je23ab][l-t-je] |
+| SE → GG GY1 1AA, Guernsey under GG | 2.5 kg, 40 × 30 × 15 cm | none | 2026-10-06 | [se-gg-gy11aa][l-t-gg] |
+| SE → DK 3900, Greenland under DK | 2.5 kg, 40 × 30 × 15 cm | HDI, 109 | 2026-10-06 | [se-dk-3900][l-t-dk] |
+| SE → FO 100, Faroe Islands under FO | 2.5 kg, 40 × 30 × 15 cm | none | 2026-10-06 | [se-fo-100][l-t-fo] |
+| SE → ES 35001, Canary Islands under ES | 2.5 kg, 40 × 30 × 15 cm | HDI | 2026-10-06 | [se-es-35001][l-t-es] |
+| SE → DK 1620 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-06 | [se-dk-1620][l-pm-205-dk] |
+| SE → NO 0154 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-06 | [se-no-0154][l-pm-205-no], [with customs services][l-no-0154-customs] |
+| SE → CH 8001, Zürich | 2 kg, 30 × 20 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-ch-8001][l-ch-8001] |
+| SE → CH 8001, Zürich | 20 kg, 30 × 20 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-ch-8001-20kg][l-ch-8001-20kg] |
+| SE → CH 1201, Geneva | 2 kg, 30 × 20 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-ch-1201][l-ch-1201] |
+| SE → CH 3011, Bern | 2 kg, 30 × 20 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-ch-3011][l-ch-3011] |
+| SE → CH 6900, Lugano | 2 kg, 30 × 20 × 15 cm | HDI, 202, 601, 233 | 2026-10-06 | [se-ch-6900][l-ch-6900] |
+| SE → LI 9490, Vaduz | 2 kg, 30 × 20 × 15 cm | 202 | 2026-10-06 | [se-li-9490][l-li-9490] |
+| SE → HU 1052 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-08 | [se-hu-1052][l-pm-hu] |
+| SE → RO 030031 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-08 | [se-ro-030031][l-pm-ro] |
 
-The territory codes AX, JE, GG, and FO matched no product, while the same postal codes under FI and GB did.
-Product matches treated FI 22100 like mainland Finland, offering 109 and 112 to Åland.
-The evidence files keep each matched product's `toCountries` entries with a `postalCodeExcludes` value and the entry of the recipient country.
+No lane matched 205 or SPI, so the booking-export 205 cases to DK 1620 and NO 0154 skip, and the EKAER and UIT entries could not be tried on 205 or SPI to HU or RO.
+No GB postal code matched 109 or 112, so the booking-export 112 GB case skipped until it was sent without the check (see [Rejections](#rejections)).
+The territory codes AX, JE, GG, and FO matched no product, while the same postal codes under FI and GB did, and FI 22100 matched like mainland Finland, offering 109 and 112 to Åland.
+No CH lane matched 109, 112, or 107, and the manual lists CH, but not LI, among the valid countries of 601 (§5.19 p82).
+Every product matched to CH marks its CH entry `customs` `true` with no `postalCodeExcludes`, and DDP is the only payer code each of them flags `customs` `true`.
+Every lane that matched 601 also matched HDI, which the manual names as the invoice-file code for 601 (§5.19 p81).
+
+### Catalog postal-code excludes
+
+The territory evidence files keep each matched product's `toCountries` entries with a `postalCodeExcludes` value and the entry of the recipient country.
 The excludes the matches applied agree with these entries: 202 and 601 list GB `GY*,JE*`, while 233 lists no GB excludes and was matched to GB JE2 3AB and GY1 1AA ([se-gb-je23ab][l-t-gb-je], [se-gb-w1d1an][l-t-gb-w1d]); 202, 601, and 233 list DK `39*`, ES `35*`, and were not matched to DK 3900 or ES 35001 ([se-dk-3900][l-t-dk], [se-es-35001][l-t-es]).
 The entries list no excludes for GB `BT` or `IM`, and 202 and 601 were matched to GB BT1 1AA and IM1 1AA.
 
@@ -234,128 +262,27 @@ The manual excludes ES Ceuta (51080) and Melilla (52080) for both, while the 109
 For 112 to IT the manual lists Serle (25080) and Bella Island (28838), while the 112 entry lists 25050, 25080, and 28898.
 The manual excludes GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT) and the NL Caribbean islands for both, while neither entry lists GB or NL excludes, and product matches offered neither 109 nor 112 to any GB postal code.
 
-### Bookings to special territories
-
-109 to FI 22100 booked to the Posti ParcelShop 8011-221003201 in Mariehamn without customs data and returned routing code 2LFI22100+70530000 ([booking-2906761917][b-917]).
-112 to FI 22100 with customs information and `customsHandlingFullService` was rejected with 24003 "customsHandlingFullService is not available for this country combination", although product matches had offered 112 for the lane ([rejection-24003-112-fi-aland][r-24003-ax]).
-112 to FI 22100 with `customsHandlingStandard` and the made-up EORI number SE0000000000 was rejected the same way, 24003 "customsHandlingStandard is not available for this country combination" ([rejection-24003-112-fi-aland-standard][r-24003-ax-std]), although the manual lists "NO and Åland Islands (FI 22)" as the valid countries of Customs handling - Standard (§6.6 p94).
-The manual names Åland (FI 22) as an area outside the tax area where customs proceedings are mandatory (§7.4 p162), while the sandbox refused both the full-service and the standard customs handling for SE to FI 22100 and accepted a 109 booking there without customs data.
-The connector now refuses both customs handling services to or from FI 22000-22999 before the booking request, and the two 112 Åland suite cases assert that refusal instead of booking.
-The connector also refuses any booking crossing the EU VAT area border without customs data, so the 109 Åland case without customs data ([booking-2906761917][b-917]) now asserts that refusal instead of booking.
-109 to FI 22100 with customs data and no customs handling service booked as 2906762592 to the same ParcelShop 8011-221003201 with payer code 022 and returned the same routing code 2LFI22100+70530000 as the booking without customs data ([booking-2906762592][b-592]).
-It sent an export `CommercialInvoice` document SANDBOX-INV-1 with invoice amount 200 SEK and one commodity, HS code 610910, origin SE, customs value 200 SEK, procedure code 1042, net weight 0.5 kg, and one unit, and no customs service.
-DHL echoed the document and the commodity unchanged except for the invoice date, returned as `2026-10-06T00:00:00`, and echoed empty `additionalServices`.
-The print call returned one PDF label.
-The response shows only that DHL accepted and stored the customs information; the evidence does not show what DHL does with it after booking.
-202 to GB BT1 1AA booked with payer code DAP and without customs data and returned routing code 2LGBBT11AA+11000000 ([booking-2906761925][b-925]); the catalog marks GB `customs` `true` for 202 ([se-gb-bt11aa][l-t-gb-bt]).
-202 to GB JE2 3AB was not sent, because the connector refuses it under the catalog's `JE*` exclude and product matches did not offer 202 there ([se-gb-je23ab][l-t-gb-je]).
-
-## Switzerland and Liechtenstein
-
-These lookups and the one booking ask what account 116768 is offered for a consumer parcel from Stockholm SE 11143 to the Swiss customs area, which lies outside the EU VAT area.
-Product matches for one 2 kg 30 × 20 × 15 cm piece returned HDI, 202, 601, and 233 for each of CH 8001 (Zürich), CH 1201 (Geneva), CH 3011 (Bern), and CH 6900 (Lugano), and returned none of 109, 112, and 107 ([se-ch-8001][l-ch-8001], [se-ch-1201][l-ch-1201], [se-ch-3011][l-ch-3011], [se-ch-6900][l-ch-6900]).
-A 20 kg piece of the same size to CH 8001 returned the same four products ([se-ch-8001-20kg][l-ch-8001-20kg]).
-The same request to LI 9490 (Vaduz) returned 202 alone ([se-li-9490][l-li-9490]); the manual lists CH, but not LI, among the valid countries of 601 (§5.19 p82).
-Every matched product marks its CH entry `customs` `true` with no `postalCodeExcludes`, and DDP is the only payer code each product flags `customs` `true`.
-The PostalCode route for CH 8001 answered 400 with 16009 "Country code 'CH' not supported." ([lookup-postal-code-ch-8001-16009][l-pc-ch]), the code PL 30-079 received.
-The nearest-service-points request for Bahnhofstrasse 1, 8001 Zürich with the 2 kg piece answered 400 "No matching servicepoint was found" ([lookup-service-points-ch-8001-none][l-sp-ch]).
-
-The sandbox accepted 601 to CH 8001 as booking 2906762477, with payer code DAP, `customsHandlingFullService`, one commodity, and a `CommercialInvoice` document carrying `invoiceAmount` 200.0 SEK, and with the consignee phone and e-mail address the manual makes mandatory for 601 (§5.19 p81) ([booking-2906762477][b-477]).
-The response echoed `customsHandlingFullService` `true` and the `CommercialInvoice` document with its amount and currency, returned the invoice date as `2026-10-06T00:00:00`, and returned routing code 2LCH8001+00000001, which ends in the routing barcode 001 that the manual lists for Customs handling - Full service (§6.5 p92).
-The print call for 2906762477 with page type `Label` returned one report of type `Label`, a PDF.
-No documents were e-mailed to DHL for this booking, so, as for the NO bookings, the evidence does not show what DHL does after booking with the commercial invoice it asks for.
-No booking was sent to LI, and no CH booking used 202, 233, HDI, or customs handling Standard, which the manual limits to NO and Åland (§6.6 p94).
-The CH product matches also list the joint declaration among 601's customs services, which the manual limits to NO (see [Joint declaration offered to CH](#joint-declaration-offered-to-ch)).
-
 ## Deviations from manual v5.26
 
-### Payer codes for 109 and 112
+Where the sandbox contradicts the manual the connector follows the sandbox, and where the sandbox has no evidence it follows the manual.
+Rows whose topic a published page covers point to that page; the bookings, rejections, and lookups above hold the full evidence.
 
-The manual lists only payer code 023 for 112 (§5.3 p19), but the sandbox accepted 112 to PL with payer code 022 ([booking-2906761149][b-149]) as well as 023 ([booking-2906761131][b-131]).
-It rejected payer code 1 for 112 with 22020 ([rejection-22020][r-22020]).
-The Product API catalog lists CPT, 022, DPU, DAP, 023, CIP, and DDP for both 109 and 112, with `customs` `true` only for DDP ([lookup-products-109-112-payer-codes.json][l-products]), while the manual lists only the Combiterms 022 and 023 for 109 (§5.14 p63) and 023 for 112 (p19).
-No booking used an Incoterm as the payer code for 109 or 112.
-
-### SENT for PL
-
-The manual makes `SENT_FREE` ("Is shipment SENT free?") mandatory for shipments to or from PL in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), with the SENT reference and carrier key mandatory when the shipment is not SENT free, and its API example sends `SENT_FREE` `"false"` with `SENT_REF` and `SENT_CARKEY`.
-It does not mention SENT in the sections of 109 (§5.14 pp62-64) or 112 (§5.3 pp17-20).
-On 2026-10-05 the sandbox applied the same rule to 109: it rejected 109 to PL without SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." ([rejection-22001][r-22001]).
-On 2026-10-08 it accepted the same request body, 109 to PL without SENT entries, as 2906769613 with routing code 2LPL30074+70530000 and printed its label ([booking-2906769613][b-613]).
-Whether this change in the sandbox is lasting is unknown, and the request was not retried.
-The sandbox accepted 109 and 112 to PL with `SENT_FREE` `"true"` at shipment level ([booking-2906761123][b-123], [booking-2906761131][b-131]).
-The vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines an `AdditionalInformation` schema that no other schema references.
-On 2026-10-08 it accepted 601 to PL booked without a SENT option, for which the connector sent `SENT_FREE` `"true"` alone, as 2906769647 with routing code 2LPL30079+00000000 ([booking-2906769647][b-647]).
-It also accepted 601 to PL with `SENT_FREE` `"false"`, `SENT_REF` `SENT20261008000001`, and `SENT_CARKEY` `SANDBOXCARKEY0001` as 2906769654 with the same routing code and echoed the three entries ([booking-2906769654][b-654]).
-Both identifiers are placeholders made up for the suite and not issued by the Polish SENT system, so the sandbox did not check SENT identifiers against that system at booking.
-
-### EKAER and UIT for HU and RO
-
-The manual lists EKAER (HU) and UIT (RO) entries in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), and not for 109 or 112.
-The sandbox accepted 109 and 112 to RO and HU without these entries ([booking-2906761263][b-263], [booking-2906761271][b-271], [booking-2906761289][b-289], [booking-2906761297][b-297]), which matches the manual.
-For 601 it accepted `EKAER_FREE` `"false"` with a placeholder EKAER number to HU ([booking-2906761339][b-339]) and `UIT_FREE` `"false"` without a UIT number to RO ([booking-2906761347][b-347]); the latter matches the related-fields tables, which mark the UIT code for a shipment that is not UIT free conditional, "Code should be provided if possible" (§5.19 p82).
-The EKAER number in that booking, `E0000SANDBOX0001`, is made up, and the sandbox accepted it.
-On 2026-10-08 it accepted 601 booked without an EKAER or UIT option, for which the connector sent its default for a shipment below 500 kg: `EKAER_FREE` `"true"` without a number to HU ([booking-2906769555][b-555]) and `UIT_FREE` `"true"` without a number to RO ([booking-2906769563][b-563]).
-It also accepted 601 to RO with `UIT_FREE` `"false"` and `UIT_NUMBER` `0000-0000-0000-0001` as 2906769662 with routing code 2LRO030031+00000000 and echoed both entries ([booking-2906769662][b-662]).
-That UIT number is a placeholder in the format of the manual's example `1234-5678-9012-3456` (§5.19 p82), not issued by the Romanian tax authority, so, as with the EKAER number, the sandbox did not check it at booking.
-Product matches for a 1 kg piece from SE 11143 offered 202 and 233, and neither 205 nor SPI, to HU 1052 and RO 030031 ([lookup-product-matches-se-hu-1052][l-pm-hu], [lookup-product-matches-se-ro-030031][l-pm-ro]).
-The sandbox accepted 202 and 233 booked without an EKAER or UIT option, for which the connector sent the same defaults: `EKAER_FREE` `"true"` alone to HU as 2906769969 (202, routing code 2LHU1052+11000000) and 2906769985 (233, 2LHU1052+00000000) ([booking-2906769969][b-969], [booking-2906769985][b-985]), and `UIT_FREE` `"true"` alone to RO as 2906769977 (202, 2LRO030031+11000000) and 2906769993 (233, 2LRO030031+00000000) ([booking-2906769977][b-977], [booking-2906769993][b-993]).
-
-### Service point capacity filter
-
-The ServicePointLocator applied the piece capacity filter for PL but not for SE.
-For Stockholm a 2.5 kg piece of 40 × 30 × 15 cm and a 500 kg piece of 300 × 200 × 200 cm returned the same ten service points in the same order ([lookup-service-points-se-capacity-not-applied.json][l-sp-se]).
-For Warszawa the 2.5 kg piece returned points, while the 500 kg piece was answered with HTTP 400 "The dimensions are too large for servicepoint", and with `locationTypes` `["locker"]` "The dimensions are too large for locationtype locker" ([lookup-service-points-pl-capacity-too-large.json][l-sp-pl]).
-
-### Service point ids and sub types
-
-For 103 the manual says only the four-digit part nnnn of an id like SE-nnnn00 is to be used (§10.14.2.1 p231), but the sandbox accepted the full id SE-982000 ([booking-2906761230][b-230]).
-For SE the lookup's `id` and `servicePointId` are equal (SE-982000), while elsewhere they differ, for example `id` 101 and `servicePointId` 8005-PL-4516440 in Warszawa ([lookup-service-points-pl-capacity-too-large.json][l-sp-pl]) and `id` 231652 and `servicePointId` 8023-231652 in București ([booking-2906761263][b-263]).
-Appendix M states that the AccessPoint sub type carries the location type `servicepoint`, `locker`, or `postoffice` (§10.14.2.2 p232), while the vendored spec enumerates `ParcelShop` and `ParcelStation`.
-The sandbox accepted `ParcelShop` for PL, RO, NO, and DK ([booking-2906761123][b-123], [booking-2906761263][b-263], [booking-2906761305][b-305], [booking-2906761354][b-354]) and `ParcelStation` for a HU locker ([booking-2906761289][b-289]).
-Their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p232.
-
-### Service types and lookup size for service point products
-
-The manual says only shops and stations with service type `parcel:pick-up` can be selected for 109 (§10.14.2.2 p232), but the sandbox accepted 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289][b-289]).
-For 103 the manual says to always search the ten closest service points (§5.12 p57), while the suite's 103 booking searched five ([booking-2906761230][b-230]); the lookup segment's capacity check searched ten ([lookup-service-points-se-capacity-not-applied.json][l-sp-se]).
-
-### Customs to NO
-
-The manual's Customs handling - Full service section says a commercial invoice must be sent to DHL and lists routing barcode 001 on the label (§6.5 p92), and for 109 it asks for two copies of the customs documents on the outside of the package (§5.14 p62).
-The sandbox accepted 109 and 112 to NO with `customsHandlingFullService`, one commodity, and a `ProformaInvoice` document without an invoice amount or EORI ([booking-2906761305][b-305], [booking-2906761313][b-313]), and 202, 233, and 601 to NO the same way ([booking-2906762139][b-139], [booking-2906762154][b-154], [booking-2906762162][b-162]).
-It accepted 109 and 112 to NO with `customsHandlingStandard`, one commodity, a `ProformaInvoice`, and the made-up EORI number SE0000000000 as well ([booking-2906762105][b-105], [booking-2906762113][b-113]); the manual lists NO among the valid countries of Customs handling - Standard (§6.6 p94).
-No documents were e-mailed to DHL for these bookings, and the evidence does not show whether DHL would act on a missing commercial invoice.
-109 to NO returned routing code 2LNO0186+70530001, ending in 001, while 112 to NO returned 2LNO0154+000000 without it.
-The 202, 233, and 601 full-service bookings to NO returned 2LNO0154+11000001, 2LNO0154+00000001, and 2LNO0154+00000001, also ending in 001, as did the 109 Standard booking with 2LNO0186+70530001 again, while the 112 Standard booking returned 2LNO0154+000000.
-
-### Joint declaration offered to CH
-
-Product matches on account 116768 list `customsJointDeclaration` among the customs additional services of 601 on all five CH lookups, to CH 8001 with a 2 kg and a 20 kg piece, CH 1201, CH 3011, and CH 6900 ([se-ch-8001][l-ch-8001], [se-ch-8001-20kg][l-ch-8001-20kg], [se-ch-1201][l-ch-1201], [se-ch-3011][l-ch-3011], [se-ch-6900][l-ch-6900]).
-The manual's Customs, joint declaration section lists NO as its only valid country and allows the service only according to a separate agreement (§6.8 p98).
-No booking has sent `customsJointDeclaration` to CH or to any other country, so the evidence shows only that the catalog offers the service on the CH lanes, not that DHL would accept such a booking.
-Product matches to NO 0154 list `customsJointDeclaration` for 601, 109, and 112 ([se-no-0154-customs][l-no-0154-customs]).
-601, 202, 233, and HDI list the same customs services to NO 0154 as to the five CH lanes, which suggests the catalog's customs service lists do not vary by destination, so a service's presence on a lane does not show that DHL would accept it there.
-
-### Routing code reference and product codes
-
-For 112 (§5.3 p18) and 109 (§5.14 p62) the manual asks for the label's routing code to be sent as a reference in the IFTMIN shipment instruction.
-The API bookings sent no routing code, and every booking response returned `routingCode` (for example [booking-2906761131][b-131] and [booking-2906761123][b-123]).
-Product matches for SE to PL returned both 601 and HDI ([lookup-product-matches-se-pl.json][l-pm-pl]), and the manual names HDI as the invoice-file code for 601 (§5.19 p81).
-Product matches for SE 11143 to SE 41101 returned 502, 118, 104, 102, 402, 211, 401, and 103 ([lookup-product-matches-se-se.json][l-pm-se]).
-
-### Phone numbers on labels
-
-The manual's label field description (§9.4.2) marks the sender phone, field 6 "Consignor or pickup party phone number", conditional, and does not allow printing it for 104, for 402/502, or for 107 from AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, while making it mandatory for 107 from SK (p168).
-For field 9 it marks the consignee or delivery party phone number conditional and the receiving parcelshop's phone number mandatory for 103 (p170).
-It does not allow printing the receiver phone for 109 and 112 to AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, makes it mandatory for 109 and 112 to SK, and does not allow it for 118 or 401 (p170).
-It makes the receiver's mobile phone number mandatory in the shipment data for 118 (§5.16 p68) and the consignee phone number and e-mail address mandatory for 601 (§5.19 p81).
-Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone, and the 103 booking sent no AccessPoint phone.
-The 109 labels to DK and NO print the sender phone and no consignee phone, although the bookings sent +45 20 12 34 56 and +47 400 00 000 ([label-2906761354][lb-354], [label-2906761305][lb-305]), which matches the field 9 rule for 109 to DK and NO.
-The 112 label to FR prints neither the sender phone nor the consignee phone +33 6 12 34 56 78 and has no `Phn.` line ([label-2906761867][lb-867]), which matches the field 9 rule for 112 to FR and the conditional field 6.
-The 112 label to HU prints a `Phn.` line with neither the sender phone nor the consignee phone +36 30 000 0000 ([label-2906761297][lb-297]), and the 118 label prints a `Phn.` line with no number ([label-2906761255][lb-255]); both match the field 9 rules for 112 to HU and for 118, and the missing sender phone matches the conditional field 6.
-The 102 and 601 labels print a `Phn.` line with no number ([label-2906761222][lb-222], [label-2906761248][lb-248]), where fields 6 and 9 are conditional.
-The 103 service-point label prints a `Phn.` line with no number ([label-2906761230][lb-230]), while the manual makes the receiving parcelshop's phone number mandatory for 103; this remains a deviation.
+| Topic | Manual v5.26 says | Sandbox did | Connector follows | Published page |
+|-------|-------------------|-------------|-------------------|----------------|
+| Payer codes for 109 and 112 | 022 and 023 for 109 (§5.14 p63), 023 only for 112 (§5.3 p19) | accepted 112 with 022 ([2906761149][b-149]) and 023 ([2906761131][b-131]) and rejected payer code 1 with 22020 ([rejection-22020][r-22020]); the Product API catalog lists CPT, 022, DPU, DAP, 023, CIP, and DDP for both products, with `customs` `true` only for DDP ([lookup-products-109-112-payer-codes.json][l-products]); no booking used an Incoterm as the payer code for 109 or 112 | the sandbox: 022 and 023 for 112 | [booking-rules.md#payer-codes](../../concepts/booking-rules.md#payer-codes) |
+| SENT for PL | `SENT_FREE` mandatory to or from PL in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), with `SENT_REF` and `SENT_CARKEY` when not free, as in its API example; no SENT in the sections of 109 (§5.14 pp62-64) or 112 (§5.3 pp17-20) | applied the rule to 109 on 2026-10-05 ([rejection-22001][r-22001]) and accepted the same request on 2026-10-08 ([2906769613][b-613]), so whether the change is lasting is unknown; accepted `SENT_FREE` at shipment level ([2906761123][b-123], [2906761131][b-131]), although the vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines an `AdditionalInformation` schema that no other schema references; accepted placeholder identifiers not issued by the Polish SENT system ([2906769654][b-654]) | sends `SENT_FREE` `"true"` when no SENT option is given | [booking-rules.md#sent](../../concepts/booking-rules.md#sent) |
+| EKAER and UIT for HU and RO | entries in the related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47), SPI (§5.11 p52), and 601 (§5.19 p82), not for 109 or 112; the UIT code for a shipment that is not UIT free is conditional, "Code should be provided if possible" (§5.19 p82), as `1234-5678-9012-3456` in its example | accepted 109 and 112 without entries, as the manual has it ([2906761263][b-263], [2906761271][b-271], [2906761289][b-289], [2906761297][b-297]); accepted 601 with `UIT_FREE` `"false"` without a number ([2906761347][b-347]) and the made-up EKAER number and the placeholder UIT number ([2906761339][b-339], [2906769662][b-662]), so it did not check them at booking | `"true"` free flags by default below 500 kg | [booking-rules.md#ekaer-and-uit](../../concepts/booking-rules.md#ekaer-and-uit) |
+| Excluded areas for 109 and 112 | see [Catalog postal-code excludes](#catalog-postal-code-excludes) | product matches offered 109 to DK 3900, which the manual excludes ([se-dk-3900][l-t-dk]); no booking tested it | the manual's excludes for 109 and 112, the catalog's for 202, 233, and 601 | [destinations.md#excluded-postal-codes](../../concepts/destinations.md#excluded-postal-codes) |
+| Customs to Åland | Customs handling - Standard valid to "NO and Åland Islands (FI 22)" (§6.6 p94); Åland (FI 22) is outside the tax area and customs proceedings are mandatory (§7.4 p162) | rejected full service and Standard with 24003 ([full service][r-24003-ax], [Standard][r-24003-ax-std]), and booked 109 without customs data ([2906761917][b-917]) and with customs data and no customs service ([2906762592][b-592]) | the sandbox: refuses both customs handling services to or from FI 22000-22999, and the two 112 Åland suite cases assert that refusal; also refuses any booking crossing the EU VAT area border without customs data, so the 109 Åland case without customs data asserts that refusal | [destinations.md#åland](../../concepts/destinations.md#åland) |
+| Service point capacity filter | no manual citation recorded | applied the piece filter for PL but not for SE ([SE][l-sp-se], [PL][l-sp-pl]) | sends the caller's parcel as the `piece` filter | [lookups.md#service-points](../../guides/lookups.md#service-points) |
+| Service point id for 103 | use only the four-digit part nnnn of an id like SE-nnnn00 (§10.14.2.1 p231) | accepted the full id SE-982000 ([2906761230][b-230]); the lookup's `id` and `servicePointId` are equal in SE and differ elsewhere | sends the service point id as given | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
+| AccessPoint sub type | Appendix M: the sub type carries the location type `servicepoint`, `locker`, or `postoffice` (§10.14.2.2 p232), while the vendored spec enumerates `ParcelShop` and `ParcelStation` | accepted `ParcelShop` for PL, RO, NO, and DK ([2906761123][b-123], [2906761263][b-263], [2906761305][b-305], [2906761354][b-354]) and `ParcelStation` for a HU locker ([2906761289][b-289]); their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p232 | `ParcelShop` and `ParcelStation` | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
+| Service type for 109 | only shops and stations with service type `parcel:pick-up` can be selected for 109 (§10.14.2.2 p232) | accepted the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([2906761289][b-289]) | no service type check | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
+| Lookup size for 103 | always search the ten closest service points (§5.12 p57) | the suite's 103 booking searched five ([2906761230][b-230]); the lookup segment's capacity check searched ten ([SE][l-sp-se]) | the caller's `max_items` | none |
+| Customs to NO | Customs handling - Full service: a commercial invoice must be sent to DHL and routing barcode 001 is on the label (§6.5 p92); for 109 two copies of the customs documents on the outside of the package (§5.14 p62); NO is valid for Customs handling - Standard (§6.6 p94) | accepted full service with a `ProformaInvoice` without an invoice amount or EORI for 109, 112, 202, 233, and 601 ([2906761305][b-305], [2906761313][b-313], [2906762139][b-139], [2906762154][b-154], [2906762162][b-162]) and Standard with a `ProformaInvoice` and the made-up EORI SE0000000000 for 109 and 112 ([2906762105][b-105], [2906762113][b-113]); routing codes 2LNO0186+70530001 (109, both services), 2LNO0154+11000001 (202), and 2LNO0154+00000001 (233 and 601) end in 001, while 112 returned 2LNO0154+000000 for both services | requires a `CommercialInvoice` for sales outside the EU VAT area, its own rule | [README.md#commercial-or-proforma-invoice](../../../README.md#commercial-or-proforma-invoice) |
+| Joint declaration to CH | Customs, joint declaration lists NO as its only valid country and needs a separate agreement (§6.8 p98) | product matches list `customsJointDeclaration` among 601's customs services on all five CH lookups ([8001][l-ch-8001], [8001 20 kg][l-ch-8001-20kg], [1201][l-ch-1201], [3011][l-ch-3011], [6900][l-ch-6900]) and for 601, 109, and 112 to NO 0154 ([se-no-0154-customs][l-no-0154-customs]); 601, 202, 233, and HDI list the same customs services to NO 0154 as to CH, which suggests the lists do not vary by destination; no booking sent the service | no country check; sends the service when selected | [README.md#customs-services](../../../README.md#customs-services) |
+| Routing code reference | send the label's routing code as a reference in the IFTMIN shipment instruction for 112 (§5.3 p18) and 109 (§5.14 p62) | the API bookings sent no routing code, and every response returned `routingCode` (for example [2906761131][b-131] and [2906761123][b-123]) | sends no routing code | none |
+| Phone numbers on labels | the receiving parcelshop's phone is mandatory on the 103 label (§9.4.2 p170) | the 103 label prints a `Phn.` line with no number ([label-2906761230][lb-230]); the other labels match (see [Labels](#labels)) | transmits the consignee phone on every booking | [labels.md#phone-numbers](../../concepts/labels.md#phone-numbers) |
 
 ## Pending verification
 

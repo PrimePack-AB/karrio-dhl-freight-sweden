@@ -56,7 +56,7 @@ The Customs column applies the [EU VAT area](#the-eu-vat-area) check to the pare
 The sandbox booked 202 to GB BT1 1AA (Northern Ireland) with payer code DAP and no customs data ([booking-2906761925-202-se-gb-northern-ireland.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761925-202-se-gb-northern-ireland.json)).
 202 to GB JE2 3AB was not sent: the connector refuses it before the booking request under the catalog's `JE*` exclude, and product matches did not offer 202 for that postcode ([lookup-product-matches-se-gb-je23ab.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json)).
 The Caribbean Netherlands codes BQ, CW, AW, and SX are sent as given, excluded from 109, 112, and 107, and passed through on the other products.
-The [findings note](../notes/sandbox/sandbox-findings.md#special-territories-in-product-matches) lists the products matched for each territory.
+The [findings note](../notes/sandbox/sandbox-findings.md#product-matches) lists the products matched for each territory.
 
 ## Åland
 
@@ -127,7 +127,7 @@ For 202, 233, and 601, for which the manual lists no excluded areas other than 2
 
 The manual names the NL Caribbean islands without postal codes, so they are excluded under their own country codes AW, BQ, CW, and SX, which are sent to DHL unchanged, whatever the postal code; an address on the islands under NL is not recognised.
 601's DK list reads `2142` where the other products read `2412`, Christiansø; the connector treats it as a typo and excludes 2412 for 601 as well.
-The catalog lists different excludes for 109 and 112, which the connector does not apply because the manual covers both products; the [findings note](../notes/sandbox/sandbox-findings.md#special-territories-in-product-matches) compares them, including 109 to DK 3900, which product matches offered while the manual excludes DK 3800-3999 ([lookup-product-matches-se-dk-3900.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)).
+The catalog lists different excludes for 109 and 112, which the connector does not apply because the manual covers both products; the [findings note](../notes/sandbox/sandbox-findings.md#catalog-postal-code-excludes) compares them, including 109 to DK 3900, which product matches offered while the manual excludes DK 3800-3999 ([lookup-product-matches-se-dk-3900.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)).
 205 and SPI were not matched by any probe, so no catalog excludes are applied to them.
 The manual's 107 entry for FR outside mainland France and Corsica gives no postal codes and is not checked (§5.15 p66).
 The manual also points to the DHL Freight website for the present list of postal codes, which the connector does not consult.

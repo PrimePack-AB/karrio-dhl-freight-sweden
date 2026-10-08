@@ -55,4 +55,4 @@ GB is outside the EU VAT area, so 109 and 112 to GB carry customs information as
 
 The 601 CH booking took its `CommercialInvoice` amount from `customs.duty.declared_value`.
 The PostalCode route for CH 8001 answered 16009, and the nearest-service-points request for Zürich 8001 found no point ([lookup-postal-code-ch-8001-16009.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json), [lookup-service-points-ch-8001-none.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-ch-8001-none.json)).
-The [findings note](../notes/sandbox/sandbox-findings.md#switzerland-and-liechtenstein) lists the remaining CH lookups.
+The [findings note](../notes/sandbox/sandbox-findings.md#product-matches) lists the remaining CH lookups.
