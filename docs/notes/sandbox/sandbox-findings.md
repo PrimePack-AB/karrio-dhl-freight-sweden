@@ -12,7 +12,7 @@ The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT D
 The calls came from three sources.
 A read-only probe script called the Product, AdditionalService, ServicePointLocator, and PostalCode APIs at 14:14.
 Two scripts booked directly against TransportInstruction (14:31) and through the connector (14:48).
-The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04, its lookup, rejection, and approved booking segments at 08:11, its 601 PL and RO bookings with default SENT free, placeholder SENT identifiers, and a placeholder UIT number at 08:26, and its 202 and 233 HU and RO bookings without EKAER or UIT options at 08:48.
+The opt-in sandbox suite in `sandbox_tests/` ran its lookup and booking segments between 16:20 and 16:31, its rejection and declaration segments at 16:53, its 109 DK ParcelShop case at 17:14, and its 103 id-only AccessPoint rejection at 17:31, and on 2026-10-06 its 112 FR case at 08:10, its 112 GB case at 08:29, skipped by the product matches check, and at 08:39 without that check, its thirteen special-territory product matches probes at 08:52, and its 112 and 109 Åland and 202 Northern Ireland cases at 09:07, and its 112 Åland case with customs handling Standard at 09:12, its freight and Standard customs bookings at 10:39, its 401 domestic booking at 11:12, its forced 205 booking at 11:26, its CH and LI lookups at 12:27, its 601 CH booking at 12:41, and its 109 Åland booking with customs data at 13:30, and on 2026-10-08 its 601 HU and RO bookings without EKAER or UIT options at 08:04, its lookup, rejection, and approved booking segments at 08:11, its 601 PL and RO bookings with default SENT free, placeholder SENT identifiers, and a placeholder UIT number at 08:26, its 202 and 233 HU and RO bookings without EKAER or UIT options at 08:48, and its PostalCode route lookups and `enforce` pre-flights at 15:12.
 The 08:11 run sent eight TransportInstruction requests, and this note cites only its 109 PL request without SENT entries.
 A manual capacity probe with the connector ran at 16:21.
 
@@ -89,6 +89,8 @@ The home-delivery labels of 102, 118, and 601, the 112 label to HU, and the 103 
 The 112 FR label of 2906761867, printed with page type `Label`, is one PDF page of 283.46 × 425.2 pt (100 × 150 mm) in a different layout from the other labels: it shows the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000, and no `Phn.` line ([label-2906761867][lb-867]).
 Booking 2906761255 (118) was preceded by a PostalCode route lookup for SE 11151 that returned `homeDeliveryParcel` `true`, the connector's `enforce` pre-flight ([booking-2906761255][b-255]).
 The suite's lookup segment returned the same flags for SE 11151, `bookable` `true` and `homeDeliveryParcel` `true` ([lookup-postal-code-se-11151-route.json][l-pc-11151]), the route flag the manual ties to 118 (§10.14.7 p235).
+On 2026-10-08 the route for SE 98138 Kiruna answered `bookable` `true` and `homeDeliveryParcel` `false`, so `karrio.Address.validate` reports success unscoped and failure scoped to 118 ([lookup-postal-code-se-98138-no-home-delivery.json][l-pc-98138]).
+With `address_validation` `enforce`, a 118 request to SE 98138 and one to SE 99999 each sent only the route lookup and raised `PostalCodeNotServableError`, the first for `homeDeliveryParcel` `false` and the second for 16010, with no TransportInstruction call ([98138 pre-flight][l-pf-98138], [99999 pre-flight][l-pf-99999]).
 The 103 and 109 bookings to RO, HU, NO, DK, FI 22100, and, for 2906769613, PL were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
 The five service points nearest Mariehamn 22100 were Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 ([booking-2906761917][b-917]).
 
@@ -115,6 +117,7 @@ No booking was created by any of them on 2026-10-05.
 | 22020 | `ChargeableWeight` | ChargeableWeight is lower than product min 2500.0 | 205 SE → NO 0154, payer code DAP, customs handling full service, one commodity, one 1 kg piece, sent without the product matches check | [rejection-22020-205-no][r-22020-205-no] |
 
 The PostalCode API rejected the unknown SE postal code 99999 with HTTP 400 and the PascalCase ErrorResult `{"ErrorCode": 16010, "Status": 400, "UserMessage": "Post code '99999' not found."}` ([lookup-postal-code-se-99999-16010.json][l-pc-99999]).
+On 2026-10-08 it answered SE 98060 with 16012 "Post code '98060' not supported." ([lookup-postal-code-se-98060-16012.json][l-pc-98060]) and SE 84094 with 16011 "Post code '84094' (Landsbygd) not supported." ([lookup-postal-code-se-84094-16011.json][l-pc-84094]).
 Its route lookup for PL 30-079 answered HTTP 400 with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), which matches the manual listing the route service only for domestic products (§10.14.1 p230).
 
 ## Special territories in product matches
@@ -287,7 +290,7 @@ The 103 service-point label prints a `Phn.` line with no number ([label-29067612
 
 ## Pending verification
 
-The README no longer lists PostalCode error 16012 as "not supported", because no capture shows 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]).
+The README does not list PostalCode error 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), and 16012 appeared on 2026-10-08 for the Swedish code 98060 ([lookup-postal-code-se-98060-16012.json][l-pc-98060]).
 
 ## Untested
 
@@ -355,6 +358,11 @@ The Print API was called only for labels, and the PickupRequest, TimeTable, Pric
 [r-22020-205-no]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json
 [l-pc-99999]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json
 [l-pc-11151]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-route.json
+[l-pc-98138]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98138-no-home-delivery.json
+[l-pc-98060]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98060-16012.json
+[l-pc-84094]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json
+[l-pf-98138]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98138-118-enforce-preflight.json
+[l-pf-99999]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-118-enforce-preflight.json
 [l-pc-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-pl-route-16009.json
 [l-pc-ch]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json
 [l-sp-ch]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-ch-8001-none.json

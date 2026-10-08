@@ -1,0 +1,37 @@
+{
+ "kind": "lookup",
+ "summary": "The enforce pre-flight of a 118 booking to SE 99999 sent only this PostalCode route lookup, which answered 16010, and raised PostalCodeNotServableError without a TransportInstruction call.",
+ "captured_at": "2026-10-08T15:12:13Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/99999/route",
+ "product": "118",
+ "route": "SE 11143 -> SE 99999",
+ "booking_id": null,
+ "error_code": "16010",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_lookups.TestSandboxPreflight.test_enforce_refuses_unknown_postal_code",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/99999/route",
+   "http_status": 400,
+   "date": "2026-10-08T15:12:13Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/017-preflight-118-se-99999.request.json",
+    "sha256": "120764dcc1a9d949da79d09c44bfebe45cb6e4760b3f0e45e42d86d4ef0f5d38"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/017-preflight-118-se-99999.response.json",
+    "sha256": "87735c82d0aefd01ef73d32b23f59fc43b98529a4a32985bdb8a57832a473abd"
+   },
+   "request": null,
+   "response": {
+    "ErrorCode": 16010,
+    "Status": 400,
+    "UserMessage": "Post code '99999' not found."
+   }
+  }
+ ]
+}

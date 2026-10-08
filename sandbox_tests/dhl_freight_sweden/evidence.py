@@ -719,6 +719,66 @@ def _(b: Builder) -> Json:
     )
 
 
+POSTAL_CODE_RUN = "20261008-171212-postal-code"
+
+
+@evidence("lookup-postal-code-se-98138-no-home-delivery.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "PostalCode route for SE 98138 Kiruna answered bookable true and homeDeliveryParcel false, "
+        "unscoped and scoped to 118 alike.",
+        None, "SE 98138", None, None,
+        f"{SUITE_RUN}: test_lookups.test_postal_code_route_kiruna_bookable_without_home_delivery",
+        [b.suite_exchange(POSTAL_CODE_RUN, "007-postal-code-se-98138"),
+         b.suite_exchange(POSTAL_CODE_RUN, "009-postal-code-se-98138-118")],
+    )
+
+
+@evidence("lookup-postal-code-se-98060-16012.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup", "PostalCode route for SE 98060 answered 400 with 16012 \"Post code '98060' not supported.\".",
+        None, "SE 98060", None, "16012", f"{SUITE_RUN}: test_lookups.test_postal_code_route_not_supported",
+        [b.suite_exchange(POSTAL_CODE_RUN, "011-postal-code-se-98060")],
+    )
+
+
+@evidence("lookup-postal-code-se-84094-16011.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "PostalCode route for SE 84094 answered 400 with 16011 \"Post code '84094' (Landsbygd) not supported.\".",
+        None, "SE 84094", None, "16011", f"{SUITE_RUN}: test_lookups.test_postal_code_route_rural_not_supported",
+        [b.suite_exchange(POSTAL_CODE_RUN, "013-postal-code-se-84094")],
+    )
+
+
+@evidence("lookup-postal-code-se-99999-118-enforce-preflight.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "The enforce pre-flight of a 118 booking to SE 99999 sent only this PostalCode route lookup, "
+        "which answered 16010, and raised PostalCodeNotServableError without a TransportInstruction call.",
+        "118", "SE 11143 -> SE 99999", None, "16010",
+        f"{SUITE_RUN}: test_lookups.TestSandboxPreflight.test_enforce_refuses_unknown_postal_code",
+        [b.suite_exchange(POSTAL_CODE_RUN, "017-preflight-118-se-99999")],
+    )
+
+
+@evidence("lookup-postal-code-se-98138-118-enforce-preflight.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "The enforce pre-flight of a 118 booking to SE 98138 Kiruna sent only this PostalCode route lookup, "
+        "which answered homeDeliveryParcel false, and raised PostalCodeNotServableError without a "
+        "TransportInstruction call.",
+        "118", "SE 11143 -> SE 98138", None, None,
+        f"{SUITE_RUN}: test_lookups.TestSandboxPreflight.test_enforce_refuses_without_home_delivery",
+        [b.suite_exchange(POSTAL_CODE_RUN, "019-preflight-118-se-98138")],
+    )
+
+
 @evidence("lookup-postal-code-pl-route-16009.json")
 def _(b: Builder) -> Json:
     return b.document(

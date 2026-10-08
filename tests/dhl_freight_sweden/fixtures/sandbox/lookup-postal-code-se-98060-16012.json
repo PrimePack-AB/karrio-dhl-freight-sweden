@@ -1,0 +1,37 @@
+{
+ "kind": "lookup",
+ "summary": "PostalCode route for SE 98060 answered 400 with 16012 \"Post code '98060' not supported.\".",
+ "captured_at": "2026-10-08T15:12:13Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98060/route",
+ "product": null,
+ "route": "SE 98060",
+ "booking_id": null,
+ "error_code": "16012",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_lookups.test_postal_code_route_not_supported",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98060/route",
+   "http_status": 400,
+   "date": "2026-10-08T15:12:13Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/011-postal-code-se-98060.request.json",
+    "sha256": "a8bc0bf9dd9cab00872f9cd02979c6e68828c0b79a90b46935ea70c823c0e9fe"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/011-postal-code-se-98060.response.json",
+    "sha256": "8b5ad7979c3d6f1c4ec472e646281ceb9acdae20bc163c1d590e53f394fba4ef"
+   },
+   "request": null,
+   "response": {
+    "ErrorCode": 16012,
+    "Status": 400,
+    "UserMessage": "Post code '98060' not supported."
+   }
+  }
+ ]
+}

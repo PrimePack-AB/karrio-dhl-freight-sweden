@@ -1,0 +1,69 @@
+{
+ "kind": "lookup",
+ "summary": "PostalCode route for SE 98138 Kiruna answered bookable true and homeDeliveryParcel false, unscoped and scoped to 118 alike.",
+ "captured_at": "2026-10-08T15:12:12Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98138/route",
+ "product": null,
+ "route": "SE 98138",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_lookups.test_postal_code_route_kiruna_bookable_without_home_delivery",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98138/route",
+   "http_status": 200,
+   "date": "2026-10-08T15:12:12Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/007-postal-code-se-98138.request.json",
+    "sha256": "d4fe47faff48edaa8566ab5b67f30392f831b73448e80802efd51c632679766f"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/007-postal-code-se-98138.response.json",
+    "sha256": "9923d9a078731af263d36d2db59a4f2c8001097e0a7a7ad58947d9442cfbf9f8"
+   },
+   "request": null,
+   "response": {
+    "countryCode": "SE",
+    "postalCode": "98138",
+    "city": "KIRUNA",
+    "lineHaul": "950",
+    "terminalId": "4850",
+    "deviating": "0",
+    "updatedDate": "2026-07-02T22:00:03",
+    "bookable": true,
+    "homeDeliveryParcel": false
+   }
+  },
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/98138/route",
+   "http_status": 200,
+   "date": "2026-10-08T15:12:12Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/009-postal-code-se-98138-118.request.json",
+    "sha256": "c53fa17913245759e26c1b4f2bd211235cc48130ce17f13cde7dd8e81089fb41"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/009-postal-code-se-98138-118.response.json",
+    "sha256": "332979e7344223787c61c9b89523eb83ede8c2afa27e973f5a67b789b4424b0d"
+   },
+   "request": null,
+   "response": {
+    "countryCode": "SE",
+    "postalCode": "98138",
+    "city": "KIRUNA",
+    "lineHaul": "950",
+    "terminalId": "4850",
+    "deviating": "0",
+    "updatedDate": "2026-07-02T22:00:03",
+    "bookable": true,
+    "homeDeliveryParcel": false
+   }
+  }
+ ]
+}

@@ -1,0 +1,37 @@
+{
+ "kind": "lookup",
+ "summary": "PostalCode route for SE 84094 answered 400 with 16011 \"Post code '84094' (Landsbygd) not supported.\".",
+ "captured_at": "2026-10-08T15:12:13Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/84094/route",
+ "product": null,
+ "route": "SE 84094",
+ "booking_id": null,
+ "error_code": "16011",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_lookups.test_postal_code_route_rural_not_supported",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "GET /postalcodeapi/v1/postalcodes/SE/84094/route",
+   "http_status": 400,
+   "date": "2026-10-08T15:12:13Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/013-postal-code-se-84094.request.json",
+    "sha256": "eec2cffd16c62e4b89c2ef6be6818ebc2c695191a1eef03551ab226fd809b89d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261008-171212-postal-code/013-postal-code-se-84094.response.json",
+    "sha256": "1146e5e3fd83228e0e034d747fc65feba13e4301828142f1014c4d4b4537fc0c"
+   },
+   "request": null,
+   "response": {
+    "ErrorCode": 16011,
+    "Status": 400,
+    "UserMessage": "Post code '84094' (Landsbygd) not supported."
+   }
+  }
+ ]
+}
