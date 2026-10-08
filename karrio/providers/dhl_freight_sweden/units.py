@@ -180,6 +180,47 @@ TERRITORY_PARENTS: typing.Dict[str, str] = {
 }
 
 
+
+class TerritoryPostalCodes(typing.NamedTuple):
+    """The postal codes of a territory booked under its parent country.
+
+    A code matches when, normalised under the parent, it is numeric and lies
+    in one of ``ranges`` or has ``digits`` digits.
+    """
+
+    name: str
+    parent: str
+    ranges: typing.Tuple[typing.Tuple[int, int], ...]
+    digits: typing.Optional[int] = None
+
+    def describe(self) -> str:
+        article = "an" if self.parent[0] in "AEFHILMNORSX" else "a"
+        ranges = " or ".join(f"{low}-{high}" for low, high in self.ranges)
+        digits = f" or of {_DIGIT_WORDS[self.digits]} digits" if self.digits else ""
+        return f"{article} {self.parent} postal code in {ranges}{digits}"
+
+    def matches(self, postal_code: typing.Optional[str]) -> bool:
+        postal = normalized_postal_code(self.parent, postal_code)
+        return postal.isdigit() and (
+            any(low <= int(postal) <= high for low, high in self.ranges)
+            or len(postal) == self.digits
+        )
+
+
+_DIGIT_WORDS = {3: "three"}
+
+# The TERRITORY_PARENTS entries whose territory lies in a postal-code range of
+# the parent, from NON_EU_VAT_POSTAL_RANGES and the Faroese three-digit codes
+# of NON_EU_VAT_POSTAL_CODE_LENGTHS. JE, GG, IM, and XI have no numeric range.
+TERRITORY_POSTAL_CODES: typing.Dict[str, TerritoryPostalCodes] = {
+    "AX": TerritoryPostalCodes("Åland", "FI", ((22000, 22999),)),
+    "IC": TerritoryPostalCodes("Canary Islands", "ES", ((35000, 35999), (38000, 38999))),
+    "EA": TerritoryPostalCodes("Ceuta and Melilla", "ES", ((51000, 51999), (52000, 52999))),
+    "FO": TerritoryPostalCodes("Faroe Islands", "DK", ((3800, 3999),), digits=3),
+    "GL": TerritoryPostalCodes("Greenland", "DK", ((3800, 3999),)),
+}
+
+
 def parent_country(country_code: typing.Optional[str]) -> typing.Optional[str]:
     """The country DHL serves a territory code under; other codes unchanged."""
     return TERRITORY_PARENTS.get((country_code or "").upper(), country_code)

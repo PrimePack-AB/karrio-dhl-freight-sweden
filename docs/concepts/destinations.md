@@ -52,6 +52,9 @@ The connector therefore rates, books, and looks up product matches and service p
 | Canary Islands | IC | ES | yes, ES 35000-35999, 38000-38999 | 109, 112, 202, 233, 601 |
 | Ceuta, Melilla | EA | ES | yes, ES 51000-52999 | 202, 233, 601; 51080 and 52080 from 109 and 112 |
 
+A booking whose shipper or recipient carries the code AX, IC, EA, FO, or GL fails before any other destination check with `TerritoryPostalCodeError`, keyed by the party's `postal_code`, when the postal code is missing or, normalised under the parent, lies outside the territory: FI 22000-22999 for AX, ES 35000-35999 or 38000-38999 for IC, ES 51000-51999 or 52000-52999 for EA, DK 3800-3999 or a three-digit code for FO, and DK 3800-3999 for GL.
+Such a code would otherwise be booked as the parent's mainland, inside the EU VAT area, with its customs data dropped.
+JE, GG, IM, and XI have no numeric postal-code range and are not checked, and rating does not check the postal code of a territory code.
 The Customs column applies the [EU VAT area](#the-eu-vat-area) check to the parent country and postal code, and the Excluded from column applies the [excluded postal codes](#excluded-postal-codes) after the mapping; the Faroe Islands' three-digit codes fall under the DK 3800-3999 entry for 109 and 112 and under the catalog's `???` for the others.
 The sandbox booked 202 to GB BT1 1AA (Northern Ireland) with payer code DAP and no customs data ([booking-2906761925-202-se-gb-northern-ireland.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761925-202-se-gb-northern-ireland.json)).
 202 to GB JE2 3AB was not sent: the connector refuses it before the booking request under the catalog's `JE*` exclude, and product matches did not offer 202 for that postcode ([lookup-product-matches-se-gb-je23ab.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-gb-je23ab.json)).
