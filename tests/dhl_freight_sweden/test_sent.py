@@ -4,8 +4,8 @@ Lanes to or from PL carry SENT entries under the shipment's
 additionalInformation: SENT_FREE "false" with SENT_REF and SENT_CARKEY, or
 SENT_FREE "true" (product manual v5.26 §5.4 p23). The live API requires
 SENT_FREE "true" when neither identifier is sent (validation error 22001,
-fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json). The
-connector requires one of them explicitly.
+fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json). Without
+either, the connector declares the shipment SENT free.
 """
 
 import typing
@@ -33,7 +33,7 @@ class TestDHLFreightSent(unittest.TestCase):
             gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
         return context.exception
 
-    def test_lanes_to_and_from_pl_without_sent_declaration_fail(self):
+    def test_lanes_to_and_from_pl_without_sent_declaration_send_sent_free(self):
         cases = [
             ("to PL", _parcel_connect(_recipient_pl)),
             ("from PL", {**_parcel_connect(_recipient_se), "shipper": _shipper_pl}),
@@ -42,10 +42,21 @@ class TestDHLFreightSent(unittest.TestCase):
 
         for lane, payload in cases:
             with self.subTest(lane=lane):
-                error = self._error(payload)
+                serialized = self._serialize(payload)
 
-                self.assertEqual(detail_keys(error), {"dhl_freight_sweden_sent_free"})
-                self.assertIn("dhl_freight_sweden_sent_free", str(error))
+                self.assertEqual(serialized["additionalInformation"], [SentFree])
+
+    def test_lane_to_pl_without_sent_declaration_at_500_kg_and_above_sends_sent_free(self):
+        for weight in [500.0, 1200.0]:
+            with self.subTest(weight=weight):
+                serialized = self._serialize(
+                    {
+                        **_parcel_connect(_recipient_pl),
+                        "parcels": [{"weight": weight, "weight_unit": "KG"}],
+                    }
+                )
+
+                self.assertEqual(serialized["additionalInformation"], [SentFree])
 
     def test_lane_from_pl_with_explicit_sent_free_is_sent(self):
         serialized = self._serialize(
