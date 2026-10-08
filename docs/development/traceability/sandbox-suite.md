@@ -29,9 +29,18 @@ Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the
 
 ## Evidence
 
-Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](../../../tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256, and `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks those files offline.
-A new sandbox finding gets its own evidence file there before the README or the findings note cites it.
-`sandbox_tests/dhl_freight_sweden/evidence.py` builds those files from the captures: its `CATALOG` names each evidence file and the capture files behind it, relative to the state directory.
+```mermaid
+flowchart TD
+  call["Live sandbox call"] --> capture["Capture directory: request and response JSON, client key redacted"]
+  capture --> build["sandbox_tests/dhl_freight_sweden/evidence.py builds each CATALOG entry"]
+  build --> fixture["Committed evidence file in tests/dhl_freight_sweden/fixtures/sandbox/"]
+  fixture --> check["test_sandbox_evidence.py checks metadata, redaction, and parsing offline"]
+  fixture --> cite["README, docs pages, and the findings note cite it"]
+  cite --> links["test_doc_links.py checks the links resolve and every evidence file is linked"]
+```
+
+Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](../../../tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256.
+A new sandbox finding gets its own evidence file and `CATALOG` entry, naming the capture files relative to the state directory, before anything cites it.
 Rebuilding over the same captures reproduces the committed files byte for byte, so `git diff` after a rebuild shows only new or changed findings:
 
 ```bash
