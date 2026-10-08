@@ -37,7 +37,7 @@ The table compares the labels with the receiver phone, field 9, of the manual's 
 | 103 | receiving service point's phone mandatory | `Phn.` line with no number | [103](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761230-103-se-se-service-point.json) |
 
 "Not allowed" for 109 and 112 covers every country the manual lists for them except SK.
-The 103 label is the one deviation from the manual, recorded under [Phone numbers on labels](../notes/sandbox/sandbox-findings.md#phone-numbers-on-labels).
+The 103 label is the one deviation from the manual, recorded under [Deviations from manual v5.26](../notes/sandbox/sandbox-findings.md#deviations-from-manual-v526).
 The sender phone, field 6, is conditional, and printing it is not allowed for 104, for 402/502, or for 107 from every listed country except SK (p168), so the labels without it do not contradict the manual.
 
 The phone format follows product manual v5.26 Appendix E (§10.6 p197): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only; dots, letters, and slash are forbidden.
