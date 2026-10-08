@@ -31,4 +31,4 @@
 - `karrio.Shipment.create` refuses non-SE shippers, so inbound-product tests (107) call the mapper/proxy directly
 
 ## Current State
-- 2026-10-08: docs site live at https://primepack-ab.github.io/karrio-dhl-freight-sweden/ via `.github/workflows/docs-pages.yml` and the external harness PrimePack-AB/starlight-docs-harness pinned at v1.2 (commit e04b3ad); architecture and deferred maintenance in docs/development/architecture/docs-site.md
+- 2026-10-08: docs site live at https://primepack-ab.github.io/karrio-dhl-freight-sweden/ via `.github/workflows/docs-pages.yml` and the external harness PrimePack-AB/starlight-docs-harness pinned at v1.3 (commit 6a9f84b); architecture and deferred maintenance in docs/development/architecture/docs-site.md
