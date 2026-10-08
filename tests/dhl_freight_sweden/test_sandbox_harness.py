@@ -354,6 +354,22 @@ class TestSandboxDeclarationPayloads(unittest.TestCase):
 
                 self.assertEqual(serialized["additionalInformation"], expected)
 
+    def test_601_without_declarations_serialize_as_default_free(self):
+        cases = {
+            "HU": [{"code": "EKAER_FREE", "stringValue": "true"}],
+            "RO": [{"code": "UIT_FREE", "stringValue": "true"}],
+        }
+
+        for country, expected in cases.items():
+            with self.subTest(country=country):
+                serialized = _serialize(
+                    gateway.mapper.create_shipment_request(
+                        shipment_request(**declarations.payload(country, {}))
+                    )
+                )
+
+                self.assertEqual(serialized["additionalInformation"], expected)
+                self.assertEqual(declarations.DEFAULT_INFORMATION[country], expected)
 
 class TestSandboxExportPayloads(unittest.TestCase):
     def test_aland_customs_without_service_carries_customs_information(self):
