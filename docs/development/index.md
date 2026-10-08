@@ -4,6 +4,7 @@ title: "Development"
 
 This section is for working on the connector itself.
 The README is the consumer guide; [Plugin layout](architecture/plugin-layout.md) describes how the package registers with karrio, and [Sandbox suite and evidence](traceability/sandbox-suite.md) describes the opt-in suite that books against the DHL sandbox and the evidence files the documentation cites.
+[Running the sandbox suite](../guides/sandbox-runs.md) shows how to run that suite.
 Working notes, including the sandbox findings, are indexed in [docs/notes](../notes/README.md).
 
 ## Setup
