@@ -134,7 +134,6 @@ class TransportMovement(lib.StrEnum):
     """DHL Freight customs document transport movements."""
 
     Export = "Export"
-    Import = "Import"
 
 
 class CustomsOption(lib.Enum):
