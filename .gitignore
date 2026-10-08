@@ -8,3 +8,4 @@ build/
 !.envrc
 !.env.example
 .claude.local.md
+logs/
