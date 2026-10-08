@@ -6,8 +6,12 @@ accessors below narrow them to what these tests know they hold, without
 changing any runtime value.
 """
 
+import email.message
 import enum
+import http
+import io
 import typing
+import urllib.error
 
 import karrio.core.errors as errors
 import karrio.core.models as models
@@ -87,3 +91,42 @@ def shipment_request(**fields: typing.Any) -> models.ShipmentRequest:
 def address_validation_request(**fields: typing.Any) -> models.AddressValidationRequest:
     """An ``AddressValidationRequest`` from plain dict fields, which its attrs converters accept."""
     return models.AddressValidationRequest(**fields)
+
+
+def http_error(status: int, body: str = "") -> typing.Callable[..., typing.Any]:
+    """A mocked ``lib.request`` answer that fails with ``status`` and ``body``.
+
+    The answer hands a real ``HTTPError`` to the request's ``on_error``
+    decoder, so ``lib.error_decoder`` enriches a JSON body with the HTTP
+    metadata and raises on a body that is not JSON, as it does live.
+    """
+
+    def respond(**kwargs: typing.Any) -> typing.Any:
+        return kwargs["on_error"](
+            urllib.error.HTTPError(
+                kwargs["url"],
+                status,
+                http.HTTPStatus(status).phrase,
+                email.message.Message(),
+                io.BytesIO(body.encode()),
+            )
+        )
+
+    return respond
+
+
+def answers(*responses: typing.Any) -> typing.Callable[..., typing.Any]:
+    """A ``lib.request`` side effect answering calls in order.
+
+    An exception is raised, an ``http_error`` answer is run against the
+    call's arguments, and any other value is returned as the body.
+    """
+    pending = list(responses)
+
+    def side_effect(**kwargs: typing.Any) -> typing.Any:
+        response = pending.pop(0)
+        if isinstance(response, BaseException):
+            raise response
+        return response(**kwargs) if callable(response) else response
+
+    return side_effect

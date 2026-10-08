@@ -6,6 +6,7 @@ flag to product 118 availability. The unified ``validate_address`` protocol
 method and the booking pre-flight share this evaluation.
 """
 
+import enum
 import typing
 import karrio.lib as lib
 import karrio.core.models as models
@@ -19,6 +20,25 @@ import karrio.providers.dhl_freight_sweden.units as provider_units
 # documented flag fall back to the general ``bookable`` flag.
 PRODUCT_SERVICABILITY_FLAGS = {"118": "homeDeliveryParcel"}
 
+# PostalCode ErrorResult codes that answer for the postal code itself:
+# 16009 country not supported, 16010 not found, 16011 rural (Landsbygd) and
+# 16012 not supported. Any other failure leaves the location unverified.
+REFUSAL_ERROR_CODES = {16009, 16010, 16011, 16012}
+
+# The API Farm answers 401 for a missing or unknown client key; the answer
+# for a key whose application lacks the PostalCode API is not captured, so
+# 403 is treated alike.
+ACCESS_DENIED_STATUSES = {401, 403}
+
+
+class RouteOutcome(enum.Enum):
+    """What a route lookup establishes about a postal code."""
+
+    servable = "servable"
+    refused = "refused"
+    access_unavailable = "access_unavailable"
+    unverified = "unverified"
+
 
 class PostalCodeNotServableError(errors.ShippingSDKDetailedError):
     """Raised when the destination postal code is not servable for the product."""
@@ -30,6 +50,27 @@ def evaluate_route(route: dict, product: typing.Optional[str] = None) -> bool:
     """Return the servability of a product on a postal-code route response."""
     flag = PRODUCT_SERVICABILITY_FLAGS.get(product or "")
     return bool(route.get(flag or "bookable"))
+
+
+def to_route_body(value: typing.Any) -> dict:
+    """Decode a route-lookup body, mapping a missing or non-object body to {}."""
+    body = lib.failsafe(lambda: lib.to_dict(value)) if value else None
+    return body if isinstance(body, dict) else {}
+
+
+def classify_route(route: dict, product: typing.Optional[str] = None) -> RouteOutcome:
+    """Classify a decoded route-lookup body for a product."""
+    if _is_route(route):
+        return lib.identity(
+            RouteOutcome.servable
+            if evaluate_route(route, product)
+            else RouteOutcome.refused
+        )
+    if _error_code(route) in REFUSAL_ERROR_CODES:
+        return RouteOutcome.refused
+    if route.get("http_status") in ACCESS_DENIED_STATUSES:
+        return RouteOutcome.access_unavailable
+    return RouteOutcome.unverified
 
 
 def check_booking_route(
@@ -80,6 +121,11 @@ def _is_rejection(route: dict) -> bool:
     return isinstance(status, int) and 400 <= status < 500
 
 
+def _error_code(route: dict) -> typing.Optional[int]:
+    code = error.error_result_fields(route)["error_code"]
+    return lib.failsafe(lambda: int(code)) if code is not None else None
+
+
 def _servability_warning(
     route: dict, product: str, settings: provider_utils.Settings
 ) -> models.Message:
@@ -105,6 +151,35 @@ def _unverified_warning(settings: provider_utils.Settings) -> models.Message:
         message=(
             "Destination servability could not be verified (address "
             "validation API error); the booking proceeded without the check"
+        ),
+    )
+
+
+def _access_unavailable_message(
+    route: dict, settings: provider_utils.Settings
+) -> models.Message:
+    return models.Message(
+        carrier_name=settings.carrier_name,
+        carrier_id=settings.carrier_id,
+        code="postal_code_api_unavailable",
+        level="warning",
+        message=(
+            "Postal code location could not be verified: the PostalCode API "
+            "is not available for this application"
+        ),
+        details=dict(http_status=route.get("http_status")),
+    )
+
+
+def _unverified_message(settings: provider_utils.Settings) -> models.Message:
+    return models.Message(
+        carrier_name=settings.carrier_name,
+        carrier_id=settings.carrier_id,
+        code="address_validation_unavailable",
+        level="warning",
+        message=(
+            "Postal code location could not be verified (address validation "
+            "API error)"
         ),
     )
 
@@ -144,13 +219,16 @@ def parse_address_validation_response(
 
     An unscoped lookup reports the general ``bookable`` flag; a lookup scoped
     through ``options.service`` reports the product's flag. A body without
-    route fields yields no details; messages appear only when the body
-    matches a known error shape, so a failure body outside those shapes
-    (e.g. a 5xx) returns empty lists — detect it via ``details is None``.
+    route fields yields no details and a message: DHL's own error for a
+    postal code it refuses, ``postal_code_api_unavailable`` when the client
+    key's application has no PostalCode API access, and
+    ``address_validation_unavailable`` for any other failure.
     """
     response = _response.deserialize()
     route = response if _is_route(response) else {}
-    messages = error.parse_error_response(response, settings)
+    messages = _lookup_messages(
+        classify_route(response, _response.ctx.get("service")), response, settings
+    )
 
     details = lib.identity(
         models.AddressValidationDetails(
@@ -172,6 +250,18 @@ def parse_address_validation_response(
     )
 
     return details, messages
+
+
+def _lookup_messages(
+    outcome: RouteOutcome, response: dict, settings: provider_utils.Settings
+) -> typing.List[models.Message]:
+    if outcome == RouteOutcome.access_unavailable:
+        return [_access_unavailable_message(response, settings)]
+    if outcome == RouteOutcome.unverified:
+        return [_unverified_message(settings)]
+    if outcome == RouteOutcome.refused:
+        return error.parse_error_response(response, settings)
+    return []
 
 
 def _is_route(response: typing.Any) -> bool:

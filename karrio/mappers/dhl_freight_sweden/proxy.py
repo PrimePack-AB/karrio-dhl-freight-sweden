@@ -24,19 +24,26 @@ class Proxy(proxy.Proxy):
         GETs ``/postalcodes/{countryCode}/{postalCode}/route`` with the
         standard client-key header; the route body feeds the unified
         ``AddressValidationDetails`` through the shared evaluation helpers.
+        A failed lookup (network error, timeout, or a body that is not JSON)
+        deserializes to an empty body, which the helpers report as
+        unverified rather than aborting the caller.
         """
         params = request.serialize()
-        response = lib.request(
-            url=f"{self.settings.postal_code_api_url}/postalcodes/"
-            f"{urllib.parse.quote(str(params.get('country_code') or '').upper(), safe='')}/"
-            f"{urllib.parse.quote(str(params.get('postal_code') or ''), safe='')}/route",
-            trace=self.trace_as("json"),
-            method="GET",
-            headers={"client-key": self.settings.client_key},
-            on_error=lib.error_decoder,
+        response = lib.failsafe(
+            lambda: lib.request(
+                url=f"{self.settings.postal_code_api_url}/postalcodes/"
+                f"{urllib.parse.quote(str(params.get('country_code') or '').upper(), safe='')}/"
+                f"{urllib.parse.quote(str(params.get('postal_code') or ''), safe='')}/route",
+                trace=self.trace_as("json"),
+                method="GET",
+                headers={"client-key": self.settings.client_key},
+                on_error=lib.error_decoder,
+            )
         )
 
-        return lib.Deserializable(response, provider_utils.to_dict, request.ctx)
+        return lib.Deserializable(
+            response, provider_address.to_route_body, request.ctx
+        )
 
     def get_rates(self, request: lib.Serializable) -> lib.Deserializable:
         """Resolve static prices from the server-side rate sheet.
