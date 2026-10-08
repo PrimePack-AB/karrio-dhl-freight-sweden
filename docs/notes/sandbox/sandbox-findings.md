@@ -198,6 +198,8 @@ The PL route answer matches the manual, which lists the route service only for d
 | 2026-10-05 | ServicePointLocator | Budapest 1052, before booking 2906761289 | the locker 8013-118530, whose entry lists only the service type `parcel:pick-up-unregistered` | [booking-2906761289][b-289] |
 | 2026-10-06 | ServicePointLocator, five points | Mariehamn 22100, before booking 2906761917 | five Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 | [booking-2906761917][b-917] |
 
+Every pre-flight above ran with the connection setting `address_validation` `enforce`.
+
 ## Product matches
 
 Every product matches call answered HTTP 200 without an error message, each with one piece, from SE 11143, and with the recipient country code and postal code as given.
