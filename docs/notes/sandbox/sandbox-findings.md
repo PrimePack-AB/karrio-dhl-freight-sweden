@@ -292,8 +292,6 @@ The 103 service-point label prints a `Phn.` line with no number ([label-29067612
 
 ## Pending verification
 
-The README does not list PostalCode error 16012; the sandbox answered the PL route lookup with 16009 "Country code 'PL' not supported." ([lookup-postal-code-pl-route-16009.json][l-pc-pl]), and 16012 appeared on 2026-10-08 for the Swedish code 98060 ([lookup-postal-code-se-98060-16012.json][l-pc-98060]).
-
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
 ## Untested
