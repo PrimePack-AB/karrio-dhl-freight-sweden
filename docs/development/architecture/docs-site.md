@@ -8,13 +8,13 @@ This repository contains no site application code; it holds the markdown and one
 ## Build and publishing
 
 The workflow `.github/workflows/docs-pages.yml` runs on pushes to `main` that touch `docs/**` or the workflow itself, and on manual dispatch.
-Its build job checks out this repository and invokes the harness as a composite GitHub Action, pinned by commit SHA with the tag in a trailing comment (currently v1.1, commit 14fdd00).
+Its build job checks out this repository and invokes the harness as a composite GitHub Action, pinned by commit SHA with the tag in a trailing comment (currently v1.2, commit e04b3ad).
 The action installs bun, builds the site with `docs-dir`, `exclude` (default `notes`), `title`, `base`, `repo-url`, and `repo-ref` passed as environment variables, and uploads the Pages artifact.
 The deploy job deploys that artifact with `actions/deploy-pages`, and only that job holds the `pages: write` and `id-token: write` permissions.
 The repository's Pages source is set to GitHub Actions.
 
 Consuming a new harness release means editing the SHA pin and its tag comment in the workflow.
-Published harness tags are never force-moved; the v1 tag predates the v1.1 fixes, so v1.1 is the only tag consumers pin.
+Published harness tags are never force-moved; the v1 tag predates the v1.1 fixes, so consumers pin v1.1 or later.
 
 A failed build leaves the last good deployment serving, and the failure surfaces in the Actions log.
 The `github-pages` environment has no required reviewers, because a required review would leave deployments pending silently instead of failing.

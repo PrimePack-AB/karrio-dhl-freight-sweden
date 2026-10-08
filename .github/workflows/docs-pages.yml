@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
-      - uses: PrimePack-AB/starlight-docs-harness@14fdd00a2d0c5beb15a1946f48ed96fd67ae6a7a # v1.1
+      - uses: PrimePack-AB/starlight-docs-harness@e04b3adb0991a23515e46588f4c1668eae9ddeda # v1.2
         with:
           repo-url: https://github.com/PrimePack-AB/karrio-dhl-freight-sweden
   deploy:
