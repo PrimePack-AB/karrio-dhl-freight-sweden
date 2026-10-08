@@ -17,8 +17,7 @@ The API Farm has no tracking or cancellation endpoint, so the proxy defines neit
 
 ## Namespace packages and pyright
 
-`pyrightconfig.json` resolves the SDK from the `../karrio/modules/sdk` checkout and the project venv from `.venv`.
-`pyrightconfig.json` resolves the SDK from the same `../karrio/modules/sdk` checkout and the project venv from `.venv`, and checks `karrio/`, `examples/`, `sandbox_tests/`, and `tests/`.
+`pyrightconfig.json` resolves the SDK from the `../karrio/modules/sdk` checkout and the project venv from `.venv`, and checks `karrio/`, `examples/`, `sandbox_tests/`, and `tests/`.
 At runtime `karrio` is a `pkgutil.extend_path` namespace shared by the SDK and this repository, which pyright cannot follow: the SDK's regular `karrio`, `karrio.providers`, `karrio.mappers`, `karrio.schemas`, and `karrio.plugins` packages would shadow this repository's directories.
 The empty `__init__.pyi` files in those five directories make them regular packages for pyright, so imports of both the SDK and the connector resolve.
 They have no runtime effect and are excluded from the wheel by `[tool.setuptools.exclude-package-data]`, so an installed connector never shadows the SDK's `karrio/__init__.py`.
