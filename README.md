@@ -349,10 +349,8 @@ DHL has not said whether this still applies to API bookings that carry full cust
 
 ### Norway, Switzerland, and Great Britain
 
-The sandbox booked 109 and 112 to NO, with the customs services listed above.
-On account 116768 product matches offered HDI, 202, 601, and 233 to CH and none of 109, 112, and 107 ([lookup-product-matches-se-ch-8001.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json)), and 601 to Zürich was booked as shown above.
-The manual lists GB for 109 and 112 only under a separate agreement with DHL (§5.3 p18, §5.14 p63), and DHL rejected 112 to GB for account 116768, which holds none, with 22005 and 22026 ([rejection-22005-112-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json)).
-[Products](docs/concepts/products.md) has the details for each destination.
+Bookings to NO, CH, and GB carry customs data like any lane outside the EU VAT area, but the products differ: on account 116768 product matches to CH offered HDI, 202, 601, and 233 and none of 109, 112, and 107 ([lookup-product-matches-se-ch-8001.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json)), and the manual lists GB for 109 and 112 only under a separate agreement with DHL (§5.3 p18, §5.14 p63).
+[Products](docs/concepts/products.md) has the bookings, rejections, and lookups for each destination.
 
 ## Special territories and excluded postal codes
 
