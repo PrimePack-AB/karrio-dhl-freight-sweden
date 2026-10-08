@@ -399,7 +399,7 @@ An excluded booking fails with `ExcludedDestinationError` keyed by the party's `
 
 A boolean option accepts true, `"true"`, `"1"`, 1, or `"yes"` and false, `"false"`, `"0"`, 0, or `"no"` (strings in any case), treats null or an empty string as unset, and fails with `OptionValueError` on any other value.
 `customs.options` takes `eori_number` for Standard and `voec_number` for VOEC.
-No additional service other than the customs services has been sent to the sandbox ([findings](docs/notes/sandbox/sandbox-findings.md#untested)).
+No additional service other than the customs services has been sent to the sandbox ([findings](docs/notes/sandbox/sandbox-findings.md#coverage)).
 
 ## Errors reference
 
