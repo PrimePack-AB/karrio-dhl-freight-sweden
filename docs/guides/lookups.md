@@ -36,23 +36,20 @@ products, messages = product_matches.parse_product_matches_response(
 )
 ```
 
-Both `shipper` and `recipient` (postal code and country) are required; the connector raises a field error before any carrier call when one is missing.
-`parcels` is optional and takes karrio parcel dicts, the same shape as `ShipmentRequest.parcels`; each becomes one piece criterion.
-Parcel fields the lookup does not use (`description`, `items`, `options`, `reference_number`, ...) are ignored.
-A parcel without `weight_unit` or `dimension_unit` is read as KG or CM, and LB/IN parcels are converted, so pieces always go out in KG and CM with a volume in m³ when all three dimensions are set.
-No `packageType` is sent, because the connector has no mapping from karrio packaging types to DHL package type codes.
-The optional scalar keys are shipment totals and the trade direction:
+| Key | Required | `MatchCriteria` field | Unit or values |
+|-----|----------|-----------------------|----------------|
+| `shipper` | yes, with `postal_code` and `country_code` | Consignor party address | |
+| `recipient` | yes, with `postal_code` and `country_code` | Consignee party address | |
+| `parcels` | no | `pieces`, one per parcel | see [Parcel input](#parcel-input) |
+| `total_weight` | no | `totalWeight` | kg |
+| `total_volume` | no | `totalVolume` | m³ |
+| `total_loading_meters` | no | `totalLoadingMeters` | loading metres |
+| `total_pallet_places` | no | `totalPalletPlaces` | pallet places |
+| `total_number_of_pieces` | no | `totalNumberOfPieces` | count |
+| `import_export` | no | `importExport` | `E` or `I` |
 
-| Key | `MatchCriteria` field | Unit or values |
-|-----|-----------------------|----------------|
-| `total_weight` | `totalWeight` | kg |
-| `total_volume` | `totalVolume` | m³ |
-| `total_loading_meters` | `totalLoadingMeters` | loading metres |
-| `total_pallet_places` | `totalPalletPlaces` | pallet places |
-| `total_number_of_pieces` | `totalNumberOfPieces` | count |
-| `import_export` | `importExport` | `E` or `I` |
-
-These keys are passed through to the DHL `MatchCriteria` fields as given, in DHL's metric units, with no conversion.
+A missing `shipper` or `recipient`, or one without its postal code or country, raises a field error before any carrier call.
+The `total_*` and `import_export` keys are shipment totals and the trade direction, passed through to the DHL `MatchCriteria` fields as given, in DHL's metric units, with no conversion.
 Any other top-level key raises a field error naming it before any carrier call, so a misspelled or unsupported key (for example `piece` or `services`) is never silently dropped.
 Each product carries `code`, `name`, `from_countries`, `to_countries`, `to_country_postal_excludes`, and `rules_for_country_delivery_types`; the delivery-type rules signal whether a product delivers to a service point.
 
@@ -88,9 +85,7 @@ points, messages = service_points.parse_service_points_response(
 )
 ```
 
-`parcel` is one karrio parcel dict, the parcel the point must fit; the caller chooses which parcel of the shipment to pass, and the connector sends it as the request's `piece` capacity filter.
-Parcel fields the lookup does not use (`description`, `items`, `options`, `reference_number`, ...) are ignored.
-A parcel without `weight_unit` or `dimension_unit` is read as KG or CM, and an LB/IN parcel is converted, so the capacity filter always goes out in KG and CM.
+`parcel` is one karrio parcel dict, the parcel the point must fit (see [Parcel input](#parcel-input)); the caller chooses which parcel of the shipment to pass, and the connector sends it as the request's `piece` capacity filter.
 The accepted top-level keys are `address`, `max_items`, `location_types`, `distance`, and `parcel`.
 Any other key, including `parcels` and `piece`, raises a field error naming it before any carrier call.
 
@@ -102,6 +97,13 @@ Any other key, including `parcels` and `piece`, raises a field error naming it b
 | `type` | `servicepoint`, `locker`, `postoffice`, or `postbank` | `locker` books as `ParcelStation`, every other type as `ParcelShop` |
 | `address` | `{street, city, postal_code, country_code}` | the four address options |
 | `coordinates` | `{latitude, longitude}` | display and sorting |
+
+## Parcel input
+
+Both lookups take karrio parcel dicts, the same shape as `ShipmentRequest.parcels`: product matches a list under `parcels`, each becoming one piece criterion, and service points one parcel under `parcel`.
+Parcel fields the lookups do not use (`description`, `items`, `options`, `reference_number`, ...) are ignored.
+A parcel without `weight_unit` or `dimension_unit` is read as KG or CM, and an LB/IN parcel is converted, so pieces always go out in KG and CM.
+Product matches pieces also carry a volume in m³ when all three dimensions are set, and no `packageType`, because the connector has no mapping from karrio packaging types to DHL package type codes.
 
 ## Lookups and booking over REST
 
