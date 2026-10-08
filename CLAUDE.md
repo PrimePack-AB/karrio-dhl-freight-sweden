@@ -7,6 +7,11 @@
 - Territory-table parity with nordic_conventions: `cd ../nordic_conventions && PYTHONPATH=../karrio-dhl-freight-sweden .venv/bin/python -m unittest discover -s tests` - EU VAT tables and postcode normalisation must change identically in both repos
 - Docs site preview: `DOCS_DIR=$PWD/docs SITE_BASE=/karrio-dhl-freight-sweden REPO_URL=https://github.com/PrimePack-AB/karrio-dhl-freight-sweden bun run --cwd ../starlight-docs-harness dev` - renders ./docs minus docs/notes/ at http://localhost:4321/karrio-dhl-freight-sweden/; publishing is automatic on docs pushes to main via docs-pages
 
+## Docs site
+- Site behavior (mounting, link rewriting, rendering) lives in ../starlight-docs-harness; consume a new harness tag by editing the SHA pin (`# vN.N` comment) in .github/workflows/docs-pages.yml
+- Failed builds keep the last deployment serving; do not add required reviewers to the github-pages environment - deploys would pend silently instead of failing
+- docs/notes/-only pushes still trigger a rebuild (the paths filter matches docs/**) - a harmless redeploy of unchanged content
+
 ## Product manual
 - Source of truth: DHL Freight Sweden product manual, newest listed at https://dhlpaket.se/dashboard/specifications/products/ - cite the URL, do not crawl it; never vendor the PDF
 - Cite as `§x.y pN` against the version and sha named in README; a new manual version means re-mapping every citation (section numbers shift when products are removed)
