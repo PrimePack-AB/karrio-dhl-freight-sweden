@@ -135,9 +135,11 @@ details, messages = karrio.Address.validate(
 
 Scoped to 118 through `options.service`, `details.success` reports `homeDeliveryParcel`; unscoped, it reports the route's `bookable` flag, and `details.complete_address` carries DHL's city for the code.
 An unknown code returns DHL's error as a message, such as 16010 "post code not found" ([lookup-postal-code-se-99999-16010.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-99999-16010.json)), and a country the route does not cover returns 16009 ([lookup-postal-code-ch-8001-16009.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-ch-8001-16009.json)).
+A Swedish code DHL knows but does not serve returns 16012 "post code not supported" ([lookup-postal-code-se-98060-16012.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98060-16012.json)), and a rural (Landsbygd) code returns 16011 ([lookup-postal-code-se-84094-16011.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json)).
 
 The `address_validation` setting runs the same check before a 118 booking to a Swedish recipient.
 With `warn` an unservable route or a DHL error adds a message and the shipment is booked, and with `enforce` it blocks the booking with `PostalCodeNotServableError`.
+`enforce` treats every DHL 4xx route error, 16009, 16010, 16011, and 16012 included, as a refusal.
 A lookup with no verdict, such as a timeout or a 5xx answer, adds a warning and books in both modes, so a PostalCodes outage cannot block bookings.
 Values are read case-insensitively, a value that names no mode means `off`, and a connection can move from `off` to `warn` to `enforce`.
 
