@@ -257,7 +257,7 @@ Product matches decide what DHL offers on a lane; this catalogue maps karrio ser
 | `dhl_freight_sweden_road_freight_standard`, `_direct`, `_priority` | 202, 205, 233 | Road Freight Standard, Direct, Priority | to and from SE | none |
 | `dhl_freight_sweden_standard_pallet_international` | SPI | Standard Pallet International | to and from SE | none |
 
-Rating offers each product only on the lanes the manual's valid countries allow, so none of 109, 112, 107, 202, 205, 233, SPI, and 601 rates within SE; [Products](docs/concepts/products.md#lanes) lists the countries.
+Rating and booking accept each product only on the lanes the manual's valid countries allow, so none of 109, 112, 107, 202, 205, 233, SPI, and 601 rates or books within SE, and a booking on another lane fails with `ProductLaneError`; [Products](docs/concepts/products.md#lanes) lists the countries.
 Each product section of the manual states minimum piece dimensions, for example 15 × 11 × 2 cm for 102 and 112 and 15 × 11 × 3 cm for 601, and DHL checks them at booking; [Products](docs/concepts/products.md) lists them all.
 Home Delivery B2C (401) takes its door access code through `dhl_freight_sweden_doorstep_access_code`.
 
@@ -423,6 +423,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
+| `ProductLaneError` | a lane outside the product's valid countries in the manual | `shipper.country_code` or `recipient.country_code` |
 | `SentInformationError`, `TransportDeclarationError` | a missing or contradictory SENT, EKAER, or UIT declaration, including an undeclared EKAER or UIT shipment at or above 500 kg | the option |
 | `PartyTaxIdError` | 202, SPI, or 601 to or from GR without both VAT numbers or TINs | `shipper.federal_tax_id` or `recipient.federal_tax_id` |
 | `QrCodeEligibilityError` | a QR code outside 107 from the listed countries | `dhl_freight_sweden_qr_code` |
