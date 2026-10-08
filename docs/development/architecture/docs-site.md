@@ -8,7 +8,7 @@ This repository contains no site application code; it holds the markdown and one
 ## Build and publishing
 
 The workflow `.github/workflows/docs-pages.yml` runs on pushes to `main` that touch `docs/**` or the workflow itself, and on manual dispatch.
-Its build job checks out this repository and invokes the harness as a composite GitHub Action, pinned by commit SHA with the tag in a trailing comment (currently v1.2, commit e04b3ad).
+Its build job checks out this repository and invokes the harness as a composite GitHub Action, pinned by commit SHA with the tag in a trailing comment (currently v1.3, commit 6a9f84b).
 The action installs bun, builds the site with `docs-dir`, `exclude` (default `notes`), `title`, `base`, `repo-url`, and `repo-ref` passed as environment variables, and uploads the Pages artifact.
 The deploy job deploys that artifact with `actions/deploy-pages`, and only that job holds the `pages: write` and `id-token: write` permissions.
 The repository's Pages source is set to GitHub Actions.
