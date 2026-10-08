@@ -1,7 +1,7 @@
 """Expected DHL-side rejections: payload mutations and the rejection attempt.
 
-The connector rejects these payloads before sending them, so each case
-builds a valid request through the connector and mutates its serialized
+The connector never sends these payloads: it refuses most of them locally
+and adds a default SENT entry to PL lanes. Each case therefore builds a valid request through the connector and mutates its serialized
 TransportInstruction with ``harness.mutated_request`` just before the call.
 """
 
