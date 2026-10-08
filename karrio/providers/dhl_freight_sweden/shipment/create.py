@@ -102,6 +102,12 @@ class TransportDeclarationError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class TerritoryPostalCodeError(errors.ShippingSDKDetailedError):
+    """Raised when a territory country code carries a postal code outside the territory."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class ProductLaneError(errors.ShippingSDKDetailedError):
     """Raised when the product does not ship from the shipper's to the recipient's country."""
 
@@ -307,6 +313,7 @@ def shipment_request(
 ) -> lib.Serializable:
     _check_label_type(payload, settings)
     _check_flag_options(payload)
+    _check_territory_postal_codes(dict(shipper=payload.shipper, recipient=payload.recipient))
     shipper = lib.to_address(provider_units.with_parent_country(payload.shipper))
     recipient = lib.to_address(provider_units.with_parent_country(payload.recipient))
     packages = lib.to_packages(payload.parcels)
@@ -795,6 +802,40 @@ def _qr_code(
         )
 
     return True
+
+
+def _check_territory_postal_codes(addresses: typing.Dict[str, models.Address]) -> None:
+    mismatched = next(
+        (
+            (party, country, territory, address.postal_code)
+            for party, address in addresses.items()
+            for country in [(address.country_code or "").upper()]
+            for territory in [provider_units.TERRITORY_POSTAL_CODES.get(country)]
+            if territory is not None and not territory.matches(address.postal_code)
+        ),
+        None,
+    )
+
+    if mismatched is None:
+        return
+
+    party, country, territory, postal_code = mismatched
+    missing = not str(postal_code or "").strip()
+    raise TerritoryPostalCodeError(
+        f"Country code {country} ({territory.name}) is booked as {territory.parent} "
+        f"and needs {territory.describe()}; "
+        + lib.identity(
+            f"got no {party} postal code"
+            if missing
+            else f"got {party} postal code {postal_code!r}"
+        ),
+        details={
+            f"{party}.postal_code": dict(
+                code="required" if missing else "invalid",
+                message=f"{territory.describe()} required",
+            )
+        },
+    )
 
 
 def _check_lane(

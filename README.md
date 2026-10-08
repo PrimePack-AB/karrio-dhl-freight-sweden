@@ -365,6 +365,7 @@ Bookings to NO, CH, and GB carry customs data like any lane outside the EU VAT a
 ## Special territories and excluded postal codes
 
 DHL product matches answered nothing for the territory codes AX, JE, GG, and FO ([AX 22100](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json)), so the connector sends a territory under its parent country with the postal code as given.
+For AX, IC, EA, FO, and GL the postal code must lie in the territory, for example FI 22000-22999 for AX, or the booking fails with `TerritoryPostalCodeError`.
 
 | Territory | Code | Sent as | Outside the EU VAT area | Excluded from |
 | ----------- | ------ | --------- | ------------------------- | --------------- |
@@ -424,6 +425,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
+| `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code` or `recipient.postal_code` |
 | `ProductLaneError` | a lane outside the product's valid countries in the manual | `shipper.country_code` or `recipient.country_code` |
 | `SentInformationError`, `TransportDeclarationError` | a missing or contradictory SENT, EKAER, or UIT declaration, including an undeclared EKAER or UIT shipment at or above 500 kg | the option |
 | `PartyTaxIdError` | 202, SPI, or 601 to or from GR without both VAT numbers or TINs | `shipper.federal_tax_id` or `recipient.federal_tax_id` |
