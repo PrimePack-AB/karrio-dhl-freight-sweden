@@ -12,6 +12,7 @@ import typing
 import unittest
 
 import karrio.core.models as models
+from karrio.providers.dhl_freight_sweden import units
 from karrio.providers.dhl_freight_sweden.shipment.create import TerritoryPostalCodeError
 
 from .fixture import detail_keys, gateway, serialize_request
@@ -114,6 +115,21 @@ class TestDHLFreightTerritoryPostalCodes(unittest.TestCase):
         serialized = _book(_address("FI", "00100"))
 
         self.assertEqual(_consignee(serialized)["countryCode"], "FI")
+
+
+
+class TestDHLFreightTerritoryPostalCodeDescription(unittest.TestCase):
+    def test_describe_names_any_digit_count(self):
+        cases = [
+            (3, "a DK postal code in 3800-3999 or of three digits"),
+            (4, "a DK postal code in 3800-3999 or of 4 digits"),
+            (None, "a DK postal code in 3800-3999"),
+        ]
+        for digits, description in cases:
+            with self.subTest(digits=digits):
+                territory = units.TerritoryPostalCodes("Test", "DK", ((3800, 3999),), digits)
+
+                self.assertEqual(territory.describe(), description)
 
 
 if __name__ == "__main__":
