@@ -228,6 +228,20 @@ class TestDHLFreightServicePointTerminalId(unittest.TestCase):
                     terminal_id,
                 )
 
+    def test_service_point_b2c_accepts_a_lowercase_country_prefix(self):
+        cases = {"se-651400": "6514", "Se-982000": "9820"}
+
+        for service_point_id, terminal_id in cases.items():
+            with self.subTest(service_point_id=service_point_id):
+                self.assertEqual(
+                    self._access_point_id(
+                        "dhl_freight_sweden_service_point_b2c",
+                        _recipient_se,
+                        _service_point(service_point_id, "ParcelShop", "SE"),
+                    ),
+                    terminal_id,
+                )
+
     def test_service_point_b2c_keeps_a_terminal_id(self):
         self.assertEqual(
             self._access_point_id(
@@ -258,6 +272,9 @@ class TestDHLFreightServicePointTerminalId(unittest.TestCase):
             "SE-6514000",
             "SE-ABCD00",
             "DK-651400",
+            "dk-651400",
+            "pl-651400",
+            "se-651401",
             "651400",
             "651",
             "8009-591371",

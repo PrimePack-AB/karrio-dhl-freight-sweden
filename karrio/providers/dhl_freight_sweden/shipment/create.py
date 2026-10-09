@@ -1389,7 +1389,9 @@ def _additional_information(
 
 # Manual v5.26 §10.14.2.1 p231 and IFTMIN v3.7 Appendix A p59: for 103 the
 # ServicePointLocator id SE-nnnn00 is sent as its four-digit terminal id nnnn.
-SERVICE_POINT_TERMINAL_ID = re.compile(r"(?:SE-(?P<located>\d{4})00|(?P<terminal>\d{4}))")
+SERVICE_POINT_TERMINAL_ID = re.compile(
+    r"(?:SE-(?P<located>\d{4})00|(?P<terminal>\d{4}))", re.IGNORECASE
+)
 
 
 def _service_point_terminal_id(service_point: str) -> str:
