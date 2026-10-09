@@ -14,6 +14,7 @@ import unittest
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import (
     ServicePointEligibilityError,
+    ServicePointIdError,
 )
 
 from .fixture import detail_keys, gateway, serialize_request
@@ -194,6 +195,93 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
                     detail_keys(error), {"dhl_freight_sweden_service_point"}
                 )
                 self.assertIn("dhl_freight_sweden_service_point_type", str(error))
+
+
+class TestDHLFreightServicePointTerminalId(unittest.TestCase):
+    """103 sends only the four-digit terminal id nnnn of a SE-nnnn00 id.
+
+    Product manual v5.26 §10.14.2.1 p231 and IFTMIN v3.7 Appendix A p59:
+    the id SE-651400 from the ServicePointLocator API is sent as 6514.
+    """
+
+    def _access_point_id(self, product: str, recipient: dict, options: dict) -> str:
+        request = gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(**_payload(product, recipient, options))
+        )
+        return next(
+            party["id"]
+            for party in serialize_request(request)["parties"]
+            if party["type"] == "AccessPoint"
+        )
+
+    def test_service_point_b2c_sends_the_terminal_id(self):
+        cases = {"SE-651400": "6514", "SE-982000": "9820", " SE-230500 ": "2305"}
+
+        for service_point_id, terminal_id in cases.items():
+            with self.subTest(service_point_id=service_point_id):
+                self.assertEqual(
+                    self._access_point_id(
+                        "dhl_freight_sweden_service_point_b2c",
+                        _recipient_se,
+                        _service_point(service_point_id, "ParcelShop", "SE"),
+                    ),
+                    terminal_id,
+                )
+
+    def test_service_point_b2c_keeps_a_terminal_id(self):
+        self.assertEqual(
+            self._access_point_id(
+                "dhl_freight_sweden_service_point_b2c",
+                _recipient_se,
+                _service_point("6514", "ParcelShop", "SE"),
+            ),
+            "6514",
+        )
+
+    def test_parcel_connect_keeps_the_service_point_id(self):
+        self.assertEqual(
+            self._access_point_id(
+                "dhl_freight_sweden_parcel_connect_b2c",
+                _recipient_pl,
+                {
+                    **_service_point("PL-651400", "ParcelShop", "PL"),
+                    "dhl_freight_sweden_sent_free": True,
+                },
+            ),
+            "PL-651400",
+        )
+
+    def test_service_point_b2c_refuses_ids_without_a_terminal_id(self):
+        service_point_ids = [
+            "SE-651401",
+            "SE-65140",
+            "SE-6514000",
+            "SE-ABCD00",
+            "DK-651400",
+            "651400",
+            "651",
+            "8009-591371",
+        ]
+
+        for service_point_id in service_point_ids:
+            with self.subTest(service_point_id=service_point_id):
+                with self.assertRaises(ServicePointIdError) as context:
+                    gateway.mapper.create_shipment_request(
+                        models.ShipmentRequest(
+                            **_payload(
+                                "dhl_freight_sweden_service_point_b2c",
+                                _recipient_se,
+                                _service_point(service_point_id, "ParcelShop", "SE"),
+                            )
+                        )
+                    )
+
+                self.assertEqual(
+                    detail_keys(context.exception),
+                    {"dhl_freight_sweden_service_point"},
+                )
+                self.assertIn(repr(service_point_id), str(context.exception))
+                self.assertIn("SE-nnnn00", str(context.exception))
 
 
 def _service_point(service_point_id: str, sub_type: str, country_code: str) -> dict:

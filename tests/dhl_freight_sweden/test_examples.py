@@ -84,8 +84,15 @@ class TestExamples(unittest.TestCase):
 
         self.assertEqual(body["productCode"], booked["productCode"])
         self.assertEqual(body["payerCode"], booked["payerCode"])
+        # The booking predates sending 103 points by their terminal id: it
+        # carried the full id SE-982000, which the connector now sends as 9820.
         self.assertEqual(
-            _parties(body, "AccessPoint"), _parties(booked, "AccessPoint")
+            _parties(body, "AccessPoint"),
+            [
+                {**party, "id": "9820"}
+                for party in _parties(booked, "AccessPoint")
+                if party["id"] == "SE-982000"
+            ],
         )
 
     def test_service_point_matches_lookup_normalisation(self):

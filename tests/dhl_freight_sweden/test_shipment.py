@@ -1916,7 +1916,7 @@ PrintByIdRequest = {
 # for name and address, 22006 for the postal code, and 22026 for the country
 # code (fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json).
 AccessPointShop = {
-    "id": "SE-230500",
+    "id": "2305",
     "type": "AccessPoint",
     "subType": "ParcelShop",
     "name": "KUNGSKLIPPAN TOBAK, T-BANA RÅDHUSET",
