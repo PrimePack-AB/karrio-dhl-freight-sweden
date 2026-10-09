@@ -37,7 +37,7 @@ The manual is cited rather than vendored, and a new manual version means re-mapp
 
 The products' booking systems are cited from the DHL Freight (Sweden) Shipment Instruction IFTMIN UN S.93A S3, version 3.7, issued and valid from 2025-05-05, as `IFTMIN v3.7 pN`.
 DHL lists it at <https://dhlpaket.se/dashboard/specifications/edi/>, and the cited copy has sha256 `5f6900bdc60121de6c789f4bc5406026a45ab4bca7c6008928200a2ca1926e5d`.
-The connector books through the API Farm rather than EDI, and cites the IFTMIN only for the UNB recipient addresses on p10, which assign each product to DHL's domestic or international booking system; it is cited rather than vendored like the manual.
+The connector books through the API Farm rather than EDI, and cites the IFTMIN for the UNB recipient addresses on p10, which assign each product to DHL's domestic or international booking system, and for the 103 service point terminal id in Appendix A on p59; it is cited rather than vendored like the manual.
 
 ## Breaking changes
 
@@ -47,6 +47,8 @@ Booking fails before the booking request with `ProductLaneError` on such a lane 
 
 The international products 202, 205, 233, SPI, and 601 send the new `international_account_number` setting as the Consignor party id instead of `account_number`, and booking one fails before the booking request with `InternationalAccountNumberError` when the setting is missing or longer than 15 characters (see [Booking rules](../concepts/booking-rules.md#customer-numbers)).
 There is no fallback to `account_number`, so a connection that books these products must add the international customer number.
+
+Product 103 sends the four-digit terminal id nnnn of a service point id SE-nnnn00 as the AccessPoint party id instead of the id as given, per manual §10.14.2.1 p231 and IFTMIN v3.7 p59, and booking 103 fails before the booking request with `ServicePointIdError` for an id that is neither SE-nnnn00 nor four digits (see [Booking rules](../concepts/booking-rules.md#access-points)).
 
 ## Known limitations
 
