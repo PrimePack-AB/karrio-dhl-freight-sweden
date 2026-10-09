@@ -37,3 +37,4 @@
 
 ## Current State
 - 2026-10-08: docs site live at https://primepack-ab.github.io/karrio-dhl-freight-sweden/ via `.github/workflows/docs-pages.yml` and the external harness PrimePack-AB/starlight-docs-harness pinned at v1.3 (commit 6a9f84b); architecture and deferred maintenance in docs/development/architecture/docs-site.md
+- 2026-10-09: domestic/international customer-number split landed (`international_account_number`, PRODUCT_BOOKING_SYSTEMS); the international number is pending from DHL API Farm; open questions drafted in Swedish at ~/.local/state/karrio-dhl-freight-sweden/dhl-api-farm/svar-till-dhl-api-farm-kundnummer-2026-10-09.txt, unsent; list in docs/notes/sandbox/sandbox-findings.md (Pending verification)
