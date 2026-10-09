@@ -237,6 +237,7 @@ return {
 }
 ```
 
+For 103 the connector sends the point's four-digit terminal id, 9820 for SE-982000, as the product manual requires (§10.14.2.1 p231); [Booking rules](docs/concepts/booking-rules.md#access-points) gives the details.
 The recipient address stays on the request beside the AccessPoint party.
 When DHL rejects the AccessPoint party, take the next candidate, but only when the response carries no booking id, because booking is not idempotent.
 
@@ -427,6 +428,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `PayerCodeError` | no valid payer code, or 023 on 109 without the joint declaration | the option, `customs.incoterm`, or `dhl_freight_sweden_customs_joint_declaration` |
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
+| `ServicePointIdError` | a 103 service point id that is neither SE-nnnn00 nor a four-digit terminal id | the service-point option |
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
 | `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code` or `recipient.postal_code` |
 | `ProductLaneError` | a lane outside the product's valid countries in the manual | `shipper.country_code` or `recipient.country_code` |
