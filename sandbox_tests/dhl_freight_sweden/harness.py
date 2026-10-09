@@ -23,6 +23,7 @@ import karrio.core.utils.helpers as helpers
 import karrio.lib as lib
 import karrio.mappers.dhl_freight_sweden.proxy as connector_proxy
 import karrio.mappers.dhl_freight_sweden.settings as connector_settings
+import karrio.providers.dhl_freight_sweden.units as provider_units
 import karrio.sdk as karrio
 
 SANDBOX_HOST = "test-api.freight-logistics.dhl.com"
@@ -52,6 +53,7 @@ class SandboxConfig:
     enabled: bool
     client_key: typing.Optional[str]
     account_number: typing.Optional[str]
+    international_account_number: typing.Optional[str]
     segments: typing.FrozenSet[str]
     products: typing.Optional[typing.FrozenSet[str]]
     countries: typing.Optional[typing.FrozenSet[str]]
@@ -111,6 +113,10 @@ def load_config(
         enabled=environ.get("DHL_FREIGHT_SWEDEN_SANDBOX") == "1",
         client_key=environ.get("KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY") or None,
         account_number=environ.get("KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER") or None,
+        international_account_number=environ.get(
+            "KARRIO_DHL_FREIGHT_SWEDEN_INTERNATIONAL_ACCOUNT_NUMBER"
+        )
+        or None,
         segments=segments or DEFAULT_SEGMENTS,
         products=products or None,
         countries=countries or None,
@@ -150,6 +156,11 @@ def booking_skip_reason(
         return f"product {product} is not in DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS"
     if config.countries is not None and country not in config.countries:
         return f"country {country} is not in DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES"
+    if (
+        provider_units.booking_system(product) == provider_units.BookingSystem.international
+        and not config.international_account_number
+    ):
+        return "KARRIO_DHL_FREIGHT_SWEDEN_INTERNATIONAL_ACCOUNT_NUMBER is not set"
     return None
 
 
@@ -258,6 +269,7 @@ class Session:
                 carrier_id="dhl_freight_sweden",
                 client_key=client_key or self.config.client_key,
                 account_number=self.config.account_number,
+                international_account_number=self.config.international_account_number,
                 config=connection_config or {},
             )
         )

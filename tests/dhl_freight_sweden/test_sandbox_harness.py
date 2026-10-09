@@ -20,6 +20,7 @@ LIVE = {
     "DHL_FREIGHT_SWEDEN_SANDBOX": "1",
     "KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY": "secret-key",
     "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER": "7654321",
+    "KARRIO_DHL_FREIGHT_SWEDEN_INTERNATIONAL_ACCOUNT_NUMBER": "INT7654321",
     "HOME": "/home/tester",
 }
 
@@ -117,12 +118,22 @@ class TestSandboxHarnessConfig(unittest.TestCase):
             },
             NOW,
         )
+        domestic_only = harness.load_config(
+            {**LIVE, "KARRIO_DHL_FREIGHT_SWEDEN_INTERNATIONAL_ACCOUNT_NUMBER": ""}, NOW
+        )
         cases = (
             (narrowed, "109", "RO", None),
             (narrowed, "112", "NO", None),
             (narrowed, "601", "NO", "product 601 is not in DHL_FREIGHT_SWEDEN_SANDBOX_PRODUCTS"),
             (narrowed, "109", "HU", "country HU is not in DHL_FREIGHT_SWEDEN_SANDBOX_COUNTRIES"),
             (harness.load_config(LIVE, NOW), "601", "DK", None),
+            (domestic_only, "109", "DK", None),
+            (
+                domestic_only,
+                "202",
+                "DK",
+                "KARRIO_DHL_FREIGHT_SWEDEN_INTERNATIONAL_ACCOUNT_NUMBER is not set",
+            ),
         )
         for config, product, country, reason in cases:
             with self.subTest(product=product, country=country):
