@@ -7,6 +7,7 @@ import karrio.schemas.dhl_freight_sweden.print_response as dhl_freight_sweden_re
 
 import base64
 import datetime
+import re
 import typing
 import karrio.lib as lib
 import karrio.core.models as models
@@ -68,6 +69,12 @@ class CustomsInvoiceNumberError(errors.ShippingSDKDetailedError):
 
 class ServicePointDetailsError(errors.ShippingSDKDetailedError):
     """Raised when an access point party is missing service point details."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
+class ServicePointIdError(errors.ShippingSDKDetailedError):
+    """Raised when a 103 service point id holds no four-digit terminal id."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -1380,6 +1387,30 @@ def _additional_information(
     ]
 
 
+# Manual v5.26 §10.14.2.1 p231 and IFTMIN v3.7 Appendix A p59: for 103 the
+# ServicePointLocator id SE-nnnn00 is sent as its four-digit terminal id nnnn.
+SERVICE_POINT_TERMINAL_ID = re.compile(r"(?:SE-(?P<located>\d{4})00|(?P<terminal>\d{4}))")
+
+
+def _service_point_terminal_id(service_point: str) -> str:
+    match = SERVICE_POINT_TERMINAL_ID.fullmatch(service_point.strip())
+
+    if match is None:
+        raise ServicePointIdError(
+            f"Product 103 books a service point by its four-digit terminal id; "
+            f"{service_point!r} is neither a SE-nnnn00 service point id nor a "
+            "four-digit terminal id",
+            details={
+                "dhl_freight_sweden_service_point": dict(
+                    code="invalid",
+                    message="expected a SE-nnnn00 service point id or a four-digit terminal id",
+                )
+            },
+        )
+
+    return match["located"] or match["terminal"]
+
+
 def _service_point_party(
     options,
     product_code: str,
@@ -1432,6 +1463,13 @@ def _service_point_party(
             },
         )
 
+    access_point_id = lib.identity(
+        _service_point_terminal_id(service_point)
+        if product_code
+        == provider_units.ShippingService.dhl_freight_sweden_service_point_b2c.value
+        else service_point
+    )
+
     # Keys double as the ``dhl_freight_sweden_service_point_{key}`` option names.
     details = dict(
         name=options.dhl_freight_sweden_service_point_name.state,
@@ -1460,7 +1498,7 @@ def _service_point_party(
         )
 
     return dhl_freight_sweden_req.PartyType(
-        id=service_point,
+        id=access_point_id,
         type=provider_units.PartyType.AccessPoint.value,
         subType=sub_type,
         name=details["name"],

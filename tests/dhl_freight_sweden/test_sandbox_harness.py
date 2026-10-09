@@ -313,7 +313,7 @@ class TestSandboxRejectionPayloads(unittest.TestCase):
             mutated["parties"],
             [
                 *original["parties"][:-1],
-                {"id": "SE-982000", "type": "AccessPoint", "subType": "ParcelShop"},
+                {"id": "9820", "type": "AccessPoint", "subType": "ParcelShop"},
             ],
         )
         self.assertEqual({**mutated, "parties": original["parties"]}, original)
