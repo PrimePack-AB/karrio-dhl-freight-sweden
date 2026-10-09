@@ -594,6 +594,12 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      ("080-service-points-rejection-109-pl", "082-rejection-109-pl-without-sent",
       "083-rejection-109-pl-without-sent"),
      "test_rejections.test_109_pl_without_sent_is_rejected_with_22001", 1),
+    ("booking-2906771650-103-se-se-terminal-id.json",
+     "103 within SE to service point SE-982000 sent as the four-digit terminal id 9820, after a "
+     "five-point service point lookup, then printed.",
+     "103", "SE 11143 -> SE 11151", "20261009-094959",
+     ("001-service-points-103-se", "003-booking-103", "004-booking-103"),
+     "test_booking_pudo.test_book_103_service_point_se", 1),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
