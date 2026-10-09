@@ -18,17 +18,20 @@
 - Cite as `§x.y pN` against the version and sha named in docs/development/index.md (Product manual citations); a new manual version means re-mapping every citation (section numbers shift when products are removed)
 - Exclusion precedence: manual first; Product API `postalCodeExcludes` only where the manual is silent, and only once a product-matches fixture is committed
 - Follow the sandbox only where it rejects something the manual allows (e.g. Åland 24003): refuse it before booking, keep the manual citation, and record the outcome in the findings note
-- Where the sandbox or the Product API accepts more than the manual allows, follow the manual
+- Where the sandbox or the Product API accepts more than the manual allows, follow the manual; the one operator-chosen exception is the customs joint declaration to CH (manual §6.8 p98 lists NO only), which rests on Product API product matches
+- EDI specifications (IFTMIN v3.7) at https://dhlpaket.se/dashboard/specifications/edi/ supplement the manual on per-product receiving systems and party ids; cite version and sha as in docs/development/index.md, never vendor the PDF
 - Describe sandbox outcomes neutrally as what the sandbox did, never as contradicting DHL or the manual
 
 ## Evidence rules
 - Every sandbox claim in README.md, any docs/ page outside docs/notes/, or docs/notes/sandbox/sandbox-findings.md cites a committed redacted fixture in tests/dhl_freight_sweden/fixtures/sandbox/ produced by sandbox_tests evidence tooling; `test_doc_links.py` enforces the links
 - Client key is secret (repo-root `.env`, never print); account number 116768 is not secret and must stay unredacted
 - The API has no cancel endpoint; sandbox bookings stay booked
+- DHL API Farm correspondence is written in Swedish and cites only DHL's own documents (manual, EDI specs, API spec), never fixtures or sandbox outcomes
 - Probe with free lookups (product matches, service points) before spending bookings; `require_product_match=False` forces a single case past the matches gate
 
 ## Code map
 - karrio/providers/dhl_freight_sweden/units.py - product country lists, payer/Incoterm tables, access points, POSTAL_CODE_EXCLUSIONS, EU VAT-area tables, TERRITORY_PARENTS (territory codes sent as parent country; DHL matches nothing for AX/JE/GG/FO)
+- units.py PRODUCT_BOOKING_SYSTEMS - domestic products send `account_number` as consignor id, international products (202/205/233/SPI/601) send `international_account_number`
 - shipment/create.py - up-front booking validation (SENT/EKAER/UIT, GR tax ids, excluded postcodes, QR eligibility) as ShippingSDKDetailedError subclasses
 - `karrio.Shipment.create` refuses non-SE shippers, so inbound-product tests (107) call the mapper/proxy directly
 
