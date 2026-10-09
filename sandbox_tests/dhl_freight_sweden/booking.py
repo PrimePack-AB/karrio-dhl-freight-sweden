@@ -222,6 +222,7 @@ def nearest_service_point(
                 country_code=country,
             ),
             parcel=PARCEL,
+            service=provider_units.ShippingService.map(product).name_or_key,
         ),
         settings,
     )

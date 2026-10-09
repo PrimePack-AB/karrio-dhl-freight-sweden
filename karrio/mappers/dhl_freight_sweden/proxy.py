@@ -202,7 +202,7 @@ class Proxy(proxy.Proxy):
             on_error=lib.error_decoder,
         )
 
-        return lib.Deserializable(response, provider_utils.to_json_body)
+        return lib.Deserializable(response, provider_utils.to_json_body, request.ctx)
 
 
 def _booking_destination(data: dict) -> typing.Optional[dict]:

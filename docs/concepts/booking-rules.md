@@ -93,7 +93,8 @@ A four-digit terminal id passes unchanged, and any other 103 id fails before the
 Booking 2906761230 predates this rule and carried the full id SE-982000 ([booking-2906761230-103-se-se.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json)).
 Booking 2906771650 used the four-digit terminal id 9820 for the same service point ([booking-2906771650-103-se-se-terminal-id.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906771650-103-se-se-terminal-id.json)).
 For the other products the connector sends the service point id as given, and it does not check the point's service types.
-For 109 the manual allows only shops and stations with service type `parcel:pick-up` (§10.14.2.2 p232); the sandbox booked 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
+For 109 the manual allows only shops and stations with service type `parcel:pick-up` (§10.14.2.2 p232).
+A service points lookup with `service` `dhl_freight_sweden_parcel_connect_b2c` drops other points (see [Lookups](../guides/lookups.md#service-points)), but booking does not re-check the service types of the id it is given; the sandbox booked 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
 ## SENT
 

@@ -121,6 +121,77 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
             )
             self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedServicePoints)
 
+    def _points(self, response: str, **payload) -> list:
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.return_value = response
+            request = service_points.service_points_request(
+                {**ServicePointsParams, **payload}, settings_of(gateway)
+            )
+            points, _ = service_points.parse_service_points_response(
+                proxy_of(gateway).find_service_points(request), settings_of(gateway)
+            )
+        return [point["service_point_id"] for point in points]
+
+    def test_parcel_connect_lookup_keeps_only_parcel_pick_up_points(self):
+        self.assertEqual(
+            self._points(
+                ServicePointsResponse, service="dhl_freight_sweden_parcel_connect_b2c"
+            ),
+            ["8005-PL-4516440"],
+        )
+
+    def test_parcel_connect_lookup_keeps_points_listing_both_pick_up_types(self):
+        self.assertEqual(
+            self._points(
+                MixedPickUpResponse, service="dhl_freight_sweden_parcel_connect_b2c"
+            ),
+            ["8005-PL-4516440", "8005-PL-4599334"],
+        )
+
+    def test_parcel_connect_lookup_drops_points_without_service_types(self):
+        self.assertEqual(
+            self._points(
+                NoServiceTypesResponse, service="dhl_freight_sweden_parcel_connect_b2c"
+            ),
+            [],
+        )
+
+    def test_lookup_for_other_services_or_none_keeps_every_point(self):
+        for payload in (
+            {},
+            {"service": None},
+            {"service": "dhl_freight_sweden_service_point_b2c"},
+            {"service": "dhl_freight_sweden_parcel_connect_plus"},
+        ):
+            with self.subTest(**payload):
+                self.assertEqual(
+                    self._points(ServicePointsResponse, **payload),
+                    ["8005-PL-4516440", "8005-PL-4599334"],
+                )
+
+    def test_service_is_not_sent_to_dhl(self):
+        request = service_points.service_points_request(
+            {**ServicePointsParams, "service": "dhl_freight_sweden_parcel_connect_b2c"},
+            settings_of(gateway),
+        )
+        self.assertEqual(serialize_request(request), ServicePointsRequest)
+
+    def test_unknown_service_is_a_field_error(self):
+        for service in ("109", "parcel_connect_b2c", "postnord_parcel"):
+            with self.subTest(service=service):
+                with self.assertRaises(service_points.ServicePointServiceError) as context:
+                    service_points.service_points_request(
+                        {**ServicePointsParams, "service": service},
+                        settings_of(gateway),
+                    )
+
+                exception = context.exception
+                self.assertEqual(exception.code, "SHIPPING_SDK_FIELD_ERROR")
+                self.assertEqual(
+                    exception.details,
+                    {"service": dict(code="invalid", message="unknown service name")},
+                )
+
     def test_parse_service_points_error(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = ErrorResponse
@@ -239,6 +310,19 @@ ServicePointsResponse = """{
       "longitude": 21.00276
     }
   ]
+}"""
+
+MixedPickUpResponse = ServicePointsResponse.replace(
+    """        "parcel:pick-up-unregistered"
+      ],""",
+    """        "parcel:pick-up-unregistered",
+        "parcel:pick-up"
+      ],""",
+)
+
+NoServiceTypesResponse = """{
+  "status": "OK",
+  "servicePoints": [{"id": "101", "servicePointId": "8005-PL-4516440"}]
 }"""
 
 ParsedServicePoints = [
