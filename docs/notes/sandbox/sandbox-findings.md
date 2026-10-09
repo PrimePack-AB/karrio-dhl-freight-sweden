@@ -1,5 +1,5 @@
 ---
-title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-08"
+title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-09"
 ---
 
 ## Method
@@ -43,6 +43,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-08 | 08:48 | suite | 202 and 233 HU and RO bookings without EKAER or UIT options |
 | 2026-10-08 | 15:12 | suite | PostalCode route lookups and `enforce` pre-flights |
 | 2026-10-08 | 15:27 | suite | PostalCode route lookup and `enforce` pre-flight with an unknown client key |
+| 2026-10-09 | 07:49 | suite | 103 service point booking with the four-digit terminal id |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -50,7 +51,7 @@ The `label` files come from the suite's print calls of bookings 2906761222, 2906
 
 ## Bookings
 
-All 41 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 42 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm.
 None was cancelled, because the API Farm has no cancellation operation.
 The evidence files keep each booking's routing code; the routing codes that bear on a finding are quoted under [Deviations from manual v5.26](#deviations-from-manual-v526).
@@ -66,6 +67,7 @@ The direct-script bookings 2906761073 and 2906761081 and the connector-script bo
 | 2026-10-05 | 103 | SE → SE 11151 | payer code 1, ParcelShop SE-982000 sent as the full id | 2906761230 | [booking][b-230], [label][lb-230] |
 | 2026-10-05 | 118 | SE → SE 11151 | payer code 1, after an `enforce` PostalCode route pre-flight | 2906761255 | [booking][b-255], [label][lb-255] |
 | 2026-10-06 | 401 | SE → SE 11151 | payer code 1 | 2906762303 | [booking][b-303] |
+| 2026-10-09 | 103 | SE → SE 11151 | payer code 1, ParcelShop SE-982000 sent as the four-digit terminal id 9820 | 2906771650 | [booking][b-650] |
 
 ### Intra-EU
 
@@ -280,7 +282,7 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 | Excluded areas for 109 and 112 | see [Catalog postal-code excludes](#catalog-postal-code-excludes) | product matches offered 109 to DK 3900, which the manual excludes ([se-dk-3900][l-t-dk]); no booking tested it | the manual's excludes for 109 and 112, the catalog's for 202, 233, and 601 | [destinations.md#excluded-postal-codes](../../concepts/destinations.md#excluded-postal-codes) |
 | Customs to Åland | Customs handling - Standard valid to "NO and Åland Islands (FI 22)" (§6.6 p94); Åland (FI 22) is outside the tax area and customs proceedings are mandatory (§7.4 p162) | rejected full service and Standard with 24003 ([full service][r-24003-ax], [Standard][r-24003-ax-std]), and booked 109 without customs data ([2906761917][b-917]) and with customs data and no customs service ([2906762592][b-592]) | the sandbox: refuses both customs handling services to or from FI 22000-22999, and the two 112 Åland suite cases assert that refusal; also refuses any booking crossing the EU VAT area border without customs data, so the 109 Åland case without customs data asserts that refusal | [destinations.md#åland](../../concepts/destinations.md#åland) |
 | Service point capacity filter | no manual citation recorded | applied the piece filter for PL but not for SE ([SE][l-sp-se], [PL][l-sp-pl]) | sends the caller's parcel as the `piece` filter | [lookups.md#service-points](../../guides/lookups.md#service-points) |
-| Service point id for 103 | use only the four-digit part nnnn of an id like SE-nnnn00 (§10.14.2.1 p231) | accepted the full id SE-982000 ([2906761230][b-230]); the lookup's `id` and `servicePointId` are equal in SE and differ elsewhere | the manual since 2026-10-09: sends the four-digit terminal id nnnn and refuses other 103 ids | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
+| Service point id for 103 | use only the four-digit part nnnn of an id like SE-nnnn00 (§10.14.2.1 p231) | booking 2906761230 used the full id SE-982000 ([2906761230][b-230]) and booking 2906771650 used the four-digit terminal id 9820 ([2906771650][b-650]); the lookup's `id` and `servicePointId` are equal in SE and differ elsewhere | the manual since 2026-10-09: sends the four-digit terminal id nnnn and refuses other 103 ids | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | AccessPoint sub type | Appendix M: the sub type carries the location type `servicepoint`, `locker`, or `postoffice` (§10.14.2.2 p232), while the vendored spec enumerates `ParcelShop` and `ParcelStation` | accepted `ParcelShop` for PL, RO, NO, and DK ([2906761123][b-123], [2906761263][b-263], [2906761305][b-305], [2906761354][b-354]) and `ParcelStation` for a HU locker ([2906761289][b-289]); their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p232 | `ParcelShop` and `ParcelStation` | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | Service type for 109 | only shops and stations with service type `parcel:pick-up` can be selected for 109 (§10.14.2.2 p232) | accepted the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([2906761289][b-289]) | no service type check | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | Lookup size for 103 | always search the ten closest service points (§5.12 p57) | the suite's 103 booking searched five ([2906761230][b-230]); the lookup segment's capacity check searched ten ([SE][l-sp-se]) | the caller's `max_items` | none |
@@ -346,6 +348,7 @@ These were never exercised:
 [b-149]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json
 [b-222]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761222-102-se-se.json
 [b-230]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json
+[b-650]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906771650-103-se-se-terminal-id.json
 [b-248]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json
 [b-255]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761255-118-se-se.json
 [b-263]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json

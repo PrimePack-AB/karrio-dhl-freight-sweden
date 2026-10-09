@@ -90,6 +90,7 @@ The sandbox accepted 109 bookings with `ParcelShop` to PL, RO, NO, and DK and wi
 For 103 the connector sends only the four-digit terminal id nnnn of a service point id SE-nnnn00, so SE-651400 goes as 6514, because the manual and the IFTMIN shipment instruction use only that four-digit value for 103 (§10.14.2.1 p231, IFTMIN v3.7 p59).
 A four-digit terminal id passes unchanged, and any other 103 id fails before the booking request with `ServicePointIdError` keyed by `dhl_freight_sweden_service_point`.
 Booking 2906761230 predates this rule and carried the full id SE-982000 ([booking-2906761230-103-se-se.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json)).
+Booking 2906771650 used the four-digit terminal id 9820 for the same service point ([booking-2906771650-103-se-se-terminal-id.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906771650-103-se-se-terminal-id.json)).
 For the other products the connector sends the service point id as given, and it does not check the point's service types.
 For 109 the manual allows only shops and stations with service type `parcel:pick-up` (§10.14.2.2 p232), while the sandbox accepted the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
