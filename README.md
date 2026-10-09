@@ -199,6 +199,7 @@ request = service_points.service_points_request(
     {
         "address": {"street": "Nowogrodzka 31", "city": "Warszawa",
                     "postal_code": "00-251", "country_code": "PL"},
+        "service": "dhl_freight_sweden_parcel_connect_b2c",
         "parcel": {"weight": 2.5, "length": 40, "width": 30, "height": 15},
     },
     gateway.settings,
@@ -209,6 +210,7 @@ points, messages = service_points.parse_service_points_response(
 ```
 
 The lookup asks for the ten closest points, as the manual says to (§5.12 p57), unless `max_items` sets another number.
+With `service` set to `dhl_freight_sweden_parcel_connect_b2c`, the lookup keeps only points whose service types include `parcel:pick-up`, the ones the manual allows for 109 (§10.14.2.2 p232); booking does not re-check this for the id it is given.
 
 Filter and rank the candidates in this order, so that the fallback loop works through a fixed list.
 
@@ -445,6 +447,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `PostalCodeNotServableError` | `enforce` validation of an unservable 118 postal code | `recipient.postal_code` |
 | `PostalCodeApiUnavailableError` | `enforce` validation with a client key whose DHL application lacks the PostalCode API | `recipient.postal_code` |
 | `ProductMatchPartiesError`, `UnexpectedPayloadKeysError` | a lookup without both parties, or with an unknown key | the party or key |
+| `ServicePointServiceError` | a service points lookup whose `service` is not a DHL Freight service name | `service` |
 
 DHL's own validation errors seen in the sandbox are these.
 

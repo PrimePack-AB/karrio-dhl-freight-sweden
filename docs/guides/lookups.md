@@ -67,6 +67,7 @@ request = service_points.service_points_request(
             "country_code": "PL",
         },
         "max_items": 5,                                 # optional, default 10
+        "service": "dhl_freight_sweden_parcel_connect_b2c",  # optional
         "location_types": ["servicepoint", "locker"],   # optional
         "distance": {"value": 2, "unit": "km"},         # optional
         "parcel": {                                     # optional
@@ -88,7 +89,11 @@ points, messages = service_points.parse_service_points_response(
 `parcel` is one karrio parcel dict, the parcel the point must fit (see [Parcel input](#parcel-input)); the caller chooses which parcel of the shipment to pass, and the connector sends it as the request's `piece` capacity filter.
 DHL applied the filter for PL but not for SE: in Stockholm a 2.5 kg piece of 40 × 30 × 15 cm and a 500 kg piece of 300 × 200 × 200 cm returned the same ten service points in the same order ([lookup-service-points-se-capacity-not-applied.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-se-capacity-not-applied.json)), while in Warszawa the 500 kg piece was answered with HTTP 400 "The dimensions are too large for servicepoint", and with `locationTypes` `["locker"]` "The dimensions are too large for locationtype locker" ([lookup-service-points-pl-capacity-too-large.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-pl-capacity-too-large.json)).
 `max_items` defaults to ten when omitted, because the manual says to always search for the ten closest service points (§5.12 p57); an explicit value is sent as given.
-The accepted top-level keys are `address`, `max_items`, `location_types`, `distance`, and `parcel`.
+`service` is the karrio service name the point is for, and it is not sent to DHL.
+For `dhl_freight_sweden_parcel_connect_b2c` (109) the connector drops every point whose `service_types` lack `parcel:pick-up`, because the manual allows only those shops and stations for 109 (§10.14.2.2 p232); a point listing only `parcel:pick-up-unregistered` is dropped, and one listing it alongside `parcel:pick-up` is kept.
+Other services and a lookup without `service` return every point DHL sends, and a `service` that is not a DHL Freight service name raises `ServicePointServiceError` keyed by `service` before any carrier call.
+The filter applies to lookup results only: booking does not re-check the service types of the `dhl_freight_sweden_service_point` id it is given.
+The accepted top-level keys are `address`, `max_items`, `location_types`, `distance`, `parcel`, and `service`.
 Any other key, including `parcels` and `piece`, raises a field error naming it before any carrier call.
 
 | Key | Content | Booking use |
@@ -99,6 +104,7 @@ Any other key, including `parcels` and `piece`, raises a field error naming it b
 | `type` | `servicepoint`, `locker`, `postoffice`, or `postbank` | `locker` books as `ParcelStation`, every other type as `ParcelShop` |
 | `address` | `{street, city, postal_code, country_code}` | the four address options |
 | `coordinates` | `{latitude, longitude}` | display and sorting |
+| `service_types` | DHL service types, e.g. `parcel:pick-up` | 109 needs `parcel:pick-up` |
 
 ## Parcel input
 
@@ -142,7 +148,7 @@ The service points body is the `NearestServicePointRequest` shape, with the piec
 }
 ```
 
-The driver then does the normalization the connector would: prefer `servicePointId` over `id`, map `locationType` `locker` to `ParcelStation` and every other type to `ParcelShop`, and check the four address fields.
+The driver then does the normalization the connector would: prefer `servicePointId` over `id`, map `locationType` `locker` to `ParcelStation` and every other type to `ParcelShop`, check the four address fields, and for 109 keep only points whose `serviceTypes` include `parcel:pick-up`.
 
 REST booking resolves the connection from the selected rate, so it is rate-first:
 

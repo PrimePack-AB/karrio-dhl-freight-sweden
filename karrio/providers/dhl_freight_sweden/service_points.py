@@ -10,6 +10,7 @@ the postnord ``service_points`` precedent.
 
 import typing
 import karrio.lib as lib
+import karrio.core.errors as errors
 import karrio.core.models as models
 import karrio.providers.dhl_freight_sweden.error as error
 import karrio.providers.dhl_freight_sweden.lookup as lookup
@@ -18,11 +19,22 @@ import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
 
 ACCEPTED_PAYLOAD_KEYS = frozenset(
-    {"address", "location_types", "max_items", "distance", "parcel"}
+    {"address", "location_types", "max_items", "distance", "parcel", "service"}
 )
 # Product manual v5.26 §5.12 p57: "Always search for ten closest service
 # points to get the most accurat reply."
 DEFAULT_MAX_ITEMS = 10
+# Product manual v5.26 §10.14.2.2 p232: for 109 only shops and stations with
+# service type "parcel:pick-up" can be selected.
+REQUIRED_SERVICE_TYPES: typing.Dict[str, str] = {
+    provider_units.ShippingService.dhl_freight_sweden_parcel_connect_b2c.name: "parcel:pick-up",
+}
+
+
+class ServicePointServiceError(errors.ShippingSDKDetailedError):
+    """Raised when a lookup's ``service`` is not a DHL Freight service name."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
 
 
 def service_points_request(
@@ -35,9 +47,19 @@ def service_points_request(
     rather than being silently dropped. ``parcel`` is one karrio
     ``Parcel``-shaped dict, chosen by the caller, that the point must fit;
     it is sent in KG/CM as the request ``piece``. ``max_items`` defaults to
-    ``DEFAULT_MAX_ITEMS`` when omitted.
+    ``DEFAULT_MAX_ITEMS`` when omitted. ``service`` is a karrio service name
+    that is not sent to DHL; it rides in the request context so that the
+    parser can apply the service's ``REQUIRED_SERVICE_TYPES``.
     """
     lookup.guard_payload_keys(payload, ACCEPTED_PAYLOAD_KEYS, "service points")
+    service = payload.get("service")
+    if service is not None and service not in provider_units.ShippingService.__members__:
+        raise ServicePointServiceError(
+            f"The service points lookup does not know the service {service!r}; "
+            "pass a DHL Freight service name such as "
+            f"{provider_units.ShippingService.dhl_freight_sweden_parcel_connect_b2c.name}",
+            details={"service": dict(code="invalid", message="unknown service name")},
+        )
     address = payload.get("address") or {}
     distance = payload.get("distance") or {}
     parcel = payload.get("parcel")
@@ -72,7 +94,7 @@ def service_points_request(
         ),
     )
 
-    return lib.Serializable(request, provider_utils.to_dict)
+    return lib.Serializable(request, provider_utils.to_dict, dict(service=service))
 
 
 def parse_service_points_response(
@@ -85,15 +107,23 @@ def parse_service_points_response(
     ``errorMessage``, which the shared error parser turns into Messages (an
     ``errorMessage``-free body parses to no Messages). A body that is not a
     JSON object yields no points and, unless it carries known error shapes,
-    an internal-error Message.
+    an internal-error Message. When the request named a service with a
+    required service type, points whose ``serviceTypes`` lack it are dropped.
     """
     response = _response.deserialize()
     body = response if isinstance(response, dict) else {}
+    required_service_type = REQUIRED_SERVICE_TYPES.get(
+        (_response.ctx or {}).get("service") or ""
+    )
 
     points = [
         _normalize_service_point(point)
         for point in body.get("servicePoints") or []
         if isinstance(point, dict)
+        and (
+            required_service_type is None
+            or required_service_type in (point.get("serviceTypes") or [])
+        )
     ]
     messages = error.parse_error_response(response, settings) or lib.identity(
         [] if isinstance(response, dict) else [_unexpected_response(settings)]
