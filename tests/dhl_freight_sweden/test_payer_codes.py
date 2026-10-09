@@ -57,14 +57,18 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
         )
 
         self.assertEqual(detail_keys(error), {"dhl_freight_sweden_payer_code"})
-        self.assertIn("valid codes: 022, 023", str(error))
+        self.assertIn("valid codes: 023", str(error))
 
-    def test_explicit_022_on_parcel_connect_plus_is_sent(self):
-        payload = _with_options(
-            ShipmentPayload112PL, {"dhl_freight_sweden_payer_code": "022"}
+    def test_explicit_022_on_parcel_connect_plus_is_refused(self):
+        error = self._error(
+            _with_options(
+                ShipmentPayload112PL, {"dhl_freight_sweden_payer_code": "022"}
+            )
         )
 
-        self.assertEqual(self._payer_code(payload), "022")
+        self.assertEqual(detail_keys(error), {"dhl_freight_sweden_payer_code"})
+        self.assertIn("Payer code 022 is not valid for product 112", str(error))
+        self.assertIn("valid codes: 023", str(error))
 
     def test_explicit_valid_payer_code_is_sent(self):
         payload = _payload(
@@ -112,19 +116,20 @@ class TestDHLFreightPayerCodes(unittest.TestCase):
             self._payer_code(_with_incoterm(_parcel_connect_plus, "DDP")), "023"
         )
 
-    def test_incoterms_on_parcel_connect_plus_translate_to_022(self):
+    def test_incoterms_translating_to_022_on_parcel_connect_plus_fail(self):
         for incoterm in ["DAP", "CPT", "CIP", "DPU"]:
             with self.subTest(incoterm=incoterm):
-                self.assertEqual(
-                    self._payer_code(_with_incoterm(_parcel_connect_plus, incoterm)),
-                    "022",
-                )
+                error = self._error(_with_incoterm(_parcel_connect_plus, incoterm))
+
+                self.assertEqual(detail_keys(error), {"customs.incoterm"})
+                self.assertIn("Payer code 022 is not valid for product 112", str(error))
+                self.assertIn("valid codes: 023", str(error))
 
     def test_untranslatable_incoterm_on_parcel_connect_plus_fails(self):
         error = self._error(_with_incoterm(_parcel_connect_plus, "EXW"))
 
         self.assertEqual(detail_keys(error), {"customs.incoterm"})
-        self.assertIn("valid codes: 022, 023", str(error))
+        self.assertIn("valid codes: 023", str(error))
 
     def test_incoterm_ddp_on_parcel_connect_requires_joint_declaration(self):
         error = self._error(_with_incoterm(_parcel_connect, "DDP"))

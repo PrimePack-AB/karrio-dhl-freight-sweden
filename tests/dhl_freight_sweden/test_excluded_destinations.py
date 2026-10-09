@@ -580,7 +580,17 @@ def _book(product: str, party: str, country: str, postal_code: typing.Optional[s
             },
         ),
         "shipper": lane["shipper"],
-        **({"customs": _CUSTOMS} if outside_eu_vat_area else {}),
+        **(
+            {
+                "customs": {
+                    **_CUSTOMS,
+                    # §5.3 p19: 112 takes only 023, the Combiterm of DDP.
+                    "incoterm": "DDP" if product == "112" else "DAP",
+                }
+            }
+            if outside_eu_vat_area
+            else {}
+        ),
     }
     request = gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
     return serialize_request(request)

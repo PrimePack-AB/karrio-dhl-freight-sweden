@@ -43,7 +43,7 @@ Sandbox bookings made before that review with the domestic customer number were 
 | 402, 502 | 3, 4 | none | §5.18 p77 |
 | 107 | 001 | 001 | §5.15 p66 |
 | 109 | 022, 023 (023 only with customs joint declaration) | 022 | §5.14 p63 |
-| 112 | 022, 023 | 023 | §5.3 p19 lists 023 only; 022 per the sandbox, see below |
+| 112 | 023 | 023 | §5.3 p19 |
 | 202, 233, SPI, 601 | export EXW, FCA, CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.4 p24, §5.10 p48, §5.11 p53, §5.19 p83 |
 | 205 | export CPT, CIP, DAP, DPU, DDP; import EXW, FCA | none | §5.9 p43 |
 
@@ -68,7 +68,8 @@ Payer code 023 on 109 additionally requires the `dhl_freight_sweden_customs_join
 The manual conflicts with itself here: the 109 section requires the joint declaration for 023 (§5.14 p63), while the joint declaration section says such bookings must not be sent for 109 and 112 (§6.8 p98).
 The connector follows §5.14, and the question is open with DHL.
 
-For 112 the connector accepts 022 as well as the manual's 023, because the sandbox accepted both while rejecting payer code 1, and the Product API catalog's Incoterm codes for 112 reach it only through the Combiterm translation ([022 accepted](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json), [023 accepted](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761131-112-se-pl.json), [1 rejected](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json), [catalog](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json)).
+For 112 the connector accepts only the manual's 023 (§5.3 p19), so an explicit 022 and the Incoterms CPT, CIP, DAP, and DPU, which translate to 022, fail before the booking request with `PayerCodeError`, and only DDP translates to a valid code.
+The sandbox booked 112 with 022 and with 023 and rejected payer code 1, and the Product API catalog lists CPT, 022, DPU, DAP, 023, CIP, and DDP for 112 ([022 booked](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761149-112-se-pl-payer-022.json), [023 booked](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761131-112-se-pl.json), [1 rejected](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json), [catalog](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json)); where the sandbox or the catalog accepts more than the manual, the connector follows the manual.
 
 ## Access points
 

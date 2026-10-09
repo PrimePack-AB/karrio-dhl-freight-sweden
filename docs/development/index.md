@@ -50,6 +50,9 @@ There is no fallback to `account_number`, so a connection that books these produ
 
 Product 103 sends the four-digit terminal id nnnn of a service point id SE-nnnn00 as the AccessPoint party id instead of the id as given, per manual §10.14.2.1 p231 and IFTMIN v3.7 p59, and booking 103 fails before the booking request with `ServicePointIdError` for an id that is neither SE-nnnn00 nor four digits (see [Booking rules](../concepts/booking-rules.md#access-points)).
 
+Product 112 accepts only payer code 023, per manual §5.3 p19, where it previously accepted 022 as well.
+Booking 112 with an explicit payer code 022, or with the Incoterm CPT, CIP, DAP, or DPU, which translate to 022, fails before the booking request with `PayerCodeError`; DDP still translates to 023 (see [Booking rules](../concepts/booking-rules.md#payer-codes)).
+
 ## Known limitations
 
 The README is also the PyPI long description (`readme = "README.md"` in `pyproject.toml`), and its relative links to `docs/`, `examples/`, and the evidence files do not resolve on PyPI; fixing them is deferred until the package is published.
