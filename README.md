@@ -199,7 +199,6 @@ request = service_points.service_points_request(
     {
         "address": {"street": "Nowogrodzka 31", "city": "Warszawa",
                     "postal_code": "00-251", "country_code": "PL"},
-        "max_items": 5,
         "parcel": {"weight": 2.5, "length": 40, "width": 30, "height": 15},
     },
     gateway.settings,
@@ -208,6 +207,8 @@ points, messages = service_points.parse_service_points_response(
     gateway.proxy.find_service_points(request), gateway.settings
 )
 ```
+
+The lookup asks for the ten closest points, as the manual says to (§5.12 p57), unless `max_items` sets another number.
 
 Filter and rank the candidates in this order, so that the fallback loop works through a fixed list.
 

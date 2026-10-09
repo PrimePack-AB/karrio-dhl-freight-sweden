@@ -45,6 +45,28 @@ class TestDHLFreightSwedenServicePoints(unittest.TestCase):
                     {key: dict(code="unexpected", message="unexpected payload key")},
                 )
 
+    def test_create_service_points_request_defaults_to_ten_points(self):
+        for payload in (
+            {k: v for k, v in ServicePointsParams.items() if k != "max_items"},
+            {**ServicePointsParams, "max_items": None},
+        ):
+            with self.subTest(max_items=payload.get("max_items", "omitted")):
+                request = service_points.service_points_request(
+                    payload, settings_of(gateway)
+                )
+                self.assertEqual(serialize_request(request)["maxNumberOfItems"], 10)
+
+    def test_create_service_points_request_keeps_explicit_max_items(self):
+        for max_items in (1, 2, 25):
+            with self.subTest(max_items=max_items):
+                request = service_points.service_points_request(
+                    {**ServicePointsParams, "max_items": max_items},
+                    settings_of(gateway),
+                )
+                self.assertEqual(
+                    serialize_request(request)["maxNumberOfItems"], max_items
+                )
+
     def test_create_service_points_request_converts_lb_in_parcel(self):
         request = service_points.service_points_request(
             {**ServicePointsParams, "parcel": ImperialParcel},
