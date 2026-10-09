@@ -12,6 +12,22 @@ Customs rules are in the README's exporting section, and destination rules (the 
 A product books only from the shipper's country to the recipient's on a lane its valid countries in the manual allow, comparing territory codes as their parent country; [Products](products.md#lanes) lists the lanes.
 Another lane fails with `ProductLaneError`, for example "Product 107 does not ship from CH to SE (product manual v5.26 §5.15 p66)", keyed by `shipper.country_code` when no lane starts in the shipper's country and by `recipient.country_code` otherwise.
 
+## Customer numbers
+
+The Consignor party id carries the DHL customer number, and DHL Freight Sweden books products in two systems that number customers separately.
+The [IFTMIN shipment instruction v3.7](../development/index.md#iftmin-shipment-instruction-citations) addresses 102, 103, 107, 109, 112, 118, 209, 210, 211, 212, 401, 402, and 502 to one system and 202, 205, 233, 601, and SPI to the other (p10), and the manual's "DHL account number format" rows agree.
+
+| Products | Account number format | Setting | Manual |
+|----------|-----------------------|---------|--------|
+| 102, 103, 104, 109, 112, 118, 209, 210, 211, 212, 401, 402, 502 | 6 digits | `account_number` | §5.2 p15, §5.12 p57, §5.13 p60, §5.14 p63, §5.3 p19, §5.16 p69, §5.5 p27, §5.6 p30, §5.7 p35, §5.8 p39, §5.17 p73, §5.18 p77 |
+| 107 | none in §5.15 | `account_number` | §5.15 pp65-67 |
+| 202, 205, 233, SPI, 601 | up to 35 alphanumeric characters | `international_account_number` | §5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83 |
+
+The IFTMIN addresses 104 to a third recipient, DPST, and the connector sends 104 the domestic number that its 6-digit format row asks for.
+An international product without `international_account_number` fails with `InternationalAccountNumberError` keyed by `international_account_number`.
+The vendored Transport Instruction API spec 2.10.0 caps the party id at 15 characters, below the manual's 35, so an international number longer than 15 characters fails with the same error; a domestic booking ignores the international number.
+The sandbox does not check which number a product receives: it accepted the domestic customer number on 202 ([booking-2906762121-202-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762121-202-se-dk.json)), 233 ([booking-2906762147-233-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json)), and 601 ([booking-2906761248-601-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json)).
+
 ## Payer codes
 
 `payerCode` carries the product's terms-of-delivery code, validated against the product's "Payer codes" table.

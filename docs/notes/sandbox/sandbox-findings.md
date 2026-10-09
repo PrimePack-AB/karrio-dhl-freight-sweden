@@ -6,6 +6,9 @@ title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-08"
 
 All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com`, and all times below are UTC.
 Every booking used customer number 116768 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
+On 2026-10-09 DHL API Farm support reviewed the bookings and said that 202 and 233 take the international customer number (utrikeskundnummer) as the Consignor id instead of the domestic 116768.
+The sandbox had accepted 116768 on 202 ([2906762121][b-121], [2906762139][b-139]), 233 ([2906762147][b-147], [2906762154][b-154]), and 601 ([2906761248][b-248]), so it does not validate which customer number a product receives.
+The connector now sends `international_account_number` for 202, 205, 233, SPI, and 601, per IFTMIN v3.7 p10 and the manual's account number format rows ([booking-rules.md#customer-numbers](../../concepts/booking-rules.md#customer-numbers)), and no sandbox booking has used an international customer number yet.
 The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
 
@@ -287,6 +290,9 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 | Phone numbers on labels | the receiving parcelshop's phone is mandatory on the 103 label (§9.4.2 p170) | the 103 label prints a `Phn.` line with no number ([label-2906761230][lb-230]); the other labels match (see [Labels](#labels)) | transmits the consignee phone on every booking | [labels.md#phone-numbers](../../concepts/labels.md#phone-numbers) |
 
 ## Pending verification
+
+In the same 2026-10-09 review DHL said that 109 takes "the short customer ID, e.g. "id": "103"".
+Whether that refers to the Consignor customer number or to the AccessPoint id is unresolved and awaits an answer from DHL, and the connector's 109 bookings are unchanged.
 
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 

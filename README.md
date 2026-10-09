@@ -37,7 +37,9 @@ A Karrio server builds its reference models at boot, so restart the API after in
 
 ## Connect
 
-A connection needs the client key of a DHL Freight Sweden API Farm account and the DHL customer number, which the connector sends as the consignor's party id.
+A connection needs the client key of a DHL Freight Sweden API Farm account and the DHL customer numbers, which the connector sends as the consignor's party id.
+DHL books the international products 202, 205, 233, SPI, and 601 in a separate system that numbers customers separately, so they take the international customer number (utrikeskundnummer) from `international_account_number`, and every other product takes the 6-digit domestic customer number from `account_number`.
+Booking an international product without `international_account_number`, or with one longer than the 15 characters the Transport Instruction API accepts, fails with `InternationalAccountNumberError`; rating is unaffected, and [Booking rules](docs/concepts/booking-rules.md#customer-numbers) gives the sources.
 
 ```python
 import karrio.sdk as karrio
@@ -46,6 +48,7 @@ gateway = karrio.gateway["dhl_freight_sweden"].create(
     dict(
         client_key="...",
         account_number="...",
+        international_account_number="...",
         test_mode=True,
         config={"address_validation": "warn"},
     )
@@ -427,6 +430,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
 | `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code` or `recipient.postal_code` |
 | `ProductLaneError` | a lane outside the product's valid countries in the manual | `shipper.country_code` or `recipient.country_code` |
+| `InternationalAccountNumberError` | 202, 205, 233, SPI, or 601 without `international_account_number`, or with one longer than 15 characters | `international_account_number` |
 | `SentInformationError`, `TransportDeclarationError` | a missing or contradictory SENT, EKAER, or UIT declaration, including an undeclared EKAER or UIT shipment at or above 500 kg | the option |
 | `PartyTaxIdError` | 202, SPI, or 601 to or from GR without both VAT numbers or TINs | `shipper.federal_tax_id` or `recipient.federal_tax_id` |
 | `QrCodeEligibilityError` | a QR code outside 107 from the listed countries | `dhl_freight_sweden_qr_code` |

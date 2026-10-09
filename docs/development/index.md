@@ -33,11 +33,20 @@ The connector and its documentation cite the DHL Freight (Sweden) product manual
 DHL lists the current manual at <https://dhlpaket.se/dashboard/specifications/products/>, and the cited copy of version 5.26 has sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`.
 The manual is cited rather than vendored, and a new manual version means re-mapping every citation, because section numbers shift when products are removed.
 
+## IFTMIN shipment instruction citations
+
+The products' booking systems are cited from the DHL Freight (Sweden) Shipment Instruction IFTMIN UN S.93A S3, version 3.7, issued and valid from 2025-05-05, as `IFTMIN v3.7 pN`.
+DHL lists it at <https://dhlpaket.se/dashboard/specifications/edi/>, and the cited copy has sha256 `5f6900bdc60121de6c789f4bc5406026a45ab4bca7c6008928200a2ca1926e5d`.
+The connector books through the API Farm rather than EDI, and cites the IFTMIN only for the UNB recipient addresses on p10, which assign each product to DHL's domestic or international booking system; it is cited rather than vendored like the manual.
+
 ## Breaking changes
 
 Rating and booking follow the lanes that the "Valid countries" tables of manual v5.26 allow for each product, listed in [Products](../concepts/products.md#lanes).
 Rating drops rates on other lanes, merchant rate sheets included, for example 233 from SE to GR and 601 from SE to LI, and an explicitly requested product adds a `destination_not_supported` message instead.
 Booking fails before the booking request with `ProductLaneError` on such a lane (see [Booking rules](../concepts/booking-rules.md#product-lanes)), with `JointDeclarationDestinationError` for the customs joint declaration to a recipient country other than NO or CH across the EU VAT area border (see the README's customs services), and with `TerritoryPostalCodeError` for a territory code AX, IC, EA, FO, or GL whose postal code is missing or outside the territory (see [Destinations](../concepts/destinations.md#special-territories)).
+
+The international products 202, 205, 233, SPI, and 601 send the new `international_account_number` setting as the Consignor party id instead of `account_number`, and booking one fails before the booking request with `InternationalAccountNumberError` when the setting is missing or longer than 15 characters (see [Booking rules](../concepts/booking-rules.md#customer-numbers)).
+There is no fallback to `account_number`, so a connection that books these products must add the international customer number.
 
 ## Known limitations
 
