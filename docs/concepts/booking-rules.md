@@ -25,8 +25,10 @@ The same page also lists 501 under the domestic system and 232 and PPI under the
 | 202, 205, 233, SPI, 601 | up to 35 alphanumeric characters | `international_account_number` | §5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83 |
 
 The IFTMIN addresses 104 to a third recipient, DPST, and the connector sends 104 the domestic number that its 6-digit format row asks for.
+The IFTMIN also lists a third-party freight payer party for most products, carrying only the account number for the domestic products and all party details for 202, 205, 233, SPI, and 601 (IFTMIN v3.7 pp59-61); the connector sends no freight payer party.
 An international product without `international_account_number` fails with `InternationalAccountNumberError` keyed by `international_account_number`.
 The vendored Transport Instruction API spec 2.10.0 caps the party id at 15 characters, below the manual's 35, so an international number longer than 15 characters fails with the same error; a domestic booking ignores the international number.
+The IFTMIN allows up to 17 characters for a party id (IFTMIN v3.7 p32), and which limit applies to the international number in the API is an open question for DHL API Farm.
 DHL API Farm support said on 2026-10-09 that 202 and 233 take the international customer number.
 Sandbox bookings made before that review with the domestic customer number were not rejected on 202 ([booking-2906762121-202-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762121-202-se-dk.json)), 233 ([booking-2906762147-233-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json)), and 601 ([booking-2906761248-601-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json)).
 
@@ -85,7 +87,7 @@ Every other product and country accepts no AccessPoint party, including 109 to I
 A `dhl_freight_sweden_service_point` value that is a sub type or location type name (`ParcelShop`, `ParcelStation`, `servicepoint`, `locker`, `postoffice`, `postbank`, in any case) is rejected: the option takes the service point id, and the sub type goes in `dhl_freight_sweden_service_point_type`.
 
 Appendix M (§10.14.2.2 p232) states that the AccessPoint `subtype` carries the location type (`servicepoint`, `locker`, `postoffice`), while the transport-instruction booking spec enumerates `ParcelShop` and `ParcelStation`.
-The connector sends `ParcelShop` and `ParcelStation`, and which values the sub type takes is an open question put to DHL API Farm on 2026-10-09.
+The connector sends `ParcelShop` and `ParcelStation`, and which values the sub type takes is an open question for DHL API Farm.
 The sandbox booked 109 with `ParcelShop` to PL, RO, NO, and DK and with `ParcelStation` to a HU locker ([booking-2906761123-109-se-pl.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761123-109-se-pl.json), [booking-2906761263-109-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761305-109-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json), [booking-2906761354-109-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json), [booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
 For 103 the connector sends only the four-digit terminal id nnnn of a service point id SE-nnnn00, so SE-651400 goes as 6514, because the manual and the IFTMIN shipment instruction use only that four-digit value for 103 (§10.14.2.1 p231, IFTMIN v3.7 p59).
@@ -117,7 +119,7 @@ The related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47),
 | neither | `SENT_FREE` `"true"`, whatever the weight | [601 to PL](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769647-601-se-pl-default-sent-free.json) |
 
 The sandbox rejected a 109 booking to PL with no SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." on 2026-10-05 and booked the same request on 2026-10-08 ([rejection](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json), [booking](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json)), and the connector sends `SENT_FREE` `"true"` when no SENT option is given.
-Whether 109 and 112 to PL take SENT entries is an open question put to DHL API Farm on 2026-10-09.
+Whether 109 and 112 to PL take SENT entries is an open question for DHL API Farm.
 The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the sandbox booked it at shipment level.
 
 ## EKAER and UIT

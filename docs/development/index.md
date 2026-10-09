@@ -37,7 +37,7 @@ The manual is cited rather than vendored, and a new manual version means re-mapp
 
 The products' booking systems are cited from the DHL Freight (Sweden) Shipment Instruction IFTMIN UN S.93A S3, version 3.7, issued and valid from 2025-05-05, as `IFTMIN v3.7 pN`.
 DHL lists it at <https://dhlpaket.se/dashboard/specifications/edi/>, and the cited copy has sha256 `5f6900bdc60121de6c789f4bc5406026a45ab4bca7c6008928200a2ca1926e5d`.
-The connector books through the API Farm rather than EDI, and cites the IFTMIN for the UNB recipient addresses on p10, which assign each product to DHL's domestic or international booking system, and for the 103 service point terminal id in Appendix A on p59; it is cited rather than vendored like the manual.
+The connector books through the API Farm rather than EDI, and cites the IFTMIN for the UNB recipient addresses on p10, which assign each product to DHL's domestic or international booking system, for the party id length on p32, and, in Appendix A on pp59-61, for the 103 service point terminal id and the parties each product takes; it is cited rather than vendored like the manual.
 
 ## Breaking changes
 
