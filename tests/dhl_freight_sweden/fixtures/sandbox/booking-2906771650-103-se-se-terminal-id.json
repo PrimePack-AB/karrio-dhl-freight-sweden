@@ -1,0 +1,366 @@
+{
+ "kind": "booking",
+ "summary": "103 within SE to service point SE-982000 sent as the four-digit terminal id 9820, after a five-point service point lookup, then printed.",
+ "captured_at": "2026-10-09T07:50:00Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "103",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": "2906771650",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_pudo.test_book_103_service_point_se",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /servicepointlocatorapi/v1/servicepoint/findnearestservicepoints",
+   "http_status": 200,
+   "date": "2026-10-09T07:50:00Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261009-094959/001-service-points-103-se.request.json",
+    "sha256": "945ed5de81986301f95b787295b77d45c943c02e03939a06d174857d53c0f12a"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261009-094959/001-service-points-103-se.response.json",
+    "sha256": "4704fc97e44c614c5026fcc5af7736c539f780d8c917e539e17b9972138a4770"
+   },
+   "request": {
+    "address": {
+     "cityName": "Stockholm",
+     "countryCode": "SE",
+     "postalCode": "11151",
+     "street": "Drottninggatan 10"
+    },
+    "maxNumberOfItems": 5,
+    "piece": {
+     "height": 10.0,
+     "length": 30.0,
+     "weight": 1.0,
+     "width": 20.0
+    }
+   },
+   "response": {
+    "status": "OK",
+    "doorStepDeliveryAvailable": false,
+    "servicePoints": [
+     {
+      "id": "SE-982000",
+      "servicePointId": "SE-982000",
+      "street": "SVEAVÄGEN 20",
+      "name": "H.T. ROSIS GODIS & TOBAK T-BANEPLAN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11157",
+      "countryCode": "SE",
+      "distance": 0.47,
+      "routeDistance": 0.49,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "cash-on-delivery",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33477,
+      "longitude": 18.0647,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-241500",
+      "servicePointId": "SE-241500",
+      "street": "SVEAVÄGEN 74",
+      "name": "SVEA GODIS",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11359",
+      "countryCode": "SE",
+      "distance": 1.09,
+      "routeDistance": 1.12,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.33988,
+      "longitude": 18.05976,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-268900",
+      "servicePointId": "SE-268900",
+      "street": "BIRGER JARLSGATAN 57",
+      "name": "PAKETSKÅP (IBOXEN) 57 BIRGER JARLSG",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11356",
+      "countryCode": "SE",
+      "distance": 1.18,
+      "routeDistance": 1.64,
+      "distanceUnit": "km",
+      "featureCodes": [],
+      "locationType": "locker",
+      "serviceTypes": [
+       "parcel:pick-up-unregistered"
+      ],
+      "latitude": 59.34114,
+      "longitude": 18.06478,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-232700",
+      "servicePointId": "SE-232700",
+      "street": "KUNGSHOLMSGATAN 2 A",
+      "name": "TC KIOSKEN",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11227",
+      "countryCode": "SE",
+      "distance": 0.83,
+      "routeDistance": 1.91,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.32967,
+      "longitude": 18.05114,
+      "clickAndCollectId": ""
+     },
+     {
+      "id": "SE-347100",
+      "servicePointId": "SE-347100",
+      "street": "TRIEWALDSGRÄND 3",
+      "name": "TASTY AMERICA",
+      "cityName": "STOCKHOLM",
+      "postalCode": "11129",
+      "countryCode": "SE",
+      "distance": 0.98,
+      "routeDistance": 2.45,
+      "distanceUnit": "km",
+      "featureCodes": [
+       "SF054"
+      ],
+      "locationType": "servicepoint",
+      "serviceTypes": [
+       "parcel:pick-up",
+       "express:drop-off",
+       "cash-on-delivery",
+       "express:pick-up",
+       "express:drop-off-prelabeled",
+       "parcel:drop-off"
+      ],
+      "latitude": 59.32252,
+      "longitude": 18.07258,
+      "clickAndCollectId": ""
+     }
+    ],
+    "homedeliveryParcel": false,
+    "lofi": true
+   }
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-09T07:50:00Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261009-094959/003-booking-103.request.json",
+    "sha256": "bed4046406f5831da2280df4fe1b242d9125f34c7812e3e19cd635cab3929fac"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261009-094959/003-booking-103.response.json",
+    "sha256": "6235b281ba317b303de5eb68b2b7b4067805970719688fb35693172f13108218"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "STOCKHOLM",
+       "countryCode": "SE",
+       "postalCode": "11157",
+       "street": "SVEAVÄGEN 20"
+      },
+      "id": "9820",
+      "name": "H.T. ROSIS GODIS & TOBAK T-BANEPLAN",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "103",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906771650",
+     "productCode": "103",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "1"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Anna Andersson",
+       "contactName": "Anna Andersson",
+       "address": {
+        "street": "Drottninggatan 10",
+        "cityName": "Stockholm",
+        "postalCode": "11151",
+        "countryCode": "SE"
+       },
+       "phone": "+46 70 123 45 67",
+       "email": "anna.andersson@example.se"
+      },
+      {
+       "id": "9820",
+       "type": "AccessPoint",
+       "name": "H.T. ROSIS GODIS & TOBAK T-BANEPLAN",
+       "address": {
+        "street": "SVEAVÄGEN 20",
+        "cityName": "STOCKHOLM",
+        "postalCode": "11157",
+        "countryCode": "SE"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525038513"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LSE11157+02000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-09T07:50:04Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261009-094959/004-booking-103.request.json",
+    "sha256": "35f45f0d366bdcd21c1ad4aa58e3b6e050f69a1163b86ccaeb5a96e65a2d2ed4"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261009-094959/004-booking-103.response.json",
+    "sha256": "59744b09d064abfd6be9b7d0eeb35494cfe33c4e29b937ff8a3bc892710b0b52"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906771650"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906771650.pdf",
+      "content": "<base64 omitted: 103744 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}
