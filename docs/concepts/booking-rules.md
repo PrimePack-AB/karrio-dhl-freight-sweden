@@ -27,7 +27,8 @@ The same page also lists 501 under the domestic system and 232 and PPI under the
 The IFTMIN addresses 104 to a third recipient, DPST, and the connector sends 104 the domestic number that its 6-digit format row asks for.
 An international product without `international_account_number` fails with `InternationalAccountNumberError` keyed by `international_account_number`.
 The vendored Transport Instruction API spec 2.10.0 caps the party id at 15 characters, below the manual's 35, so an international number longer than 15 characters fails with the same error; a domestic booking ignores the international number.
-The sandbox does not check which number a product receives: it accepted the domestic customer number on 202 ([booking-2906762121-202-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762121-202-se-dk.json)), 233 ([booking-2906762147-233-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json)), and 601 ([booking-2906761248-601-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json)).
+DHL API Farm support said on 2026-10-09 that 202 and 233 take the international customer number.
+Sandbox bookings made before that review with the domestic customer number were not rejected on 202 ([booking-2906762121-202-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762121-202-se-dk.json)), 233 ([booking-2906762147-233-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json)), and 601 ([booking-2906761248-601-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json)).
 
 ## Payer codes
 
