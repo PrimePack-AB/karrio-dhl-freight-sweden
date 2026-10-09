@@ -19,6 +19,7 @@ class Settings(provider_utils.Settings, rating_proxy.RatingMixinSettings):
     # dataclasses would and reports a false positive.
     client_key: str  # pyright: ignore[reportGeneralTypeIssues]
     account_number: typing.Optional[str] = None
+    international_account_number: typing.Optional[str] = None
 
     # generic properties
     # Redeclared for attrs field ordering; the type mirrors the SDK base

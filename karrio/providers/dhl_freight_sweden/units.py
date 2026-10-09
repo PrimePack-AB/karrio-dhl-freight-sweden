@@ -516,6 +516,69 @@ QR_CODE_COUNTRIES: typing.Dict[str, typing.FrozenSet[str]] = {
 }
 
 
+class BookingSystem(lib.StrEnum):
+    """The DHL Freight Sweden system a product is booked in.
+
+    The systems number customers separately, so the consignor id of a
+    domestic product is the domestic customer number and that of an
+    international product the international customer number
+    ("utrikeskundnummer").
+    """
+
+    domestic = "domestic"
+    international = "international"
+
+
+# Booking system per product from the UNB recipient addresses of the DHL
+# Freight (Sweden) IFTMIN shipment instruction v3.7 p10: 7330924000002 for
+# the domestic system, 7381000065002 for 202, 205, 233, 601, and SPI. 104
+# goes to DPST, and its "DHL account number format" row of product manual
+# v5.26 (§5.13 p60) asks for 6 digits like the domestic products' rows; the
+# international products' rows ask for up to 35 alphanumeric characters
+# (§5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83). 107 has no such row.
+PRODUCT_BOOKING_SYSTEMS: typing.Dict[str, BookingSystem] = {
+    **{
+        product.value: BookingSystem.domestic
+        for product in (
+            ShippingService.dhl_freight_sweden_paket,
+            ShippingService.dhl_freight_sweden_parcel_connect_plus,
+            ShippingService.dhl_freight_sweden_special,
+            ShippingService.dhl_freight_sweden_pall,
+            ShippingService.dhl_freight_sweden_stycke,
+            ShippingService.dhl_freight_sweden_parti,
+            ShippingService.dhl_freight_sweden_service_point_b2c,
+            ShippingService.dhl_freight_sweden_service_point_c2b,
+            ShippingService.dhl_freight_sweden_parcel_connect_b2c,
+            ShippingService.dhl_freight_sweden_parcel_return_connect_c2b,
+            ShippingService.dhl_freight_sweden_hemleverans_paket_b2c,
+            ShippingService.dhl_freight_sweden_home_delivery_b2c,
+            ShippingService.dhl_freight_sweden_home_delivery_c2b,
+            ShippingService.dhl_freight_sweden_home_delivery_c2b_502,
+        )
+    },
+    **{
+        product.value: BookingSystem.international
+        for product in (
+            ShippingService.dhl_freight_sweden_road_freight_standard,
+            ShippingService.dhl_freight_sweden_road_freight_direct,
+            ShippingService.dhl_freight_sweden_road_freight_priority,
+            ShippingService.dhl_freight_sweden_standard_pallet_international,
+            ShippingService.dhl_freight_sweden_home_delivery_international_b2c,
+        )
+    },
+}
+
+# The Transport Instruction API caps Party.id at 15 characters
+# (vendor/se-api-farm/transport-instruction-2.10.0.json), below the 35 that
+# the manual allows an international customer number.
+PARTY_ID_MAX_LENGTH = 15
+
+
+def booking_system(product_code: str) -> BookingSystem:
+    """The system ``product_code`` is booked in; codes outside the table are domestic."""
+    return PRODUCT_BOOKING_SYSTEMS.get(product_code, BookingSystem.domestic)
+
+
 class PayerCodes(typing.NamedTuple):
     """Terms-of-delivery codes a product accepts.
 

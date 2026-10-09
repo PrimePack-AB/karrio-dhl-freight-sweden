@@ -29,6 +29,7 @@ def _gateway(config: dict):
             carrier_id="dhl_freight_sweden",
             client_key="TEST_CLIENT_KEY",
             account_number="1234567",
+            international_account_number="INT1234567",
             config=config,
         )
     )

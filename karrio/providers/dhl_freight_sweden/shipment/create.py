@@ -114,6 +114,12 @@ class ProductLaneError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class InternationalAccountNumberError(errors.ShippingSDKDetailedError):
+    """Raised when an international product lacks a usable international customer number."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class ExcludedDestinationError(errors.ShippingSDKDetailedError):
     """Raised when the product excludes the shipper or recipient postal code."""
 
@@ -328,6 +334,7 @@ def shipment_request(
     _check_lane(service, shipper.country_code, recipient.country_code)
     _check_aland_customs_services(options, dict(shipper=shipper, recipient=recipient))
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
+    consignor_id = _consignor_id(service, settings)
     payer_code = _payer_code(
         service,
         options,
@@ -417,9 +424,7 @@ def shipment_request(
     parties = [
         # The consignor id is the customer/agreement number and is mandatory
         # according to the payer code; the consignor-pays default always needs it.
-        _party(
-            provider_units.PartyType.Consignor, shipper, id=settings.account_number
-        ),
+        _party(provider_units.PartyType.Consignor, shipper, id=consignor_id),
         _party(provider_units.PartyType.Consignee, recipient),
         *lib.identity([service_point_party] if service_point_party else []),
     ]
@@ -859,6 +864,37 @@ def _check_lane(
                 message=f"product {product_code} does not ship "
                 f"{'to' if party == 'recipient' else 'from'} "
                 f"{destination if party == 'recipient' else origin}",
+            )
+        },
+    )
+
+
+def _consignor_id(
+    product_code: str, settings: provider_utils.Settings
+) -> typing.Optional[str]:
+    system = provider_units.booking_system(product_code)
+    if system != provider_units.BookingSystem.international:
+        return settings.account_number
+
+    number = (settings.international_account_number or "").strip()
+    limit = provider_units.PARTY_ID_MAX_LENGTH
+    if number and len(number) <= limit:
+        return number
+
+    raise InternationalAccountNumberError(
+        lib.identity(
+            f"Product {product_code} is booked in DHL's international system "
+            "and needs the international customer number; set "
+            "international_account_number on the connection"
+            if not number
+            else f"The international customer number has {len(number)} "
+            f"characters; the DHL Transport Instruction API accepts at most {limit}"
+        ),
+        details={
+            "international_account_number": lib.identity(
+                dict(code="required", message="international customer number is required")
+                if not number
+                else dict(code="invalid", message=f"at most {limit} characters")
             )
         },
     )
