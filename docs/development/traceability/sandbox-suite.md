@@ -24,7 +24,7 @@ Results, with every booking, rejection, and deviation from the product manual, a
 ## Captures
 
 Every live call writes its request and response as JSON to the capture directory set by `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR`, with the `client-key` header and the client key redacted.
-The account number stays in the captures, because DHL API Farm support traces sandbox bookings by it.
+The domestic and international customer numbers stay in the captures, because DHL API Farm support traces sandbox bookings by them.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
 ## Evidence
@@ -43,7 +43,8 @@ Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixture
 Evidence files are named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
 A file's metadata names the endpoint, product, route, booking id or error code, and the capturing script or suite test, and each call records the path of its original capture relative to `$XDG_STATE_HOME` and the sha256 of that capture, so the original can be checked against the committed copy.
 The committed copies drop the `client-key` header and the response headers, and replace label and document base64 with a length marker.
-The earliest captures masked the account number in the Consignor party id; their evidence files restore it and record the masked placeholders under `account_number_restored`.
+The earliest captures masked the account number in the Consignor party id; they predate the international customer number and booked every product with the domestic 116768, so their evidence files restore that number and record the masked placeholders under `account_number_restored`.
+`test_sandbox_evidence.py` expects 116768 on international products only in captures before 2026-10-09, when DHL API Farm support said those products take the international customer number.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
 A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.
 `tests/dhl_freight_sweden/test_sandbox_evidence.py` checks the files offline for these redactions and parses every response body with the connector's parsers.

@@ -35,6 +35,9 @@ Json = typing.Any
 Exchange = typing.Dict[str, Json]
 
 HOST = "test-api.freight-logistics.dhl.com"
+# Only the earliest script captures masked the Consignor id, and all of them
+# predate the international customer number: they booked every product,
+# international ones included, with the domestic number.
 ACCOUNT_NUMBER = "116768"
 ACCOUNT_PLACEHOLDERS = frozenset({"<redacted>", "<ACCOUNT>", "__ACCOUNT__"})
 BASE64 = re.compile(r"^[A-Za-z0-9+/=\s]{200,}$")

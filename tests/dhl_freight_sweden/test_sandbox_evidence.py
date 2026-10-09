@@ -18,6 +18,7 @@ import karrio.lib as lib
 from karrio.providers.dhl_freight_sweden import (
     address,
     error,
+    units,
     product_matches,
     service_points,
 )
@@ -29,6 +30,10 @@ EVIDENCE_DIR = pathlib.Path(__file__).parent / "fixtures" / "sandbox"
 EVIDENCE_FILES = sorted(EVIDENCE_DIR.glob("*.json"))
 HOST = "test-api.freight-logistics.dhl.com"
 ACCOUNT_NUMBER = "116768"
+# DHL API Farm support's 2026-10-09 review: international products take the
+# international customer number. Earlier captures booked them with
+# ACCOUNT_NUMBER, which the sandbox accepted.
+INTERNATIONAL_ACCOUNT_NUMBER_SINCE = "2026-10-09"
 KINDS = ("booking", "rejection", "lookup", "label")
 METADATA_KEYS = (
     "kind",
@@ -162,15 +167,30 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
         self.assertTrue(token_like("code", "customsCustomersOwnDeclaration"))
         self.assertFalse(token_like("customsAdditionalServices", "customsJointDeclaration"))
 
-    def test_consignor_carries_the_account_number(self):
+    def test_consignor_carries_the_booking_system_account_number(self):
+        pre_review_international = 0
         for path in EVIDENCE_FILES:
             evidence = load(path)
+            pre_review = evidence["captured_at"] < INTERNATIONAL_ACCOUNT_NUMBER_SINCE
             for item in exchanges_to(evidence, TI_PATH):
+                system = units.booking_system(str(item["request"]["productCode"]))
+                international = system == units.BookingSystem.international
+                pre_review_international += international and pre_review
                 for body in (item["request"], item["response"].get("transportInstruction")):
                     for party in (body or {}).get("parties", []):
-                        if party["type"] == "Consignor":
-                            with self.subTest(path.name):
+                        if party["type"] != "Consignor":
+                            continue
+                        with self.subTest(path.name):
+                            if international and not pre_review:
+                                self.assertNotEqual(party["id"], ACCOUNT_NUMBER)
+                                self.assertTrue(party["id"])
+                                self.assertLessEqual(
+                                    len(party["id"]), units.PARTY_ID_MAX_LENGTH
+                                )
+                            else:
                                 self.assertEqual(party["id"], ACCOUNT_NUMBER)
+
+        self.assertGreater(pre_review_international, 0)
 
     def test_labels_cite_their_pdf_and_text(self):
         labels = 0

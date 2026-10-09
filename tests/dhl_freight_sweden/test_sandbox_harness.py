@@ -154,11 +154,15 @@ class TestSandboxHarnessBudget(unittest.TestCase):
 
 
 class TestSandboxHarnessRedaction(unittest.TestCase):
-    def test_captures_mask_the_client_key_and_keep_the_account_number(self):
+    def test_captures_mask_the_client_key_and_keep_the_account_numbers(self):
         config = harness.load_config(LIVE, NOW)
         record = {
             "request_headers": {"client-key": "secret-key"},
-            "data": {"parties": [{"id": "7654321", "type": "Consignor"}], "note": "via secret-key"},
+            "data": {
+                "parties": [{"id": "7654321", "type": "Consignor"}],
+                "note": "via secret-key",
+                "international": "INT7654321",
+            },
         }
 
         self.assertEqual(harness.capture_secrets(config), ("secret-key",))
@@ -169,6 +173,7 @@ class TestSandboxHarnessRedaction(unittest.TestCase):
                 "data": {
                     "parties": [{"id": "7654321", "type": "Consignor"}],
                     "note": "via <redacted>",
+                    "international": "INT7654321",
                 },
             },
         )
