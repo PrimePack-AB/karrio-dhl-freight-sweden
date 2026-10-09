@@ -529,10 +529,12 @@ class BookingSystem(lib.StrEnum):
     international = "international"
 
 
-# Booking system per product from the UNB recipient addresses of the DHL
-# Freight (Sweden) IFTMIN shipment instruction v3.7 p10: 7330924000002 for
-# the domestic system, 7381000065002 for 202, 205, 233, 601, and SPI. 104
-# goes to DPST, and its "DHL account number format" row of product manual
+# Booking system per connector product from the UNB recipient addresses of
+# the DHL Freight (Sweden) IFTMIN shipment instruction v3.7 p10: the
+# connector's products under 7330924000002 are domestic, and 202, 205, 233,
+# SPI, and 601 under 7381000065002 international. p10 also lists 501
+# (domestic) and 232 and PPI (international), which the connector does not
+# implement. 104 goes to DPST, and its "DHL account number format" row of product manual
 # v5.26 (§5.13 p60) asks for 6 digits like the domestic products' rows; the
 # international products' rows ask for up to 35 alphanumeric characters
 # (§5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83). 107 has no such row.
