@@ -211,8 +211,9 @@ class BookingBudget:
 def capture_secrets(config: SandboxConfig) -> typing.Tuple[typing.Optional[str], ...]:
     """The values masked in captures: the client key only.
 
-    The account number stays in the captures because DHL API Farm support
-    traces sandbox bookings by it, and it is not a credential.
+    The domestic and international customer numbers stay in the captures
+    because DHL API Farm support traces sandbox bookings by them, and neither
+    is a credential.
     """
     return (config.client_key,)
 
