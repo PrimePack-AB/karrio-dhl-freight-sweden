@@ -66,7 +66,7 @@ request = service_points.service_points_request(
             "postal_code": "00-251",
             "country_code": "PL",
         },
-        "max_items": 5,
+        "max_items": 5,                                 # optional, default 10
         "location_types": ["servicepoint", "locker"],   # optional
         "distance": {"value": 2, "unit": "km"},         # optional
         "parcel": {                                     # optional
@@ -87,6 +87,7 @@ points, messages = service_points.parse_service_points_response(
 
 `parcel` is one karrio parcel dict, the parcel the point must fit (see [Parcel input](#parcel-input)); the caller chooses which parcel of the shipment to pass, and the connector sends it as the request's `piece` capacity filter.
 DHL applied the filter for PL but not for SE: in Stockholm a 2.5 kg piece of 40 × 30 × 15 cm and a 500 kg piece of 300 × 200 × 200 cm returned the same ten service points in the same order ([lookup-service-points-se-capacity-not-applied.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-se-capacity-not-applied.json)), while in Warszawa the 500 kg piece was answered with HTTP 400 "The dimensions are too large for servicepoint", and with `locationTypes` `["locker"]` "The dimensions are too large for locationtype locker" ([lookup-service-points-pl-capacity-too-large.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-service-points-pl-capacity-too-large.json)).
+`max_items` defaults to ten when omitted, because the manual says to always search for the ten closest service points (§5.12 p57); an explicit value is sent as given.
 The accepted top-level keys are `address`, `max_items`, `location_types`, `distance`, and `parcel`.
 Any other key, including `parcels` and `piece`, raises a field error naming it before any carrier call.
 

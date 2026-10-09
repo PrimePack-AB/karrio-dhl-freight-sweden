@@ -20,6 +20,9 @@ import karrio.providers.dhl_freight_sweden.utils as provider_utils
 ACCEPTED_PAYLOAD_KEYS = frozenset(
     {"address", "location_types", "max_items", "distance", "parcel"}
 )
+# Product manual v5.26 §5.12 p57: "Always search for ten closest service
+# points to get the most accurat reply."
+DEFAULT_MAX_ITEMS = 10
 
 
 def service_points_request(
@@ -31,7 +34,8 @@ def service_points_request(
     Top-level keys outside ``ACCEPTED_PAYLOAD_KEYS`` raise a field error
     rather than being silently dropped. ``parcel`` is one karrio
     ``Parcel``-shaped dict, chosen by the caller, that the point must fit;
-    it is sent in KG/CM as the request ``piece``.
+    it is sent in KG/CM as the request ``piece``. ``max_items`` defaults to
+    ``DEFAULT_MAX_ITEMS`` when omitted.
     """
     lookup.guard_payload_keys(payload, ACCEPTED_PAYLOAD_KEYS, "service points")
     address = payload.get("address") or {}
@@ -49,7 +53,11 @@ def service_points_request(
             countryCode=provider_units.parent_country(address.get("country_code")),
         ),
         locationTypes=payload.get("location_types"),
-        maxNumberOfItems=payload.get("max_items"),
+        maxNumberOfItems=lib.identity(
+            DEFAULT_MAX_ITEMS
+            if payload.get("max_items") is None
+            else payload.get("max_items")
+        ),
         distance=distance.get("value"),
         distanceUnit=distance.get("unit"),
         piece=(

@@ -221,7 +221,6 @@ def nearest_service_point(
                 postal_code=recipient["postal_code"],
                 country_code=country,
             ),
-            max_items=5,
             parcel=PARCEL,
         ),
         settings,
