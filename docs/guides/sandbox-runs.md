@@ -15,6 +15,7 @@ DHL_FREIGHT_SWEDEN_SANDBOX=1 .venv/bin/python -m unittest discover -v -s sandbox
 ```
 
 Every test skips unless `DHL_FREIGHT_SWEDEN_SANDBOX=1` and `KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY` are set, and the booking segments also skip without `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`.
+Bookings of the international products 202, 205, 233, SPI, and 601 also skip without `KARRIO_DHL_FREIGHT_SWEDEN_INTERNATIONAL_ACCOUNT_NUMBER`, the international customer number they send as the consignor id.
 The gateway always runs in test mode on the connector's sandbox host `test-api.freight-logistics.dhl.com`, no variable can change the host, and the run fails if a carrier call targets any other host.
 
 | Variable | Default | Effect |
