@@ -290,7 +290,8 @@ Products 202, SPI, and 601 to or from GR need a VAT number or TIN for both parti
 ### Outside the EU VAT area
 
 A shipment that crosses the EU VAT area border needs customs data, meaning `customs.commodities`, `customs.invoice`, or `customs.invoice_date`, and the connector refuses one without any of them with `CustomsInformationRequiredError`.
-This refusal is the connector's own rule: DHL booked a 109 parcel to Åland without customs data before the rule existed ([booking-2906761917-109-se-fi-aland.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761917-109-se-fi-aland.json)).
+The refusal follows the manual, under which customs proceedings are mandatory for shipments delivered outside the European Union or the tax area, Åland (FI 22) included (§7.4 p162).
+The sandbox booked a 109 parcel to Åland without customs data before the connector applied this rule ([booking-2906761917-109-se-fi-aland.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761917-109-se-fi-aland.json)).
 A `documents` shipment without commodities needs at least `customs.invoice`.
 
 The customs document needs an invoice number, `customs.invoice` or else the shipment reference, and its date falls back to the shipping date.
@@ -337,23 +338,25 @@ The manual offers four customs services, and the connector sends none unless an 
 | Customs handling - Full service | `dhl_freight_sweden_customs_handling_full_service` | nothing further | §6.5 p92 |
 | Customs handling - Standard | `dhl_freight_sweden_customs_handling_standard` | `customs.options.eori_number`; valid to NO and Åland only | §6.6 p94 |
 | Customs, customers own declaration | `dhl_freight_sweden_customs_own_declaration` | the MRN in `..._own_declaration_id`; a separate agreement | §6.7 p96 |
-| Customs, joint declaration | `dhl_freight_sweden_customs_joint_declaration` | the SFID in `..._joint_declaration_id`; a separate agreement; to NO or CH (the manual names NO only) | §6.8 p98 |
+| Customs, joint declaration | `dhl_freight_sweden_customs_joint_declaration` | the SFID in `..._joint_declaration_id`; a separate agreement; to NO (the manual) or CH (DHL's Product API product matches) | §6.8 p98 |
 
 The manual lists each service as one that cannot be combined with the other three (§6.5 p92, §6.6 p94, §6.7 p96, §6.8 p98), and the connector enforces this before booking: across the EU VAT area border, more than one selected service fails with `CustomsServiceCombinationError` keyed by every selected option.
 A selected service's missing identifier fails with `CustomsServiceIdentifierError`, and payer code 023 on 109 requires the joint declaration.
 VOEC (VAT on e-commerce, NO) is sent from `customs.options.voec_number` and has not been booked in the sandbox.
-The manual lists NO as the joint declaration's only valid country (§6.8 p98), while product matches on account 116768 list `customsJointDeclaration` among the customs services of 601 to NO 0154 ([NO 0154](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-no-0154-customs.json)) and to CH ([CH 8001](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json), [CH 8001, 20 kg](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001-20kg.json), [CH 1201](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-1201.json), [CH 3011](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-3011.json), [CH 6900](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-6900.json)), so the table names both destinations.
+The manual lists NO as the joint declaration's valid country (§6.8 p98), and DHL's Product API product matches on account 116768 list `customsJointDeclaration` among the customs services of 601 to NO 0154 ([NO 0154](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-no-0154-customs.json)) and to CH ([CH 8001](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json), [CH 8001, 20 kg](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001-20kg.json), [CH 1201](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-1201.json), [CH 3011](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-3011.json), [CH 6900](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-6900.json)), so the connector allows the service to both.
 No booking has sent the service; across the EU VAT area border the connector refuses it before booking to any recipient country other than NO and CH, compared after the territory mapping, with `JointDeclarationDestinationError`.
 
-To or from Åland the connector refuses full service and Standard with `AlandCustomsServiceError`, because DHL rejected both with 24003 ([full service](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json), [Standard](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json)) although the manual lists Åland for Standard.
-An Åland shipment therefore sends its customs data without a customs service, which DHL accepted for 109 as booking 2906762592 ([booking-2906762592-109-se-fi-aland-customs.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762592-109-se-fi-aland-customs.json)); the evidence shows that DHL stored the customs data, not how DHL clears it.
+To or from Åland the connector refuses full service and Standard with `AlandCustomsServiceError`.
+The manual lists Åland as valid for both (§6.5 p92, §6.6 p94), and the sandbox rejected both with 24003 ([full service](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json), [Standard](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json)); where the sandbox rejects what the manual allows, the connector refuses it before booking.
+An Åland shipment therefore sends its customs data without a customs service, which the sandbox booked for 109 as booking 2906762592 ([booking-2906762592-109-se-fi-aland-customs.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762592-109-se-fi-aland-customs.json)); the evidence shows that the sandbox stored the customs data, not how DHL clears it.
 
 ### Commercial or proforma invoice
 
 `customs.commercial_invoice` is a field of the Karrio customs model, not a shipping option.
 True sends a `CommercialInvoice` document, and false or unset sends a `ProformaInvoice`.
 Outside the EU VAT area, content counts as a sale unless `customs.content_type` is `documents`, `gift`, `return_merchandise`, or `sample`, and a sale without `customs.commercial_invoice` true fails with `CommercialInvoiceRequiredError`.
-This is the connector's rule, not DHL's, because DHL accepted a proforma invoice on 109 to NO ([booking-2906761305-109-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json)).
+The manual requires a commercial invoice to be sent to DHL for each of the customs services full service, Standard, and customers own declaration (§6.5 p92, §6.6 p94, §6.7 p96), and the connector applies that to every sale outside the EU VAT area.
+The sandbox booked 109 to NO with full service and a `ProformaInvoice` ([booking-2906761305-109-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json)); where the sandbox accepts more than the manual, the connector follows the manual.
 
 ### Sending the invoice copy to DHL
 

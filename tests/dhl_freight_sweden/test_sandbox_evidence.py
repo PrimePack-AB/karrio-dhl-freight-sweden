@@ -32,7 +32,7 @@ HOST = "test-api.freight-logistics.dhl.com"
 ACCOUNT_NUMBER = "116768"
 # DHL API Farm support's 2026-10-09 review: international products take the
 # international customer number. Earlier captures booked them with
-# ACCOUNT_NUMBER, which the sandbox accepted.
+# ACCOUNT_NUMBER.
 INTERNATIONAL_ACCOUNT_NUMBER_SINCE = "2026-10-09"
 KINDS = ("booking", "rejection", "lookup", "label")
 METADATA_KEYS = (

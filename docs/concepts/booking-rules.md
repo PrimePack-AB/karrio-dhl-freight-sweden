@@ -85,15 +85,15 @@ Every other product and country accepts no AccessPoint party, including 109 to I
 A `dhl_freight_sweden_service_point` value that is a sub type or location type name (`ParcelShop`, `ParcelStation`, `servicepoint`, `locker`, `postoffice`, `postbank`, in any case) is rejected: the option takes the service point id, and the sub type goes in `dhl_freight_sweden_service_point_type`.
 
 Appendix M (§10.14.2.2 p232) states that the AccessPoint `subtype` carries the location type (`servicepoint`, `locker`, `postoffice`), while the transport-instruction booking spec enumerates `ParcelShop` and `ParcelStation`.
-The connector sends `ParcelShop` and `ParcelStation`.
-The sandbox accepted 109 bookings with `ParcelShop` to PL, RO, NO, and DK and with `ParcelStation` to a HU locker ([booking-2906761123-109-se-pl.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761123-109-se-pl.json), [booking-2906761263-109-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761305-109-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json), [booking-2906761354-109-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json), [booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
+The connector sends `ParcelShop` and `ParcelStation`, and which values the sub type takes is an open question put to DHL API Farm on 2026-10-09.
+The sandbox booked 109 with `ParcelShop` to PL, RO, NO, and DK and with `ParcelStation` to a HU locker ([booking-2906761123-109-se-pl.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761123-109-se-pl.json), [booking-2906761263-109-se-ro.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json), [booking-2906761305-109-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761305-109-se-no.json), [booking-2906761354-109-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761354-109-se-dk.json), [booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
 For 103 the connector sends only the four-digit terminal id nnnn of a service point id SE-nnnn00, so SE-651400 goes as 6514, because the manual and the IFTMIN shipment instruction use only that four-digit value for 103 (§10.14.2.1 p231, IFTMIN v3.7 p59).
 A four-digit terminal id passes unchanged, and any other 103 id fails before the booking request with `ServicePointIdError` keyed by `dhl_freight_sweden_service_point`.
 Booking 2906761230 predates this rule and carried the full id SE-982000 ([booking-2906761230-103-se-se.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json)).
 Booking 2906771650 used the four-digit terminal id 9820 for the same service point ([booking-2906771650-103-se-se-terminal-id.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906771650-103-se-se-terminal-id.json)).
 For the other products the connector sends the service point id as given, and it does not check the point's service types.
-For 109 the manual allows only shops and stations with service type `parcel:pick-up` (§10.14.2.2 p232), while the sandbox accepted the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
+For 109 the manual allows only shops and stations with service type `parcel:pick-up` (§10.14.2.2 p232); the sandbox booked 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([booking-2906761289-109-se-hu.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
 ## SENT
 
@@ -115,8 +115,9 @@ The related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47),
 | free flag `false` without identifiers | fails | |
 | neither | `SENT_FREE` `"true"`, whatever the weight | [601 to PL](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769647-601-se-pl-default-sent-free.json) |
 
-The sandbox rejected a 109 booking to PL with no SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." on 2026-10-05 and accepted the same request on 2026-10-08 ([rejection](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json), [booking](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json)), and the connector still sends `SENT_FREE` `"true"` when no SENT option is given.
-The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the live API accepts it at shipment level.
+The sandbox rejected a 109 booking to PL with no SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." on 2026-10-05 and booked the same request on 2026-10-08 ([rejection](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json), [booking](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json)), and the connector sends `SENT_FREE` `"true"` when no SENT option is given.
+Whether 109 and 112 to PL take SENT entries is an open question put to DHL API Farm on 2026-10-09.
+The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the sandbox booked it at shipment level.
 
 ## EKAER and UIT
 
