@@ -9,7 +9,7 @@ Manual references are to [product manual v5.26](../development/index.md#product-
 
 The connector sends customs information and the requested customs services only when the shipper or the recipient lies outside the EU VAT area for goods; within it, customs data and customs services are dropped with a `customs_omitted_intra_eu` warning.
 Outside the area a booking without customs data fails before the booking request, as the README's exporting section explains.
-To or from Åland the customs handling services Standard and full service fail before the booking request, because DHL rejected both with 24003 (see [Åland](#åland)).
+To or from Åland the customs handling services Standard and full service fail before the booking request: the manual lists Åland for both, and the sandbox rejected both with 24003 (see [Åland](#åland)).
 The manual makes customs proceedings mandatory for deliveries outside the European Union or the tax area and names Åland (FI 22) and the Canary Islands as areas outside the tax area (§7.4 p162).
 An address lies inside the area when its country is an EU member state, GR, or MC, its postal code is not in one of the ranges below, and, for DK, the code is neither led by FO or GL nor a three-digit Faroese code, or when it is a GB postcode starting with `BT` (Northern Ireland), which is inside the area for goods.
 
@@ -69,13 +69,13 @@ The sandbox answered bookings from SE to FI 22100 as follows.
 | Customs data | Customs service | Sandbox | Connector | Evidence |
 |--------------|-----------------|---------|-----------|----------|
 | none | none | 109 booked | refuses, as for any lane crossing the EU VAT area border without customs data | [booking-2906761917](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761917-109-se-fi-aland.json) |
-| yes | full service | 112 rejected with 24003 "customsHandlingFullService is not available for this country combination" | refuses | [rejection-24003-112-se-fi-aland](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json) |
-| yes, with an EORI number | Standard | 112 rejected with 24003 "customsHandlingStandard is not available for this country combination", although the manual lists "NO and Åland Islands (FI 22)" for Standard (§6.6 p94) | refuses | [rejection-24003-112-se-fi-aland-standard](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json) |
+| yes | full service | 112 rejected with 24003 "customsHandlingFullService is not available for this country combination"; the manual lists Åland for full service (§6.5 p92) | refuses | [rejection-24003-112-se-fi-aland](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json) |
+| yes, with an EORI number | Standard | 112 rejected with 24003 "customsHandlingStandard is not available for this country combination"; the manual lists "NO and Åland Islands (FI 22)" for Standard (§6.6 p94) | refuses | [rejection-24003-112-se-fi-aland-standard](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json) |
 | `CommercialInvoice` and one commodity | none | 109 booked, customs document and commodity echoed | books | [booking-2906762592](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762592-109-se-fi-aland-customs.json) |
 
 The connector refuses `dhl_freight_sweden_customs_handling_standard` and `dhl_freight_sweden_customs_handling_full_service` before the booking request when the shipper or the recipient lies in FI 22000-22999, also under AX or written `FI-22100` or `AX-22100`, with a `SHIPPING_SDK_FIELD_ERROR` keyed by the option.
 Customs information without either customs handling service is the one way to book Åland.
-The evidence shows that DHL stored the customs information, not how DHL clears customs for Åland after booking.
+The evidence shows that the sandbox stored the customs information, not how DHL clears customs for Åland after booking.
 Rating is unchanged.
 
 ## Excluded postal codes
