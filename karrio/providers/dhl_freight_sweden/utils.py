@@ -8,6 +8,7 @@ class Settings(core.Settings):
 
     client_key: str
     account_number: typing.Optional[str] = None
+    international_account_number: typing.Optional[str] = None
 
     @property
     def carrier_name(self):
