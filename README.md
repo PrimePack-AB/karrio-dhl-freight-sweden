@@ -270,6 +270,7 @@ Home Delivery B2C (401) takes its door access code through `dhl_freight_sweden_d
 The payer code is DHL's terms-of-delivery code.
 The connector takes `dhl_freight_sweden_payer_code` when set, else `customs.incoterm` when it is valid for the product, else the product default.
 109 and 112 accept only Combiterms, so an Incoterm is translated for them, CPT, CIP, DAP, and DPU to 022 and DDP to 023 (§7.6 p163).
+112 accepts only 023 (§5.3 p19), so of the Incoterms only DDP is valid for it, and an explicit 022 fails with `PayerCodeError`.
 A product without a default, such as 601, needs an explicit payer code or a valid Incoterm, and [Booking rules](docs/concepts/booking-rules.md#payer-codes) has every product's valid codes.
 
 ## Exporting
