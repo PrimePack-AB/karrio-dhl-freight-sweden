@@ -15,7 +15,8 @@ Another lane fails with `ProductLaneError`, for example "Product 107 does not sh
 ## Customer numbers
 
 The Consignor party id carries the DHL customer number, and DHL Freight Sweden books products in two systems that number customers separately.
-The [IFTMIN shipment instruction v3.7](../development/index.md#iftmin-shipment-instruction-citations) addresses 102, 103, 107, 109, 112, 118, 209, 210, 211, 212, 401, 402, and 502 to one system and 202, 205, 233, 601, and SPI to the other (p10), and the manual's "DHL account number format" rows agree.
+Of the connector's products, the [IFTMIN shipment instruction v3.7](../development/index.md#iftmin-shipment-instruction-citations) addresses 102, 103, 107, 109, 112, 118, 209, 210, 211, 212, 401, 402, and 502 to the domestic system and 202, 205, 233, SPI, and 601 to the international one (p10), and the manual's "DHL account number format" rows agree.
+The same page also lists 501 under the domestic system and 232 and PPI under the international one, products the connector does not implement.
 
 | Products | Account number format | Setting | Manual |
 |----------|-----------------------|---------|--------|
