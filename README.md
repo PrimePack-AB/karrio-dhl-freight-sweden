@@ -21,6 +21,7 @@ You cannot cancel transports via API or EDI. Cancel in your system and contact D
 The connector sends customs data inside the booking and nothing else: it uploads no documents and sends no email, and the Print call returns only the label.
 Labels are PDF only.
 The rate sheet's prices are placeholders at 0.0 that a merchant's own prices replace, and product matches, not the rate sheet, tell which products DHL offers for a lane.
+Karrio still works the sheet behind the scenes: its server resolves a rate for the requested service when buying in one call, so the sheet must keep every service the merchant books ([findings](docs/notes/integration/rate-sheet-one-call-purchase-failure-mode.md)).
 Karrio's unified rating and shipping calls accept only shippers in Sweden, the account country.
 
 ## Install and register
@@ -171,6 +172,10 @@ Service Point B2C (103) serves Sweden and Parcel Connect B2C (109) serves the co
 ```
 
 The two lookups are called on the proxy, because karrio has no unified interface for them, and [Service-point lookups](docs/guides/lookups.md) documents their inputs and outputs and a REST-only variant.
+
+The connector does not pick the point itself: the rules that narrow which points DHL accepts are specific to DHL Freight Sweden's own API — the 109 lookup keeps only `parcel:pick-up` service points (§10.14.2.2 p232) — and DHL checks no id against its registry at booking, so a wrong choice would misroute rather than fail.
+Distance limits and locker fit stay the merchant's to set.
+A one-click booking that chooses the point itself may come later.
 
 ### Find eligible products
 
