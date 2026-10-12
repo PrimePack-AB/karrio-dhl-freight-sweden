@@ -10,3 +10,4 @@ An active note is maintained against current evidence; an unverified note record
 |------|---------|--------|---------|--------------|
 | [sandbox/sandbox-findings.md](sandbox/sandbox-findings.md) | Every sandbox booking, rejection, and lookup, and each deviation from product manual v5.26, cited to committed evidence | active | 2026-10-05 | 2026-10-09 |
 | [ux/duplicate-shipment-carries-connector-options.md](ux/duplicate-shipment-carries-connector-options.md) | User-reported: a duplicated dashboard shipment keeps hidden service-point and SENT options | unverified | 2026-10-06 | 2026-10-06 |
+| [integration/rate-sheet-one-call-purchase-failure-mode.md](integration/rate-sheet-one-call-purchase-failure-mode.md) | How karrio's server resolves a rate from the static sheet when buying in one call, and the failure when the sheet drops a service | active | 2026-10-12 | 2026-10-12 |
