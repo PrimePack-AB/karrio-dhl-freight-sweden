@@ -40,7 +40,7 @@ A Karrio server builds its reference models at boot, so restart the API after in
 
 A connection needs the client key of a DHL Freight Sweden API Farm account and the DHL customer numbers, which the connector sends as the consignor's party id.
 DHL books the international products 202, 205, 233, SPI, and 601 in a separate system that numbers customers separately, so they take the international customer number (utrikeskundnummer) from `international_account_number`, and every other product takes the 6-digit domestic customer number from `account_number`.
-Booking an international product without `international_account_number`, or with one longer than the 15 characters the Transport Instruction API accepts, fails with `InternationalAccountNumberError`; rating is unaffected, and [Booking rules](docs/concepts/booking-rules.md#customer-numbers) gives the sources.
+Booking an international product without `international_account_number`, with one longer than the 15 characters the Transport Instruction API accepts, or with one containing non-digit characters, which the DHL sandbox rejected with 22014, fails with `InternationalAccountNumberError`; rating is unaffected, and [Booking rules](docs/concepts/booking-rules.md#customer-numbers) gives the sources.
 
 ```python
 import karrio.sdk as karrio
