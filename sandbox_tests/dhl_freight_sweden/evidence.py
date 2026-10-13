@@ -756,6 +756,22 @@ def _(b: Builder) -> Json:
     )
 
 
+SHORT_ID_RUN = "20261013-203959"
+SHORT_ID_TEST = "TestSandboxBookingPudo.test_book_109_service_point_dk_lookup_id"
+
+
+@evidence("booking-2906785361-109-se-dk-lookup-id.json")
+def _(b: Builder) -> Json:
+    return b.suite_booking(
+        "109 SE to DK with payer code 022 and the AccessPoint party id set to the lookup's id "
+        "115191 instead of its servicePointId 8009-115191, after the service point lookup, then "
+        "printed.",
+        "109", "SE 11143 -> DK 1620", SHORT_ID_RUN,
+        ("001-service-points-109-dk-id", "003-booking-109", "004-booking-109"),
+        SHORT_ID_TEST, 1,
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 
