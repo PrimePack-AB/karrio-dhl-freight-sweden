@@ -19,7 +19,7 @@ def offline_gateway():
             carrier_id="dhl_freight_sweden",
             client_key="YOUR_CLIENT_KEY",
             account_number="YOUR_ACCOUNT_NUMBER",
-            international_account_number="YOUR_INTL_NO",
+            international_account_number="123456",
             test_mode=True,
         )
     )

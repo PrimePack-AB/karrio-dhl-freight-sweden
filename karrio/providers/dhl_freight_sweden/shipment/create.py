@@ -887,7 +887,12 @@ def _consignor_id(
 
     number = (settings.international_account_number or "").strip()
     limit = provider_units.PARTY_ID_MAX_LENGTH
-    if number and len(number) <= limit:
+    # DHL rejected non-digit Consignor ids with 22014 while accepting
+    # 12345, 123456, and 1234567 (2026-10-13 sandbox probes), so the guard
+    # checks digits only and no length rule; the manual's account number
+    # rows allow up to 35 alphanumeric characters, pending DHL API Farm's
+    # answer on the real number's format.
+    if number and len(number) <= limit and number.isdigit():
         return number
 
     raise InternationalAccountNumberError(
@@ -898,12 +903,18 @@ def _consignor_id(
             if not number
             else f"The international customer number has {len(number)} "
             f"characters; the DHL Transport Instruction API accepts at most {limit}"
+            if len(number) > limit
+            else "The international customer number must be digits only; "
+            "the DHL Transport Instruction API rejected a non-digit "
+            "Consignor id with 22014"
         ),
         details={
             "international_account_number": lib.identity(
                 dict(code="required", message="international customer number is required")
                 if not number
                 else dict(code="invalid", message=f"at most {limit} characters")
+                if len(number) > limit
+                else dict(code="invalid", message="digits only")
             )
         },
     )
