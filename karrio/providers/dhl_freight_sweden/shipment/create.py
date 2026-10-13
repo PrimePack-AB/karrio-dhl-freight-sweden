@@ -1410,7 +1410,9 @@ SERVICE_POINT_TERMINAL_ID = re.compile(
 # response's ``id`` field, per DHL's 2026-10-13 clarification. The response's
 # other identifier, the ``servicePointId`` (8009-115191, 8005-PL-4507446),
 # belongs to that field's shape and is refused for 109.
-SERVICE_POINT_LOCATOR_SERVICE_POINT_ID = re.compile(r"80\d{2}(?:-[A-Z]{2})?-\d+")
+SERVICE_POINT_LOCATOR_SERVICE_POINT_ID = re.compile(
+    r"80\d{2}(?:-[A-Z]{2})?-\d+", re.IGNORECASE
+)
 
 
 def _service_point_terminal_id(service_point: str) -> str:
