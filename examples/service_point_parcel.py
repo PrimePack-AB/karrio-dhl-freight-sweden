@@ -6,6 +6,10 @@ values are those of point SE-982000 in sandbox booking 2906761230
 (tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json).
 ``python -m examples.service_point_parcel`` prints the TransportInstruction
 body; book it with ``karrio.Shipment.create(request).from_(gateway).parse()``.
+
+The booking option carries the lookup's ``id`` field, which 109 requires as
+its AccessPoint party id (manual v5.26 §10.14.2.2 p232); in SE it equals the
+``service_point_id``, and 103 sends its four-digit terminal part.
 """
 
 import typing
@@ -36,7 +40,7 @@ def service_point_options(point: typing.Dict[str, typing.Any]) -> typing.Dict[st
     """
     address = point["address"]
     return {
-        "dhl_freight_sweden_service_point": point["service_point_id"],
+        "dhl_freight_sweden_service_point": point["id"],
         "dhl_freight_sweden_service_point_type": (
             "ParcelStation" if point["type"] == "locker" else "ParcelShop"
         ),

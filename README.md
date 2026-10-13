@@ -220,7 +220,7 @@ With `service` set to `dhl_freight_sweden_parcel_connect_b2c`, the lookup keeps 
 
 Filter and rank the candidates in this order, so that the fallback loop works through a fixed list.
 
-1. Keep points with a `service_point_id` and all four address fields, because DHL does not check ids or names against its registry at booking, so an incomplete or invented point misroutes rather than fails.
+1. Keep points with an `id` and all four address fields, because DHL does not check ids or names against its registry at booking, so an incomplete or invented point misroutes rather than fails.
 2. Pass the parcel the point must fit as `parcel`, and keep a local margin for lockers.
 3. Apply your distance limit with `distance` and `distance_unit`.
 4. Keep only the sub types the destination accepts, for example ParcelShop only for 109 to DE.
@@ -234,7 +234,7 @@ Map the chosen point to the booking options and add them to an ordinary shipment
 ```python
 address = point["address"]
 return {
-    "dhl_freight_sweden_service_point": point["service_point_id"],
+    "dhl_freight_sweden_service_point": point["id"],
     "dhl_freight_sweden_service_point_type": (
         "ParcelStation" if point["type"] == "locker" else "ParcelShop"
     ),
@@ -246,7 +246,7 @@ return {
 }
 ```
 
-For 103 the connector sends the point's four-digit terminal id, 9820 for SE-982000, as the product manual requires (§10.14.2.1 p231); [Booking rules](docs/concepts/booking-rules.md#access-points) gives the details.
+For 103 the connector sends the point's four-digit terminal id, 9820 for SE-982000, as the product manual requires (§10.14.2.1 p231), and for 109 the lookup's `id` field as the AccessPoint party id, refusing a `servicePointId`-shaped value (§10.14.2.2 p232, [booking-2906785361](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906785361-109-se-dk-lookup-id.json)); [Booking rules](docs/concepts/booking-rules.md#access-points) gives the details.
 The recipient address stays on the request beside the AccessPoint party.
 When DHL rejects the AccessPoint party, take the next candidate, but only when the response carries no booking id, because booking is not idempotent.
 
@@ -441,7 +441,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `PayerCodeError` | no valid payer code, or 023 on 109 without the joint declaration | the option, `customs.incoterm`, or `dhl_freight_sweden_customs_joint_declaration` |
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
-| `ServicePointIdError` | a 103 service point id that is neither SE-nnnn00 nor a four-digit terminal id | the service-point option |
+| `ServicePointIdError` | a 103 id that is neither SE-nnnn00 nor a four-digit terminal id, or a 109 id shaped like the lookup's `servicePointId` instead of its `id` | the service-point option |
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
 | `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code` or `recipient.postal_code` |
 | `ProductLaneError` | a lane outside the product's valid countries in the manual | `shipper.country_code` or `recipient.country_code` |
