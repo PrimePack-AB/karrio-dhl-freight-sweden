@@ -1,14 +1,14 @@
 ---
-title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-09"
+title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-13"
 ---
 
 ## Method
 
 All calls went to the DHL Freight (Sweden) API Farm test host `test-api.freight-logistics.dhl.com`, and all times below are UTC.
-Every booking used customer number 999999 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
+Every booking before 2026-10-13 used customer number 999999 as the Consignor party id, which DHL API Farm support needs to trace these bookings.
 On 2026-10-09 DHL API Farm support reviewed the bookings and said that 202 and 233 take the international customer number (utrikeskundnummer) as the Consignor id instead of the domestic 999999.
 The sandbox did not reject the earlier bookings that used 999999 on 202 ([2906762121][b-121], [2906762139][b-139]), 233 ([2906762147][b-147], [2906762154][b-154]), and 601 ([2906761248][b-248]).
-The connector now sends `international_account_number` for 202, 205, 233, SPI, and 601, per IFTMIN v3.7 p10 and the manual's account number format rows ([booking-rules.md#customer-numbers](../../concepts/booking-rules.md#customer-numbers)), and no sandbox booking has used an international customer number yet.
+The connector now sends `international_account_number` for 202, 205, 233, SPI, and 601, per IFTMIN v3.7 p10 and the manual's account number format rows ([booking-rules.md#customer-numbers](../../concepts/booking-rules.md#customer-numbers)), and no sandbox booking has used the real international customer number yet; the 2026-10-13 probes below replaced the Consignor party id in the serialized request with placeholder values.
 The rules are compared against the DHL Freight (Sweden) product manual version 5.26, updated 2026-10-01 and valid from 2026-11-01 (sha256 `050660c37ba93d1ae9514c50dfa42c2010bc87763ccaff51a740b2526af11b73`), which DHL lists at <https://dhlpaket.se/dashboard/specifications/products/>, and page numbers below refer to that version.
 The manual names 202, 205, and 233 DHL ROAD FREIGHT STANDARD, DHL ROAD FREIGHT DIRECT, and DHL ROAD FREIGHT PRIORITY (§5.4, §5.9, §5.10), the names the Product API returns for 202 and 233 ([lookup-product-matches-se-pl.json][l-pm-pl]).
 
@@ -44,6 +44,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-08 | 15:12 | suite | PostalCode route lookups and `enforce` pre-flights |
 | 2026-10-08 | 15:27 | suite | PostalCode route lookup and `enforce` pre-flight with an unknown client key |
 | 2026-10-09 | 07:49 | suite | 103 service point booking with the four-digit terminal id |
+| 2026-10-13 | 13:04 | suite | 202 Consignor id account-number probes |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -99,6 +100,8 @@ The direct-script bookings 2906761073 and 2906761081 and the connector-script bo
 | 2026-10-08 | 202 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769977 | [booking][b-977] |
 | 2026-10-08 | 233 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769985 | [booking][b-985] |
 | 2026-10-08 | 233 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769993 | [booking][b-993] |
+| 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the five-digit 12345, an expected rejection DHL accepted | 2906784463 | [booking][b-463] |
+| 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the seven-digit 1234567, an expected rejection DHL accepted | 2906784471 | [booking][b-471] |
 
 The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
 
@@ -291,10 +294,12 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 | Joint declaration to CH | Customs, joint declaration lists NO as its only valid country and needs a separate agreement (§6.8 p98) | product matches list `customsJointDeclaration` among 601's customs services on all five CH lookups ([8001][l-ch-8001], [8001 20 kg][l-ch-8001-20kg], [1201][l-ch-1201], [3011][l-ch-3011], [6900][l-ch-6900]) and for 601, 109, and 112 to NO 0154 ([se-no-0154-customs][l-no-0154-customs]); 601, 202, 233, and HDI list the same customs services to NO 0154 as to CH, which suggests the lists do not vary by destination; no booking sent the service | allows NO, which the manual lists, and CH, for which DHL's Product API product matches list the service, and refuses the service to other recipient countries before booking | [README.md#customs-services](../../../README.md#customs-services) |
 | Routing code reference | send the label's routing code as a reference in the IFTMIN shipment instruction for 112 (§5.3 p18) and 109 (§5.14 p62) | the API bookings sent no routing code, and every response returned `routingCode` (for example [2906761131][b-131] and [2906761123][b-123]) | sends no routing code | none |
 | Phone numbers on labels | the receiving parcelshop's phone is mandatory on the 103 label (§9.4.2 p170) | the 103 label prints a `Phn.` line with no number ([label-2906761230][lb-230]); the other labels match (see [Labels](#labels)) | transmits the consignee phone on every booking | [labels.md#phone-numbers](../../concepts/labels.md#phone-numbers) |
+| International customer number characters | up to 35 alphanumeric characters for 202, 205, 233, SPI, and 601 (§5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83) | rejected the three-digit 103 and the six-character alphanumeric ABC123 Consignor party ids with 22014 ([103][r-22014-103], [ABC123][r-22014-abc]) and accepted the five-digit 12345 and the seven-digit 1234567 on 202 ([12345][b-463], [1234567][b-471]) | requires digits only, with the vendored spec's 15-character party id cap, since 2026-10-13 | [booking-rules.md#customer-numbers](../../concepts/booking-rules.md#customer-numbers) |
 
 ## Pending verification
 
-The 2026-10-09 review named the products that take the international customer number but not the number itself, so no sandbox booking has used one, and the suite skips those bookings without it ([sandbox-runs.md](../../guides/sandbox-runs.md)).
+The 2026-10-09 review named the products that take the international customer number but not the number itself, so no sandbox booking has used the real number, and the suite skips those bookings without it ([sandbox-runs.md](../../guides/sandbox-runs.md)).
+The 2026-10-13 probes replaced the Consignor party id on 202 with placeholder values: DHL rejected 103 and ABC123 with 22014 and accepted 12345 and 1234567, so the sandbox's character set and length rules are known only between those points, and whether the real number is numeric stays open for DHL API Farm.
 The eID API 2.10.0 operation `POST /eid/accounts` returns an `agreementNo` per `productCode`, but its request body takes a user name and password besides the client key, and this repository has no such credentials, so it has not been called.
 The DHL Freight (Sweden) Domestic Booking Confirmation IFTMBC, version 2.0, issued 2015-01-23 (sha256 `eab6eda2c2a0cb29e0ea569133b75360f8d0bc72e3bc18041fbf707d5a3588f3`), listed with the IFTMIN at <https://dhlpaket.se/dashboard/specifications/edi/>, returns no customer numbers either, and the connector does not cite it.
 
@@ -364,6 +369,10 @@ These were never exercised:
 [b-222]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761222-102-se-se.json
 [b-230]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761230-103-se-se.json
 [b-650]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906771650-103-se-se-terminal-id.json
+[b-463]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906784463-202-se-dk-consignor-12345.json
+[b-471]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906784471-202-se-dk-consignor-1234567.json
+[r-22014-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-consignor-103.json
+[r-22014-abc]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-consignor-abc123.json
 [b-248]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json
 [b-255]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761255-118-se-se.json
 [b-263]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761263-109-se-ro.json
