@@ -7,6 +7,10 @@ p192-194), and 112 has no accessPoint party (§5.3 p19). The sandbox rejection 2
 "AccessPoint Party is not allowed for this product"
 (fixtures/sandbox/rejection-22015-112-se-pl-access-point.json) is the
 carrier-side failure these checks pre-empt.
+
+The AccessPoint id differs per product: 103 sends a four-digit terminal id
+(§10.14.2.1 p231), 109 the ServicePointLocator response's ``id`` field
+(§10.14.2.2 p232), so the locator's ``servicePointId`` is refused for 109.
 """
 
 import unittest
@@ -52,7 +56,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_plus",
                 _recipient_pl,
-                _service_point("8005-PL-4507446", "ParcelShop", "PL"),
+                _service_point("101", "ParcelShop", "PL"),
             )
         )
 
@@ -64,7 +68,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_de,
-                _service_point("8003-4012345", "ParcelStation", "DE"),
+                _service_point("4012345", "ParcelStation", "DE"),
             )
         )
 
@@ -76,7 +80,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_de,
-                _service_point("8003-4012345", "ParcelShop", "DE"),
+                _service_point("4012345", "ParcelShop", "DE"),
             )
         )
 
@@ -90,7 +94,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
                 **_payload(
                     "dhl_freight_sweden_parcel_connect_b2c",
                     _recipient_gb,
-                    _service_point("8009-GB-1", "ParcelShop", "GB"),
+                    _service_point("123456", "ParcelShop", "GB"),
                 ),
                 "customs": Customs,
             }
@@ -99,7 +103,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_gb,
-                _service_point("8009-GB-1", "ParcelStation", "GB"),
+                _service_point("123456", "ParcelStation", "GB"),
             )
         )
 
@@ -107,12 +111,14 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
         self.assertEqual(detail_keys(error), {"dhl_freight_sweden_service_point_type"})
 
     def test_parcel_connect_to_pl_accepts_parcel_station(self):
+        # 101 is a committed PL lookup id, shared by several shops
+        # (fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json).
         access_point = self._access_point(
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_pl,
                 {
-                    **_service_point("8005-PL-4507446", "ParcelStation", "PL"),
+                    **_service_point("101", "ParcelStation", "PL"),
                     "dhl_freight_sweden_sent_free": True,
                 },
             )
@@ -125,7 +131,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_it,
-                _service_point("8007-IT-1", "ParcelStation", "IT"),
+                _service_point("123456", "ParcelStation", "IT"),
             )
         )
 
@@ -136,7 +142,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
             _payload(
                 "dhl_freight_sweden_parcel_connect_b2c",
                 _recipient_ie,
-                _service_point("8006-IE-1", "ParcelShop", "IE"),
+                _service_point("123456", "ParcelShop", "IE"),
             )
         )
 
@@ -170,7 +176,7 @@ class TestDHLFreightAccessPoints(unittest.TestCase):
                 "dhl_freight_sweden_road_freight_standard",
                 _recipient_de,
                 {
-                    **_service_point("8003-4012345", "ParcelShop", "DE"),
+                    **_service_point("4012345", "ParcelShop", "DE"),
                     "dhl_freight_sweden_payer_code": "DAP",
                 },
             )
@@ -252,7 +258,7 @@ class TestDHLFreightServicePointTerminalId(unittest.TestCase):
             "6514",
         )
 
-    def test_parcel_connect_keeps_the_service_point_id(self):
+    def test_parcel_connect_keeps_other_ids_verbatim(self):
         self.assertEqual(
             self._access_point_id(
                 "dhl_freight_sweden_parcel_connect_b2c",
@@ -301,6 +307,78 @@ class TestDHLFreightServicePointTerminalId(unittest.TestCase):
                 self.assertIn("SE-nnnn00", str(context.exception))
 
 
+class TestDHLFreightParcelConnectLookupId(unittest.TestCase):
+    """109 books the AccessPoint party by the lookup response's ``id`` field.
+
+    Manual v5.26 §10.14.2.2 p232 names ``id`` as the AccessPoint party id,
+    and DHL's 2026-10-13 clarification says the short id is the lookup
+    response's ``id`` field, not its ``servicePointId``. Booking 2906785361
+    sent the lookup's id 115191 and was accepted with the same routing code
+    as the earlier ``servicePointId`` booking 2906761354
+    (fixtures/sandbox/booking-2906785361-109-se-dk-lookup-id.json).
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+    def _access_point_id(self, options: dict) -> str:
+        request = gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(
+                **_payload(
+                    "dhl_freight_sweden_parcel_connect_b2c", _recipient_dk, options
+                )
+            )
+        )
+        return next(
+            party["id"]
+            for party in serialize_request(request)["parties"]
+            if party["type"] == "AccessPoint"
+        )
+
+    def test_sends_the_lookup_id_verbatim(self):
+        # Lookup ids observed in committed fixtures: 115191 (DK), free text
+        # with spaces and dashes (HU), 101 (PL), and Åland's shared 3201.
+        lookup_ids = ["115191", "373CSA-BP", "BP-5 POSTA", "101", "3201"]
+
+        for lookup_id in lookup_ids:
+            with self.subTest(lookup_id=lookup_id):
+                self.assertEqual(
+                    self._access_point_id(
+                        _service_point(lookup_id, "ParcelShop", "DK")
+                    ),
+                    lookup_id,
+                )
+
+    def test_refuses_service_point_locator_service_point_ids(self):
+        service_point_ids = [
+            "8009-115191",
+            "8005-PL-4507446",
+            "8013-118530",
+            "8055-ES-0005858",
+            " 8009-115191 ",
+        ]
+
+        for service_point_id in service_point_ids:
+            with self.subTest(service_point_id=service_point_id):
+                with self.assertRaises(ServicePointIdError) as context:
+                    gateway.mapper.create_shipment_request(
+                        models.ShipmentRequest(
+                            **_payload(
+                                "dhl_freight_sweden_parcel_connect_b2c",
+                                _recipient_dk,
+                                _service_point(service_point_id, "ParcelShop", "DK"),
+                            )
+                        )
+                    )
+
+                self.assertEqual(
+                    detail_keys(context.exception),
+                    {"dhl_freight_sweden_service_point"},
+                )
+                self.assertIn(repr(service_point_id), str(context.exception))
+                self.assertIn("servicePointId", str(context.exception))
+
+
 def _service_point(service_point_id: str, sub_type: str, country_code: str) -> dict:
     return {
         "dhl_freight_sweden_service_point": service_point_id,
@@ -312,6 +390,13 @@ def _service_point(service_point_id: str, sub_type: str, country_code: str) -> d
         "dhl_freight_sweden_service_point_country_code": country_code,
     }
 
+
+_recipient_dk = {
+    **_recipient_se,
+    "city": "København V",
+    "postal_code": "1620",
+    "country_code": "DK",
+}
 
 _recipient_ie = {
     **_recipient_se,

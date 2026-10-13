@@ -2,9 +2,9 @@
 
 Each test finds the service points nearest the recipient, picks the first
 candidate with an id, a complete address, and a sub type the connector accepts
-for the destination, and books it as the AccessPoint party: 103 within SE,
-109 from SE to PL (payer code 022, SENT free), and 109 from SE to DK with
-the lookup's ``id`` as the AccessPoint party id (payer code 022).
+for the destination, and books it as the AccessPoint party addressed by the
+lookup's ``id``: 103 within SE and 109 from SE to PL (payer code 022, SENT
+free) and DK (payer code 022).
 """
 
 import unittest
@@ -88,10 +88,9 @@ class TestSandboxBookingPudo(unittest.TestCase):
                 shipper=booking.SHIPPER,
                 recipient=booking.RECIPIENTS["DK"],
                 parcels=[booking.PARCEL],
-                options={
+                options=dict(
                     **booking.service_point_options(point),
-                    "dhl_freight_sweden_service_point": point["id"],
-                    "dhl_freight_sweden_payer_code": "022",
-                },
+                    dhl_freight_sweden_payer_code="022",
+                ),
             ),
         )

@@ -211,6 +211,7 @@ class TestSandboxHarnessRedaction(unittest.TestCase):
 
 
 SERVICE_POINT = {
+    "id": "101",
     "service_point_id": "PL-1234",
     "name": "Sklep Testowy",
     "type": "servicepoint",
@@ -223,6 +224,7 @@ SERVICE_POINT = {
 }
 
 SE_SERVICE_POINT = {
+    "id": "SE-982000",
     "service_point_id": "SE-982000",
     "name": "Testbutik",
     "type": "servicepoint",

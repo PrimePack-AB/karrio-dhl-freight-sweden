@@ -207,7 +207,7 @@ def nearest_service_point(
 ) -> typing.Tuple[typing.Optional[dict], typing.List[models.Message]]:
     """The nearest point to ``recipient`` that can book ``product``.
 
-    A candidate needs a service point id, a complete address, and a sub type
+    A candidate needs a lookup id, a complete address, and a sub type
     the connector accepts for the product and destination country, narrowed
     to ``sub_types`` when given.
     """
@@ -243,7 +243,7 @@ def nearest_service_point(
         (
             point
             for point in points
-            if point.get("service_point_id")
+            if point.get("id")
             and all((point.get("address") or {}).get(f) for f in ADDRESS_FIELDS)
             and sub_type(point) in accepted
         ),
@@ -253,9 +253,11 @@ def nearest_service_point(
 
 
 def service_point_options(point: dict) -> dict:
+    # 109 books the lookup's ``id`` field; the locator's SE ``id`` equals its
+    # ``service_point_id`` (SE-nnnn00), so 103 books from the same field.
     address = point["address"]
     return {
-        "dhl_freight_sweden_service_point": point["service_point_id"],
+        "dhl_freight_sweden_service_point": point["id"],
         "dhl_freight_sweden_service_point_type": sub_type(point),
         "dhl_freight_sweden_service_point_name": point.get("name"),
         "dhl_freight_sweden_service_point_street": address["street"],
