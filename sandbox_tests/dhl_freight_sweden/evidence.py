@@ -706,6 +706,56 @@ def _(b: Builder) -> Json:
     )
 
 
+CONSIGNOR_RUN = "20261013-130410"
+CONSIGNOR_TEST = "TestSandboxRejections.test_202_consignor_ids_that_are_not_six_digits_are_rejected"
+
+
+@evidence("rejection-22014-202-se-dk-consignor-103.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "202 SE to DK with the Consignor party id replaced by the three-digit 103 was rejected with "
+        "22014 'Accountnumber 103 not valid for party Consignor'.",
+        "202", "SE 11143 -> DK 1620", None, "22014",
+        f"{SUITE_RUN}: {CONSIGNOR_TEST}",
+        [b.suite_exchange(CONSIGNOR_RUN, "001-rejection-202-consignor-103")],
+    )
+
+
+@evidence("rejection-22014-202-se-dk-consignor-abc123.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "202 SE to DK with the Consignor party id replaced by the six-character alphanumeric ABC123 "
+        "was rejected with 22014 'Accountnumber ABC123 not valid for party Consignor'.",
+        "202", "SE 11143 -> DK 1620", None, "22014",
+        f"{SUITE_RUN}: {CONSIGNOR_TEST}",
+        [b.suite_exchange(CONSIGNOR_RUN, "009-rejection-202-consignor-abc123")],
+    )
+
+
+@evidence("booking-2906784463-202-se-dk-consignor-12345.json")
+def _(b: Builder) -> Json:
+    return b.suite_booking(
+        "202 SE to DK sent as an expected rejection with the Consignor party id replaced by the "
+        "five-digit 12345; DHL accepted the booking and printed the label.",
+        "202", "SE 11143 -> DK 1620", CONSIGNOR_RUN,
+        ("003-rejection-202-consignor-12345", "004-rejection-202-consignor-12345"),
+        CONSIGNOR_TEST, 0,
+    )
+
+
+@evidence("booking-2906784471-202-se-dk-consignor-1234567.json")
+def _(b: Builder) -> Json:
+    return b.suite_booking(
+        "202 SE to DK sent as an expected rejection with the Consignor party id replaced by the "
+        "seven-digit 1234567; DHL accepted the booking and printed the label.",
+        "202", "SE 11143 -> DK 1620", CONSIGNOR_RUN,
+        ("006-rejection-202-consignor-1234567", "007-rejection-202-consignor-1234567"),
+        CONSIGNOR_TEST, 0,
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 

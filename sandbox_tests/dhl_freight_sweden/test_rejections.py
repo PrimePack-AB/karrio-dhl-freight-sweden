@@ -95,3 +95,25 @@ class TestSandboxRejections(unittest.TestCase):
         )
 
         self.assertIn("22006", [str(message.code) for message in messages])
+
+    def test_202_consignor_ids_that_are_not_digits_are_rejected(self):
+        """22014 rejections; 12345 and 1234567 were accepted as 2026-10-13
+        findings and are recorded in the findings note, not rebooked."""
+        for number in ("103", "ABC123"):
+            with self.subTest(consignor_id=number):
+                rejection.reject(
+                    self,
+                    self.session,
+                    self.gateway,
+                    f"rejection-202-consignor-{number.lower()}",
+                    "202",
+                    dict(
+                        service="202",
+                        shipper=booking.SHIPPER,
+                        recipient=booking.RECIPIENTS["DK"],
+                        parcels=[booking.PARCEL],
+                        options={"dhl_freight_sweden_payer_code": "DAP"},
+                    ),
+                    rejection.with_consignor_id(number),
+                    "22014",
+                )
