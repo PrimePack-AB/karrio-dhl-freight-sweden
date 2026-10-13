@@ -7,8 +7,11 @@ class Settings(core.Settings):
     """DHL Freight (Sweden API Farm) connection settings."""
 
     client_key: str
-    account_number: typing.Optional[str] = None
-    international_account_number: typing.Optional[str] = None
+    # karrio's reference builder (karrio.references.parse_type) maps only a
+    # bare `str` annotation to the dashboard's string input; Optional[str]
+    # serializes as its repr and the form renders a label with no input box.
+    account_number: str = None  # pyright: ignore[reportAssignmentType]
+    international_account_number: str = None  # pyright: ignore[reportAssignmentType]
 
     @property
     def carrier_name(self):

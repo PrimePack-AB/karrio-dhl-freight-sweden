@@ -18,8 +18,10 @@ class Settings(provider_utils.Settings, rating_proxy.RatingMixinSettings):
     # client_key follows no inherited default; pyright orders them as
     # dataclasses would and reports a false positive.
     client_key: str  # pyright: ignore[reportGeneralTypeIssues]
-    account_number: typing.Optional[str] = None
-    international_account_number: typing.Optional[str] = None
+    # bare `str = None` mirrors the provider Settings so the dashboard
+    # renders an input box (see the comment there)
+    account_number: str = None  # pyright: ignore[reportAssignmentType]
+    international_account_number: str = None  # pyright: ignore[reportAssignmentType]
 
     # generic properties
     # Redeclared for attrs field ordering; the type mirrors the SDK base
