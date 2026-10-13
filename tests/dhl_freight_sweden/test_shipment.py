@@ -1389,6 +1389,8 @@ def _expected_details(shipment_id: str, product: str) -> dict:
         "label_type": "PDF",
         "docs": {"label": LabelBase64},
         "meta": {
+            "tracking_numbers": [shipment_id],
+            "shipment_identifiers": [shipment_id],
             "carrier_tracking_link": settings_of(gateway).tracking_url.format(shipment_id),
             "product_code": product,
         },

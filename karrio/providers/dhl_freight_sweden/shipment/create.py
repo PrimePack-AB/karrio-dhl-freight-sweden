@@ -250,6 +250,8 @@ def _extract_details(
         label_type=_label_type(report, settings),
         docs=models.Documents(label=getattr(report, "content", None) or ""),
         meta=dict(
+            tracking_numbers=[tracking_number],
+            shipment_identifiers=[tracking_number],
             carrier_tracking_link=settings.tracking_url.format(tracking_number),
             product_code=str(product_code) if product_code is not None else None,
         ),
