@@ -27,6 +27,23 @@ def with_payer_code(code: str) -> typing.Callable[[dict], dict]:
     return lambda instruction: {**instruction, "payerCode": {"code": code}}
 
 
+def with_consignor_id(number: str) -> typing.Callable[[dict], dict]:
+    """A mutation replacing the Consignor party id with ``number``."""
+
+    def mutate(instruction: dict) -> dict:
+        return {
+            **instruction,
+            "parties": [
+                {**party, "id": number}
+                if party.get("type") == provider_units.PartyType.Consignor.value
+                else party
+                for party in instruction.get("parties") or []
+            ],
+        }
+
+    return mutate
+
+
 def access_point_id_only(instruction: dict) -> dict:
     """``instruction`` with its AccessPoint parties reduced to id, type, and sub type."""
     return {

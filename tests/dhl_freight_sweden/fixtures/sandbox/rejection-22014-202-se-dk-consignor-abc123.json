@@ -1,0 +1,90 @@
+{
+ "kind": "rejection",
+ "summary": "202 SE to DK with the Consignor party id replaced by the six-character alphanumeric ABC123 was rejected with 22014 'Accountnumber ABC123 not valid for party Consignor'.",
+ "captured_at": "2026-10-13T11:04:11Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "202",
+ "route": "SE 11143 -> DK 1620",
+ "booking_id": null,
+ "error_code": "22014",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: TestSandboxRejections.test_202_consignor_ids_that_are_not_six_digits_are_rejected",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-13T11:04:11Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261013-130410/009-rejection-202-consignor-abc123.request.json",
+    "sha256": "2a0b8c528bc445f08828c18f0ba42f04796b9a044350f4a0a0ae797f5dfe4f44"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261013-130410/009-rejection-202-consignor-abc123.response.json",
+    "sha256": "5f9c22abadad90459ea7267cd0f7fa71923784968a57005e19f21fd796142bf0"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "ABC123",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "København V",
+       "countryCode": "DK",
+       "postalCode": "1620",
+       "street": "Vesterbrogade 10"
+      },
+      "contactName": "Mette Hansen",
+      "email": "mette.hansen@example.dk",
+      "name": "Mette Hansen",
+      "phone": "+45 20 12 34 56",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "202",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22014,
+      "field": "Parties[0].Id",
+      "message": "Accountnumber ABC123 not valid for party Consignor"
+     }
+    ]
+   }
+  }
+ ]
+}

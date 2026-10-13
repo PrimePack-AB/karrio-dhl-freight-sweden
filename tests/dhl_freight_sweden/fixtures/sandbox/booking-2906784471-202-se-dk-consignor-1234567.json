@@ -1,0 +1,180 @@
+{
+ "kind": "booking",
+ "summary": "202 SE to DK sent as an expected rejection with the Consignor party id replaced by the seven-digit 1234567; DHL accepted the booking and printed the label.",
+ "captured_at": "2026-10-13T11:04:11Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "202",
+ "route": "SE 11143 -> DK 1620",
+ "booking_id": "2906784471",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: TestSandboxRejections.test_202_consignor_ids_that_are_not_six_digits_are_rejected",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-13T11:04:11Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261013-130410/006-rejection-202-consignor-1234567.request.json",
+    "sha256": "35b8494faeef46537337d42a2df13f7f59049aaf91920960d227f388c6025b58"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261013-130410/006-rejection-202-consignor-1234567.response.json",
+    "sha256": "8c8f1f831e39ed73daf83b14358de84f693d8e7e72c3e7e8ac618416322a256b"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "1234567",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "København V",
+       "countryCode": "DK",
+       "postalCode": "1620",
+       "street": "Vesterbrogade 10"
+      },
+      "contactName": "Mette Hansen",
+      "email": "mette.hansen@example.dk",
+      "name": "Mette Hansen",
+      "phone": "+45 20 12 34 56",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "DAP"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "202",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906784471",
+     "productCode": "202",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "DAP"
+     },
+     "parties": [
+      {
+       "id": "1234567",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Mette Hansen",
+       "contactName": "Mette Hansen",
+       "address": {
+        "street": "Vesterbrogade 10",
+        "cityName": "København V",
+        "postalCode": "1620",
+        "countryCode": "DK"
+       },
+       "phone": "+45 20 12 34 56",
+       "email": "mette.hansen@example.dk"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525055435"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LDK1620+11000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-13T11:04:11Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261013-130410/007-rejection-202-consignor-1234567.request.json",
+    "sha256": "b6e0ed0272e404609f5d89079b683fa26d17a37be623417a0e81cb46bdc33665"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261013-130410/007-rejection-202-consignor-1234567.response.json",
+    "sha256": "redacted-2026-10-20"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906784471"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906784471.pdf",
+      "content": "<base64 omitted: 106640 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}
