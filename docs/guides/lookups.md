@@ -167,5 +167,5 @@ curl -X POST "$KARRIO/v1/proxy/shipping" \
 
 The `services` filter takes karrio service codes (`dhl_freight_sweden_parcel_connect_b2c`), not carrier codes.
 The proxy endpoints require `person_name` and `address_line1` on both addresses.
-The response carries `tracking_number`, `docs.label` (base64 PDF), and `meta.carrier_tracking_link`; `POST /api/v1/shipments` accepts the same payload when persistent shipment records are wanted.
+The response carries `tracking_number`, `docs.label` (base64 PDF), and `meta.carrier_tracking_link`, with `meta.tracking_numbers` and `meta.shipment_identifiers` listing the same transport instruction id; `POST /api/v1/shipments` accepts the same payload when persistent shipment records are wanted.
 The README's errors reference and fallback loop apply unchanged.
