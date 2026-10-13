@@ -60,9 +60,10 @@ DECLARED_VALUE = {"duty": {"paid_by": "recipient", "currency": "SEK", "declared_
 
 # The Posti ParcelShop booking 2906761917 used in Mariehamn (tests/dhl_freight_sweden/
 # fixtures/sandbox/booking-2906761917-109-se-fi-aland.json); the refusal
-# case needs no live service point lookup.
+# case needs no live service point lookup. The lookup id 3201 is shared by
+# all five Posti points in Åland.
 ALAND_PARCEL_SHOP = {
-    "dhl_freight_sweden_service_point": "8011-221003201",
+    "dhl_freight_sweden_service_point": "3201",
     "dhl_freight_sweden_service_point_type": "ParcelShop",
     "dhl_freight_sweden_service_point_name": "c/o Posti",
     "dhl_freight_sweden_service_point_street": "Nygatan 6",

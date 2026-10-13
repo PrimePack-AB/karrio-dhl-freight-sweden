@@ -58,10 +58,10 @@ def access_point_id_only(instruction: dict) -> dict:
 
 
 def access_point_party(point: dict) -> dict:
-    """The AccessPoint party the connector builds for a service point lookup result."""
+    """The AccessPoint party the connector builds for a 109 lookup result."""
     address = point["address"]
     return {
-        "id": point["service_point_id"],
+        "id": point["id"],
         "type": provider_units.PartyType.AccessPoint.value,
         "subType": booking.sub_type(point),
         "name": point.get("name"),

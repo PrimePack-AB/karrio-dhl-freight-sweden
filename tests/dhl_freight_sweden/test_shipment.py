@@ -1569,12 +1569,14 @@ ShipmentPayload202 = _payload(
     {"dhl_freight_sweden_payer_code": "DAP"},
 )
 # 109 access points: DK allows both sub types per the product catalog
-# (GET /productapi/v1/products/109); DE allows ParcelShop only.
+# (GET /productapi/v1/products/109); DE allows ParcelShop only. The service
+# point option carries the lookup's id (8009-591371's id is 591371;
+# fixtures/sandbox/booking-2906785361-109-se-dk-lookup-id.json).
 ShipmentPayload109 = _payload(
     "dhl_freight_sweden_parcel_connect_b2c",
     _recipient_dk,
     {
-        "dhl_freight_sweden_service_point": "8009-591371",
+        "dhl_freight_sweden_service_point": "591371",
         "dhl_freight_sweden_service_point_type": "ParcelStation",
         "dhl_freight_sweden_service_point_name": "Pakkeboks Westmarket",
         "dhl_freight_sweden_service_point_street": "Matthæusgade 46",
@@ -1587,7 +1589,7 @@ ShipmentPayload109Shop = _payload(
     "dhl_freight_sweden_parcel_connect_b2c",
     _recipient_dk,
     {
-        "dhl_freight_sweden_service_point": "8009-591479",
+        "dhl_freight_sweden_service_point": "591479",
         "dhl_freight_sweden_service_point_type": "ParcelShop",
         "dhl_freight_sweden_service_point_name": "Føtex Vesterbrogade",
         "dhl_freight_sweden_service_point_street": "Vesterbrogade 74",
@@ -1930,7 +1932,7 @@ AccessPointShop = {
     },
 }
 AccessPointStation = {
-    "id": "8009-591371",
+    "id": "591371",
     "type": "AccessPoint",
     "subType": "ParcelStation",
     "name": "Pakkeboks Westmarket",
@@ -1942,7 +1944,7 @@ AccessPointStation = {
     },
 }
 AccessPointShopDK = {
-    "id": "8009-591479",
+    "id": "591479",
     "type": "AccessPoint",
     "subType": "ParcelShop",
     "name": "Føtex Vesterbrogade",

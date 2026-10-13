@@ -27,7 +27,7 @@ PARCEL_CONNECT = "dhl_freight_sweden_parcel_connect_b2c"
 PAKET = "dhl_freight_sweden_paket"
 DAP = {"dhl_freight_sweden_payer_code": "DAP"}
 ALAND_PARCEL_SHOP = {
-    "dhl_freight_sweden_service_point": "8011-221003201",
+    "dhl_freight_sweden_service_point": "3201",
     "dhl_freight_sweden_service_point_type": "ParcelShop",
     "dhl_freight_sweden_service_point_name": "c/o Posti",
     "dhl_freight_sweden_service_point_street": "Nygatan 6",

@@ -74,7 +74,7 @@ class ServicePointDetailsError(errors.ShippingSDKDetailedError):
 
 
 class ServicePointIdError(errors.ShippingSDKDetailedError):
-    """Raised when a 103 service point id holds no four-digit terminal id."""
+    """Raised when a service point id has the wrong shape for the product."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -1406,6 +1406,12 @@ SERVICE_POINT_TERMINAL_ID = re.compile(
     r"(?:SE-(?P<located>\d{4})00|(?P<terminal>\d{4}))", re.IGNORECASE
 )
 
+# Manual v5.26 §10.14.2.2 p232: the 109 AccessPoint party id is the lookup
+# response's ``id`` field, per DHL's 2026-10-13 clarification. The response's
+# other identifier, the ``servicePointId`` (8009-115191, 8005-PL-4507446),
+# belongs to that field's shape and is refused for 109.
+SERVICE_POINT_LOCATOR_SERVICE_POINT_ID = re.compile(r"80\d{2}(?:-[A-Z]{2})?-\d+")
+
 
 def _service_point_terminal_id(service_point: str) -> str:
     match = SERVICE_POINT_TERMINAL_ID.fullmatch(service_point.strip())
@@ -1424,6 +1430,23 @@ def _service_point_terminal_id(service_point: str) -> str:
         )
 
     return match["located"] or match["terminal"]
+
+
+def _parcel_connect_access_point_id(service_point: str) -> str:
+    if SERVICE_POINT_LOCATOR_SERVICE_POINT_ID.fullmatch(service_point.strip()):
+        raise ServicePointIdError(
+            f"Product 109 books a service point by the lookup's id field; "
+            f"{service_point!r} is a ServicePointLocator servicePointId, not "
+            "the lookup's id",
+            details={
+                "dhl_freight_sweden_service_point": dict(
+                    code="invalid",
+                    message="expected the lookup's id field, not its servicePointId",
+                )
+            },
+        )
+
+    return service_point
 
 
 def _service_point_party(
@@ -1478,12 +1501,18 @@ def _service_point_party(
             },
         )
 
-    access_point_id = lib.identity(
-        _service_point_terminal_id(service_point)
-        if product_code
+    if (
+        product_code
         == provider_units.ShippingService.dhl_freight_sweden_service_point_b2c.value
-        else service_point
-    )
+    ):
+        access_point_id = _service_point_terminal_id(service_point)
+    elif (
+        product_code
+        == provider_units.ShippingService.dhl_freight_sweden_parcel_connect_b2c.value
+    ):
+        access_point_id = _parcel_connect_access_point_id(service_point)
+    else:
+        access_point_id = service_point
 
     # Keys double as the ``dhl_freight_sweden_service_point_{key}`` option names.
     details = dict(

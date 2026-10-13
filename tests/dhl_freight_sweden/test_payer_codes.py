@@ -254,8 +254,10 @@ _parcel_pl = {
     "reference_number": "REF-TEST-1",
 }
 
+# The service point option carries a PL lookup id; 101 covers several shops
+# (fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json).
 _parcel_shop_krakow = {
-    "dhl_freight_sweden_service_point": "8005-PL-4507446",
+    "dhl_freight_sweden_service_point": "101",
     "dhl_freight_sweden_service_point_type": "ParcelShop",
     "dhl_freight_sweden_service_point_name": "DHL Parcelshop",
     "dhl_freight_sweden_service_point_street": "Al. Kijowska 57/LU5",
@@ -336,7 +338,7 @@ ShipmentRequest109PL = {
     "parties": [
         *ShipmentRequest112PL["parties"],
         {
-            "id": "8005-PL-4507446",
+            "id": "101",
             "type": "AccessPoint",
             "subType": "ParcelShop",
             "name": "DHL Parcelshop",
