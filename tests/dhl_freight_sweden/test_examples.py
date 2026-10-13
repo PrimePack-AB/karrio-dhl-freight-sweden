@@ -131,7 +131,7 @@ class TestExamples(unittest.TestCase):
         booked = _booked_request("booking-2906762477-601-se-ch.json")
 
         self.assertEqual(body["productCode"], booked["productCode"])
-        self.assertEqual(_parties(body, "Consignor")[0]["id"], "YOUR_INTL_NO")
+        self.assertEqual(_parties(body, "Consignor")[0]["id"], "123456")
         self.assertEqual(body["payerCode"], booked["payerCode"])
         self.assertEqual(body["additionalServices"], booked["additionalServices"])
         self.assertEqual(

@@ -6,7 +6,11 @@ separately (IFTMIN shipment instruction v3.7 p10): 202, 205, 233, SPI, and
 "DHL account number format" rows in product manual v5.26 allow up to 35
 alphanumeric characters, and every other product takes the 6-digit
 domestic customer number. The Transport Instruction API caps Party.id at
-15 characters.
+15 characters. The sandbox rejected the non-digit consignor ids 103 and
+ABC123 with 22014 and accepted 12345, 123456, and 1234567 on 2026-10-13
+(tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-
+consignor-103.json and its siblings), so the guard requires digits only
+and sets no length rule beyond the cap.
 """
 
 import typing
@@ -100,16 +104,16 @@ class TestDHLFreightConsignorAccountNumber(unittest.TestCase):
         for code, service in INTERNATIONAL_SERVICES.items():
             with self.subTest(product=code):
                 self.assertEqual(
-                    _consignor_id(gateway, _international(service)), "INT1234567"
+                    _consignor_id(gateway, _international(service)), "123456"
                 )
 
     def test_international_account_number_is_stripped(self):
         self.assertEqual(
             _consignor_id(
-                _gateway(international_account_number=" INT1234567 "),
+                _gateway(international_account_number=" 123456 "),
                 _international(INTERNATIONAL_SERVICES["202"]),
             ),
-            "INT1234567",
+            "123456",
         )
 
     def test_international_products_refuse_without_an_international_account_number(self):
@@ -128,17 +132,48 @@ class TestDHLFreightConsignorAccountNumber(unittest.TestCase):
         payload = _international(INTERNATIONAL_SERVICES["233"])
 
         self.assertEqual(
-            _consignor_id(_gateway(international_account_number="A" * 15), payload),
-            "A" * 15,
+            _consignor_id(_gateway(international_account_number="1" * 15), payload),
+            "1" * 15,
         )
         with self.assertRaises(InternationalAccountNumberError) as context:
-            _consignor_id(_gateway(international_account_number="A" * 16), payload)
+            _consignor_id(_gateway(international_account_number="1" * 16), payload)
 
         self.assertIn("16 characters", str(context.exception))
         self.assertEqual(
             (context.exception.details or {})["international_account_number"]["code"],
             "invalid",
         )
+
+    def test_international_account_number_refuses_non_digits(self):
+        payload = _international(INTERNATIONAL_SERVICES["202"])
+
+        for number in ("ABC123", "INT1234567", "123 456", "A" * 15):
+            with self.subTest(international_account_number=number):
+                with self.assertRaises(InternationalAccountNumberError) as context:
+                    _consignor_id(
+                        _gateway(international_account_number=number), payload
+                    )
+
+                self.assertIn("digits", str(context.exception))
+                self.assertEqual(
+                    (context.exception.details or {})[
+                        "international_account_number"
+                    ]["code"],
+                    "invalid",
+                )
+
+    def test_international_account_number_sets_no_length_rule(self):
+        """Five-, six-, and seven-digit numbers all passed the DHL sandbox."""
+        payload = _international(INTERNATIONAL_SERVICES["202"])
+
+        for number in ("12345", "123456", "1234567"):
+            with self.subTest(international_account_number=number):
+                self.assertEqual(
+                    _consignor_id(
+                        _gateway(international_account_number=number), payload
+                    ),
+                    number,
+                )
 
     def test_domestic_products_ignore_an_overlong_international_account_number(self):
         self.assertEqual(
