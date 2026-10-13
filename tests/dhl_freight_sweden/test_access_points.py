@@ -353,6 +353,7 @@ class TestDHLFreightParcelConnectLookupId(unittest.TestCase):
         service_point_ids = [
             "8009-115191",
             "8005-PL-4507446",
+            "8005-pl-4507446",
             "8013-118530",
             "8055-ES-0005858",
             " 8009-115191 ",
