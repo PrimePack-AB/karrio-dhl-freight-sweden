@@ -98,8 +98,8 @@ Any other key, including `parcels` and `piece`, raises a field error naming it b
 
 | Key | Content | Booking use |
 |-----|---------|-------------|
-| `service_point_id` | unique identifier (e.g. `8005-PL-4516440`) | `dhl_freight_sweden_service_point` (preferred) |
-| `id` | a point-type code in some countries (e.g. `101`) | fallback identifier only |
+| `id` | the lookup's point id, e.g. `115191` (DK) or free text like `373CSA-BP` (HU); a point-type code in some countries (e.g. `101` in PL) and shared by several points (Åland's five Posti points share `3201`) | `dhl_freight_sweden_service_point` for 109, the AccessPoint party id (§10.14.2.2 p232) |
+| `service_point_id` | unique identifier (e.g. `8005-PL-4516440`) | `dhl_freight_sweden_service_point` for 103, which sends its four-digit terminal part; equal to `id` in SE, refused for 109 |
 | `name`, `shop_name` | point name | `dhl_freight_sweden_service_point_name` |
 | `type` | `servicepoint`, `locker`, `postoffice`, or `postbank` | `locker` books as `ParcelStation`, every other type as `ParcelShop` |
 | `address` | `{street, city, postal_code, country_code}` | the four address options |
@@ -148,7 +148,8 @@ The service points body is the `NearestServicePointRequest` shape, with the piec
 }
 ```
 
-The driver then does the normalization the connector would: prefer `servicePointId` over `id`, map `locationType` `locker` to `ParcelStation` and every other type to `ParcelShop`, check the four address fields, and for 109 keep only points whose `serviceTypes` include `parcel:pick-up`.
+The driver then does the normalization the connector would: book by the lookup's `id`, which 109 requires (`servicePointId`-shaped values are refused before booking), map `locationType` `locker` to `ParcelStation` and every other type to `ParcelShop`, check the four address fields, and for 109 keep only points whose `serviceTypes` include `parcel:pick-up`.
+The `id` is not unique per point in some countries (Åland's five Posti points share `3201`, and `101` covers several Polish shops), and the AccessPoint party's mandatory name and address travel with the id.
 
 REST booking resolves the connection from the selected rate, so it is rate-first:
 
@@ -162,7 +163,7 @@ curl -X POST "$KARRIO/v1/proxy/shipping" \
   -H "Authorization: Token $KARRIO_TOKEN" -H "Content-Type: application/json" \
   -d '{"shipper": {...}, "recipient": {...}, "parcels": [...],
        "selected_rate_id": "<id from the rates response>",
-       "options": {"dhl_freight_sweden_service_point": "8005-PL-4516440", ...}}'
+       "options": {"dhl_freight_sweden_service_point": "101", ...}}'
 ```
 
 The `services` filter takes karrio service codes (`dhl_freight_sweden_parcel_connect_b2c`), not carrier codes.
