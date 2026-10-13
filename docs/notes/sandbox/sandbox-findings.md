@@ -52,7 +52,7 @@ The `label` files come from the suite's print calls of bookings 2906761222, 2906
 
 ## Bookings
 
-All 42 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 45 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm.
 None was cancelled, because the API Farm has no cancellation operation.
 The evidence files keep each booking's routing code; the routing codes that bear on a finding are quoted under [Deviations from manual v5.26](#deviations-from-manual-v526).
@@ -102,6 +102,7 @@ The direct-script bookings 2906761073 and 2906761081 and the connector-script bo
 | 2026-10-08 | 233 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769993 | [booking][b-993] |
 | 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the five-digit 12345, an expected rejection DHL accepted | 2906784463 | [booking][b-463] |
 | 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the seven-digit 1234567, an expected rejection DHL accepted | 2906784471 | [booking][b-471] |
+| 2026-10-13 | 109 | SE → DK 1620 | 022, ParcelShop sent as the lookup's `id` 115191 rather than its `servicePointId` 8009-115191 | 2906785361 | [booking][b-361] |
 
 The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
 
@@ -287,7 +288,7 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 | Customs to Åland | Customs handling - Full service valid to "zones outside the EU tax area such as Åland Islands (FI 22)" (§6.5 p92) and Standard to "NO and Åland Islands (FI 22)" (§6.6 p94); Åland (FI 22) is outside the tax area and customs proceedings are mandatory (§7.4 p162) | rejected full service and Standard with 24003 ([full service][r-24003-ax], [Standard][r-24003-ax-std]), and booked 109 without customs data ([2906761917][b-917]) and with customs data and no customs service ([2906762592][b-592]) | refuses both customs handling services to or from FI 22000-22999, the sandbox having rejected both where the manual allows them, and the two 112 Åland suite cases assert that refusal; also refuses any booking crossing the EU VAT area border without customs data, so the 109 Åland case without customs data asserts that refusal | [destinations.md#åland](../../concepts/destinations.md#åland) |
 | Service point capacity filter | no manual citation recorded | applied the piece filter for PL but not for SE ([SE][l-sp-se], [PL][l-sp-pl]) | sends the caller's parcel as the `piece` filter | [lookups.md#service-points](../../guides/lookups.md#service-points) |
 | Service point id for 103 | use only the four-digit part nnnn of an id like SE-nnnn00 (§10.14.2.1 p231) | booking 2906761230 used the full id SE-982000 ([2906761230][b-230]) and booking 2906771650 used the four-digit terminal id 9820 ([2906771650][b-650]); the lookup's `id` and `servicePointId` are equal in SE and differ elsewhere | sends the four-digit terminal id nnnn and refuses other 103 ids, since 2026-10-09 | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
-| Service point id for 109 | names the field `id` for the 109 AccessPoint party (§10.14.2.2 p232), and DHL's 2026-10-13 clarification says the short id is the lookup response's `id` field | all ten 109 bookings sent the `servicePointId` (for example 8009-129635) and were accepted ([2906761073][b-073], [2906761123][b-123], [2906761263][b-263], [2906761289][b-289], [2906761305][b-305], [2906761354][b-354], [2906761917][b-917], [2906762105][b-105], [2906762592][b-592], [2906769613][b-613]); no booking has sent the lookup's `id` | sends the lookup's `servicePointId`; the move to `id` is pending | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
+| Service point id for 109 | names the field `id` for the 109 AccessPoint party (§10.14.2.2 p232), and DHL's 2026-10-13 clarification says the short id is the lookup response's `id` field | all ten earlier 109 bookings sent the `servicePointId` (for example 8009-129635) and were accepted ([2906761073][b-073], [2906761123][b-123], [2906761263][b-263], [2906761289][b-289], [2906761305][b-305], [2906761354][b-354], [2906761917][b-917], [2906762105][b-105], [2906762592][b-592], [2906769613][b-613]); booking 2906785361 sent the lookup's `id` 115191 and was accepted, with the same routing code as the `servicePointId` booking 2906761354 ([2906785361][b-361]) | sends the lookup's `servicePointId`; the move to `id` is pending | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | AccessPoint sub type | Appendix M: the sub type carries the location type `servicepoint`, `locker`, or `postoffice` (§10.14.2.2 p232), while the vendored spec enumerates `ParcelShop` and `ParcelStation` | booked `ParcelShop` for PL, RO, NO, and DK ([2906761123][b-123], [2906761263][b-263], [2906761305][b-305], [2906761354][b-354]) and `ParcelStation` for a HU locker ([2906761289][b-289]); their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p232 | sends `ParcelShop` and `ParcelStation`; which values the sub type takes is an open question for DHL API Farm | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | Service type for 109 | only shops and stations with service type `parcel:pick-up` can be selected for 109 (§10.14.2.2 p232) | booked 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([2906761289][b-289]) | drops points without `parcel:pick-up` from 109 lookups that name the service, since 2026-10-09, and does not re-check the id at booking | [lookups.md#service-points](../../guides/lookups.md#service-points) |
 | Lookup size for 103 | always search the ten closest service points (§5.12 p57) | the suite's 103 booking searched five ([2906761230][b-230]); the lookup segment's capacity check searched ten ([SE][l-sp-se]) | sends the caller's `max_items`, else ten since 2026-10-09 | [lookups.md#service-points](../../guides/lookups.md#service-points) |
@@ -307,6 +308,7 @@ The DHL Freight (Sweden) Domestic Booking Confirmation IFTMBC, version 2.0, issu
 In the same review DHL said that 109 takes "the short customer ID, e.g. "id": "103"".
 On 2026-10-13 DHL clarified, in answer to a separate question about that review comment, that the short id from ServicePointLocatorAPI is the response's `id` field, and their example shows a service point with "id": "101" beside "servicePointId": "8055-ES-0005858".
 The comment therefore concerned the AccessPoint party id, not the Consignor customer number, and the connector's 109 AccessPoint id will move to the lookup's `id`.
+Booking 2906785361 then sent the lookup's `id` 115191 as the 109 AccessPoint party id to DK 1620, and DHL accepted it and returned the same routing code as the `servicePointId` booking 2906761354 ([2906785361][b-361]).
 
 These open questions for DHL API Farm were drafted on 2026-10-09, citing the manual, the IFTMIN, and the API spec:
 
@@ -317,6 +319,10 @@ These open questions for DHL API Farm were drafted on 2026-10-09, citing the man
 - confirmation that 103 takes the four-digit terminal id in the JSON API (§10.14.2.1 p231, IFTMIN v3.7 p59), and whether 109 has a corresponding short form
 - which values the 109 AccessPoint sub type takes, the manual's location types or the spec's `ParcelShop` and `ParcelStation` ([AccessPoint sub type](#deviations-from-manual-v526))
 - whether 109 and 112 to PL take SENT entries, and if so under the rules of the international products ([SENT for PL](#deviations-from-manual-v526))
+
+One further question for DHL API Farm, drafted on 2026-10-13: the lookup `id` is not unique per service point.
+All five Posti points in Åland share the id 3201, their 8011-… values being the `servicePointId` field ([2906761917][b-917]), and the id 101 covers two shops in Kraków ([2906769613][b-613]) and eight in Warsaw ([lookup-service-points-pl-capacity-too-large.json][l-sp-pl]).
+When the id is shared, does the mandatory AccessPoint name and address disambiguate the point, and how is the point then selected?
 
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
@@ -373,6 +379,7 @@ These were never exercised:
 [b-650]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906771650-103-se-se-terminal-id.json
 [b-463]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906784463-202-se-dk-consignor-12345.json
 [b-471]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906784471-202-se-dk-consignor-1234567.json
+[b-361]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906785361-109-se-dk-lookup-id.json
 [r-22014-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-consignor-103.json
 [r-22014-abc]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-consignor-abc123.json
 [b-248]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json
