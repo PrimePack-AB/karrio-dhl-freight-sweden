@@ -369,6 +369,77 @@ class TestSandboxProbePayloads(unittest.TestCase):
             },
         )
 
+    def test_118_kiruna_serializes_the_consignee_postal_code(self):
+        serialized = _serialize(
+            gateway.mapper.create_shipment_request(
+                shipment_request(
+                    service="118",
+                    shipper=booking.SHIPPER,
+                    recipient=probes.KIRUNA,
+                    parcels=[booking.PARCEL],
+                )
+            )
+        )
+
+        consignee = next(
+            party for party in serialized["parties"] if party["type"] == "Consignee"
+        )
+        self.assertEqual(serialized["productCode"], "118")
+        self.assertEqual(consignee["address"]["postalCode"], "98138")
+        # The committed 98138 route lookup carries city and postal code only,
+        # so the stock SE recipient fills the person and street fields.
+        self.assertEqual(
+            consignee,
+            {
+                "address": {
+                    "cityName": "Kiruna",
+                    "countryCode": "SE",
+                    "postalCode": "98138",
+                    "street": "Drottninggatan 10",
+                },
+                "contactName": "Anna Andersson",
+                "email": "anna.andersson@example.se",
+                "name": "Anna Andersson",
+                "phone": "+46 70 123 45 67",
+                "type": "Consignee",
+            },
+        )
+
+    def test_unregistered_access_point_id_changes_only_the_access_point_id(self):
+        request = _pl_request(
+            "109",
+            {
+                **booking.service_point_options(SERVICE_POINT),
+                "dhl_freight_sweden_payer_code": "022",
+            },
+        )
+        original = _serialize(request)
+
+        mutated = _serialize(
+            harness.mutated_request(
+                request,
+                probes.with_access_point_id(probes.UNREGISTERED_ACCESS_POINT_ID),
+            )
+        )
+
+        access_point = original["parties"][-1]
+        self.assertEqual(access_point["type"], "AccessPoint")
+        self.assertEqual(access_point["id"], SERVICE_POINT["id"])
+        self.assertEqual(
+            [party for party in mutated["parties"] if party["type"] != "AccessPoint"],
+            original["parties"][:-1],
+        )
+        self.assertEqual(
+            mutated,
+            {
+                **original,
+                "parties": [
+                    *original["parties"][:-1],
+                    {**access_point, "id": probes.UNREGISTERED_ACCESS_POINT_ID},
+                ],
+            },
+        )
+
 
 class TestSandboxDeclarationPayloads(unittest.TestCase):
     def test_601_declarations_serialize_as_not_free(self):
