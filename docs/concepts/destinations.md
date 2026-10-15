@@ -133,4 +133,4 @@ The manual names the NL Caribbean islands without postal codes, so they are excl
 The catalog lists different excludes for 109 and 112, which the connector does not apply because the manual covers both products; the [findings note](../notes/sandbox/sandbox-findings.md#catalog-postal-code-excludes) compares them, including 109 to DK 3900, which product matches offered while the manual excludes DK 3800-3999 ([lookup-product-matches-se-dk-3900.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-dk-3900.json)).
 205 and SPI were not matched by any probe, so no catalog excludes are applied to them.
 The manual's 107 entry for FR outside mainland France and Corsica gives no postal codes and is not checked (§5.15 p66).
-The manual also points to the DHL Freight website for the present list of postal codes, which the connector does not consult.
+The manual also points to the DHL Freight website for the present list of postal codes (§5.14 p63, and likewise §5.3 p18 and §5.15 p66), which the connector does not consult.
