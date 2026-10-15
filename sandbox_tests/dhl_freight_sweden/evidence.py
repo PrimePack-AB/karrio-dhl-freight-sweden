@@ -812,6 +812,39 @@ def _(b: Builder) -> Json:
     )
 
 
+TWO_PARCELS_RUN = "20261015-125828"
+TWO_PARCELS_TEST = "TestSandboxBookingProbes.test_book_102_two_parcels"
+
+
+@evidence("booking-2906788993-102-se-se-two-parcels.json")
+def _(b: Builder) -> Json:
+    return b.suite_booking(
+        "102 within SE sent unmutated with two 1 kg parcels carrying the piece references "
+        "SANDBOX-PIECE-1 and SANDBOX-PIECE-2, then printed; the response's transportInstruction.pieces "
+        "holds one row per parcel in request order, each with a single-item id list.",
+        "102", "SE 11143 -> SE 11151", TWO_PARCELS_RUN,
+        ("001-booking-102-two-parcels", "002-booking-102-two-parcels"),
+        TWO_PARCELS_TEST, 0,
+    )
+
+
+@evidence("label-2906788993-102-se-se-two-parcels.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "102 within SE with two parcels carrying the piece references SANDBOX-PIECE-1 and "
+        "SANDBOX-PIECE-2, printed with page type Label as one report of two 297.638 x 595.276 pt "
+        "(105 x 210 mm) PDF pages; the label text shows Shipping mark SANDBOX-PIECE-1, counter 1/2, "
+        "and barcode text (00)373221512525060842 on the first page and Shipping mark SANDBOX-PIECE-2, "
+        "counter 2/2, and (00)373221512525060859 on the second, Weight: 1.0 / 2.0 and one Phn. line "
+        "with no number on both pages.",
+        "102", "SE 11143 -> SE 11151", "2906788993",
+        TWO_PARCELS_RUN, "001-booking-102-two-parcels",
+        "002-booking-102-two-parcels", TWO_PARCELS_TEST,
+        labels=SUITE_LABELS_20261015,
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 

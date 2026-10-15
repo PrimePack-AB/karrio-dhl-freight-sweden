@@ -1,0 +1,217 @@
+{
+ "kind": "label",
+ "summary": "102 within SE with two parcels carrying the piece references SANDBOX-PIECE-1 and SANDBOX-PIECE-2, printed with page type Label as one report of two 297.638 x 595.276 pt (105 x 210 mm) PDF pages; the label text shows Shipping mark SANDBOX-PIECE-1, counter 1/2, and barcode text (00)373221512525060842 on the first page and Shipping mark SANDBOX-PIECE-2, counter 2/2, and (00)373221512525060859 on the second, Weight: 1.0 / 2.0 and one Phn. line with no number on both pages.",
+ "captured_at": "2026-10-15T10:58:29Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "102",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": "2906788993",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: TestSandboxBookingProbes.test_book_102_two_parcels; label PDF decoded from the print response into agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-15T10:58:28Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/001-booking-102-two-parcels.request.json",
+    "sha256": "020de6078d79b377b3ea829592e200f0533a4e3caca31d99d825b685f7cccd6d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/001-booking-102-two-parcels.response.json",
+    "sha256": "8d566084c648cb76c3c615400177e99ac2c82b8c88bb3b25f58eb98d4a50adc2"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "999999",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-PIECE-1",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     },
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-PIECE-2",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "102",
+    "totalNumberOfPieces": 2,
+    "totalWeight": 2.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906788993",
+     "productCode": "102",
+     "totalNumberOfPieces": 2,
+     "totalWeight": 2.0,
+     "totalVolume": 0.02,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "1"
+     },
+     "parties": [
+      {
+       "id": "999999",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Anna Andersson",
+       "contactName": "Anna Andersson",
+       "address": {
+        "street": "Drottninggatan 10",
+        "cityName": "Stockholm",
+        "postalCode": "11151",
+        "countryCode": "SE"
+       },
+       "phone": "+46 70 123 45 67",
+       "email": "anna.andersson@example.se"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525060842"
+       ],
+       "marksAndNumbers": "SANDBOX-PIECE-1",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      },
+      {
+       "id": [
+        "373221512525060859"
+       ],
+       "marksAndNumbers": "SANDBOX-PIECE-2",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LSE11151+02000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-15T10:58:29Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/002-booking-102-two-parcels.request.json",
+    "sha256": "1124ea5f73a3020527ecbfa3efb4d1e5c62b9d1fbbbd7967ff121c2d88e1c76d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/002-booking-102-two-parcels.response.json",
+    "sha256": "redacted-2026-10-20"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906788993"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906788993.pdf",
+      "content": "<base64 omitted: 108000 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015/label_2906788993.pdf",
+     "sha256": "redacted-2026-10-20"
+    },
+    "page_size_pt": [
+     297.638,
+     595.276
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015/label_2906788993.txt",
+     "sha256": "a22598c2cec5fc1d858a92f8e0881b18dfa6b578792a7a092d1a23b2cf1db7f4"
+    },
+    "text": "                       DHL PAKET\n     Test Shipper AB\n     Kungsgatan 1\n     11143 Stockholm\n     SWEDEN\n\n\n\n     Anna Andersson\n                                                 T  Cust. No.\n                                                    999999\n                                                    Phn.\n\n\n\n\n                                                    Cust. No.\n\n\n\n\n                               ST\n     Drottninggatan 10\n     11151 STOCKHOLM\n     SWEDEN\n                                                    Cont. Name\n                                                    Anna Andersson\n\n Domestic routing\n\n                    110\n\n  Shipment Id:\n\n\n\n                    TE\n                  2906788993\n  Date created: 2026-10-15\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 999999\n  Weight:         1.0 / 2.0\n  Shipping mark: SANDBOX-PIECE-1\n  Delivery instr:\n                                                                  1/2\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\n ST                      (2L)SE11151+02000000\n\n\n\n\nTE                      (00)373221512525060842\n                                                  Print By DHL API FARM\n\f                       DHL PAKET\n     Test Shipper AB\n     Kungsgatan 1\n     11143 Stockholm\n     SWEDEN\n\n\n\n     Anna Andersson\n                                                 T  Cust. No.\n                                                    999999\n                                                    Phn.\n\n\n\n\n                                                    Cust. No.\n\n\n\n\n                               ST\n     Drottninggatan 10\n     11151 STOCKHOLM\n     SWEDEN\n                                                    Cont. Name\n                                                    Anna Andersson\n\n Domestic routing\n\n                    110\n\n  Shipment Id:\n\n\n\n                    TE\n                  2906788993\n  Date created: 2026-10-15\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 999999\n  Weight:         1.0 / 2.0\n  Shipping mark: SANDBOX-PIECE-2\n  Delivery instr:\n                                                                  2/2\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\n ST                      (2L)SE11151+02000000\n\n\n\n\nTE                      (00)373221512525060859\n                                                  Print By DHL API FARM\n\f"
+   }
+  }
+ ]
+}
