@@ -34,10 +34,10 @@ The table compares the labels with the receiver phone, field 9, of the manual's 
 | 401 | not allowed | no label evidence | |
 | 102 | conditional | `Phn.` line with no number | [102](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761222-102-se-se.json) |
 | 601 to DK | conditional | `Phn.` line with no number | [601](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761248-601-se-dk.json) |
-| 103 | receiving service point's phone mandatory | `Phn.` line with no number | [103](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761230-103-se-se-service-point.json) |
+| 103 | receiving service point's phone mandatory | `Phn.` line with no number | [103](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761230-103-se-se-service-point.json), [103 with a party phone](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788324-103-se-se-service-point-phone.json) |
 
 "Not allowed" for 109 and 112 covers every country the manual lists for them except SK.
-The 103 label is the one deviation from the manual, recorded under [Deviations from manual v5.26](../notes/sandbox/sandbox-findings.md#deviations-from-manual-v526).
+The 103 label is the one deviation from the manual, its `Phn.` line empty with and without an AccessPoint party phone in the booking request, and is recorded under [Deviations from manual v5.26](../notes/sandbox/sandbox-findings.md#deviations-from-manual-v526).
 The sender phone, field 6, is conditional, and printing it is not allowed for 104, for 402/502, or for 107 from every listed country except SK (p168), so the labels without it do not contradict the manual.
 
 The phone format follows product manual v5.26 Appendix E (§10.6 p197): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only; dots, letters, and slash are forbidden.
