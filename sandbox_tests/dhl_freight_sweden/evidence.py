@@ -1142,6 +1142,7 @@ def _(b: Builder) -> Json:
 
 SUITE_LABELS = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005"
 SUITE_LABELS_20261006 = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261006"
+SUITE_LABELS_20261015 = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015"
 
 
 def suite_label(
@@ -1263,6 +1264,22 @@ def _(b: Builder) -> Json:
         "112", "SE 11143 -> FR 75004", "2906761867",
         "20261006-101051", "003-booking-112", "004-booking-112", "test_booking_export",
         labels=SUITE_LABELS_20261006,
+    )
+
+
+@evidence("label-2906788324-103-se-se-service-point-phone.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "103 within SE to service point terminal id 9820 booked with consignor phone +46 8 123 456, consignee "
+        "phone +46 70 123 45 67, and AccessPoint party phone +46 8 982 000 added by the booking probe, printed "
+        "with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows one "
+        "Phn. line with no number.",
+        "103", "SE 11143 -> SE 11151", "2906788324",
+        "20261015-105136", "003-booking-103-access-point-phone",
+        "004-booking-103-access-point-phone",
+        "TestSandboxBookingProbes.test_book_103_service_point_access_point_phone",
+        labels=SUITE_LABELS_20261015,
     )
 
 
