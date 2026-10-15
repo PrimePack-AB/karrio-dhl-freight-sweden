@@ -48,12 +48,12 @@ A manual capacity probe with the connector also ran once.
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
-The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, 2906761867, 2906788324, and 2906788449.
+The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, 2906761867, 2906788324, 2906788449, and 2906788993.
 
 ## Bookings
 
-All 47 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
-Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm.
+All 48 bookings returned status `Succes`, a transport instruction id, at least one piece id, and a routing code, and every shipper was Stockholm SE 11143.
+Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm and 2906788993 with two parcels of 1 kg and 30 × 20 × 10 cm each.
 None was cancelled, because the API Farm has no cancellation operation.
 The evidence files keep each booking's routing code; the routing codes that bear on a finding are quoted under [Deviations from manual v5.26](#deviations-from-manual-v526).
 The 103 and 109 bookings to RO, HU, NO, DK, FI 22100, and, for 2906769613, PL were preceded by the service point lookup the point was taken from, and those lookups are included in the evidence files.
@@ -70,6 +70,9 @@ The direct-script bookings 2906761073 and 2906761081 and the connector-script bo
 | 2026-10-06 | 401 | SE → SE 11151 | payer code 1 | 2906762303 | [booking][b-303] |
 | 2026-10-09 | 103 | SE → SE 11151 | payer code 1, ParcelShop SE-982000 sent as the four-digit terminal id 9820 | 2906771650 | [booking][b-650] |
 | 2026-10-15 | 103 | SE → SE 11151 | payer code 1, ParcelShop terminal id 9820, AccessPoint phone +46 8 982 000 added to the serialized request by the booking probe | 2906788324 | [label][lb-324] |
+| 2026-10-15 | 102 | SE → SE 11151 | payer code 1, two parcels carrying the piece references SANDBOX-PIECE-1 and SANDBOX-PIECE-2 | 2906788993 | [booking][b-993], [label][lb-993] |
+
+The two-parcel booking 2906788993 was accepted on the first call, and the response lists one `pieces[]` row per parcel in request order, each with a single-item id list, while the print call returned one report bundling both parcel labels as a two-page PDF ([booking-2906788993][b-993], [label-2906788993][lb-993]).
 
 ### Intra-EU
 
@@ -135,7 +138,7 @@ No booking was sent to LI, and no CH booking used 202, 233, HDI, or customs hand
 
 ## Labels
 
-All ten labels with evidence files were printed with page type `Label`.
+All eleven labels with evidence files were printed with page type `Label`.
 Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone.
 The 2026-10-05 103 booking sent no AccessPoint phone, and the 2026-10-15 103 booking probe added the AccessPoint phone +46 8 982 000 to the serialized request.
 
@@ -151,6 +154,7 @@ The 2026-10-05 103 booking sent no AccessPoint phone, and the 2026-10-15 103 boo
 | 2906761867 | 112 SE → FR | one page, 283.46 × 425.2 pt (100 × 150 mm), in a different layout from the other labels | the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000; no `Phn.` line, and not the consignee phone +33 6 12 34 56 78 | [label-2906761867][lb-867] |
 | 2906788324 | 103 SE → SE, service point terminal id 9820 | one page, 105 × 210 mm | a `Phn.` line with no number, and not the AccessPoint phone +46 8 982 000 the booking probe sent | [label-2906788324][lb-324] |
 | 2906788449 | 109 SE → DK, the lookup's ParcelShop with the AccessPoint id replaced by the invented 777777 | one page, 105 × 210 mm | SHOP 777777 in the access point block, where the `servicePointId` booking 2906761354 printed SHOP 8009-115191; the sender's +46 8 123 456 as the only `Phn.` line, and the same routing code 2LDK1620+70530000 | [label-2906788449][lb-449] |
+| 2906788993 | 102 SE → SE, two parcels | two pages, 105 × 210 mm each, in one report | Shipping mark SANDBOX-PIECE-1 with counter 1/2 and barcode text (00)373221512525060842 on the first page and SANDBOX-PIECE-2 with 2/2 and (00)373221512525060859 on the second; Weight: 1.0 / 2.0 and a `Phn.` line with no number on both pages | [label-2906788993][lb-993] |
 
 The print calls for 2906762477 (601 to CH) and 2906762592 (109 to Åland) each returned one PDF label, the first as one report of type `Label`.
 
@@ -374,7 +378,7 @@ These were never exercised:
 - 109 with home addressing and no AccessPoint party
 - 109 to GB, which the manual lists for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200)
 - any booking to LI or GR, and any 107 booking with `qrCode`
-- multi-piece shipments, and pieces below the minimum dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17)
+- pieces below the minimum dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17)
 
 [b-073]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761073-109-se-pl.json
 [b-081]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761081-112-se-pl.json
@@ -471,6 +475,8 @@ These were never exercised:
 [lb-324]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788324-103-se-se-service-point-phone.json
 [lb-449]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788449-109-se-dk-unregistered-access-point-id.json
 [r-22036]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json
+[b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
+[lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
 [l-t-fi-22100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json
 [l-t-ax]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json
