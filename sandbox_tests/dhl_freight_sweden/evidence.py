@@ -772,6 +772,46 @@ def _(b: Builder) -> Json:
     )
 
 
+KIRUNA_POSTCODE_RUN = "20261015-115013"
+KIRUNA_POSTCODE_TEST = "TestSandboxBookingProbes.test_book_118_postcode_without_home_delivery"
+
+
+@evidence("rejection-22036-118-se-kiruna.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "118 within SE to the consignee postal code 98138 Kiruna, whose PostalCode route answers "
+        "bookable true and homeDeliveryParcel false, sent unmutated with the address validation "
+        "pre-flight off, was rejected with 22036 'The postal code code 98138 is not supported for "
+        "this product'.",
+        "118", "SE 11143 -> SE 98138", None, "22036",
+        f"{SUITE_RUN}: {KIRUNA_POSTCODE_TEST}",
+        [b.suite_exchange(KIRUNA_POSTCODE_RUN, "001-booking-118-kiruna-postcode")],
+    )
+
+
+UNREGISTERED_ID_RUN = "20261015-115043"
+UNREGISTERED_ID_TEST = "TestSandboxBookingProbes.test_book_109_unregistered_access_point_id"
+
+
+@evidence("label-2906788449-109-se-dk-unregistered-access-point-id.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "109 SE to DK with payer code 022, the AccessPoint party of the lookup's ParcelShop "
+        "(name SHOP, Vesterbrogade 10, 1620 København V) with its id replaced by the invented "
+        "six-digit 777777, after the service point lookup, printed with page type Label as one "
+        "297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows SHOP 777777 in the "
+        "access point block, where the servicePointId booking 2906761354 printed SHOP 8009-115191, "
+        "the sender's +46 8 123 456 as the only Phn. line, the same routing code 2LDK1620+70530000, "
+        "and empty Senders ref: and Receivers ref: lines.",
+        "109", "SE 11143 -> DK 1620", "2906788449",
+        UNREGISTERED_ID_RUN, "003-booking-109-unregistered-access-point",
+        "004-booking-109-unregistered-access-point", UNREGISTERED_ID_TEST,
+        labels=SUITE_LABELS_20261015,
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 

@@ -1,0 +1,220 @@
+{
+ "kind": "label",
+ "summary": "109 SE to DK with payer code 022, the AccessPoint party of the lookup's ParcelShop (name SHOP, Vesterbrogade 10, 1620 København V) with its id replaced by the invented six-digit 777777, after the service point lookup, printed with page type Label as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows SHOP 777777 in the access point block, where the servicePointId booking 2906761354 printed SHOP 8009-115191, the sender's +46 8 123 456 as the only Phn. line, the same routing code 2LDK1620+70530000, and empty Senders ref: and Receivers ref: lines.",
+ "captured_at": "2026-10-15T09:50:44Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+ "product": "109",
+ "route": "SE 11143 -> DK 1620",
+ "booking_id": "2906788449",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: TestSandboxBookingProbes.test_book_109_unregistered_access_point_id; label PDF decoded from the print response into agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-15T09:50:44Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-115043/003-booking-109-unregistered-access-point.request.json",
+    "sha256": "5fa029ebd0947c86522614fa69dfa3ffff7c7182147000ec6a066150b58e2fb3"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-115043/003-booking-109-unregistered-access-point.response.json",
+    "sha256": "c5314f71a2a58b0f7f3432916426b9ba27d6f3e9896ee41db4644fee124f1685"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "København V",
+       "countryCode": "DK",
+       "postalCode": "1620",
+       "street": "Vesterbrogade 10"
+      },
+      "contactName": "Mette Hansen",
+      "email": "mette.hansen@example.dk",
+      "name": "Mette Hansen",
+      "phone": "+45 20 12 34 56",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "København V",
+       "countryCode": "DK",
+       "postalCode": "1620",
+       "street": "Vesterbrogade 10"
+      },
+      "id": "777777",
+      "name": "SHOP",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906788449",
+     "productCode": "109",
+     "totalNumberOfPieces": 1,
+     "totalWeight": 1.0,
+     "totalVolume": 0.01,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "022"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Mette Hansen",
+       "contactName": "Mette Hansen",
+       "address": {
+        "street": "Vesterbrogade 10",
+        "cityName": "København V",
+        "postalCode": "1620",
+        "countryCode": "DK"
+       },
+       "phone": "+45 20 12 34 56",
+       "email": "mette.hansen@example.dk"
+      },
+      {
+       "id": "777777",
+       "type": "AccessPoint",
+       "name": "SHOP",
+       "address": {
+        "street": "Vesterbrogade 10",
+        "cityName": "København V",
+        "postalCode": "1620",
+        "countryCode": "DK"
+       },
+       "subType": "ParcelShop"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525060286"
+       ],
+       "marksAndNumbers": "SANDBOX-TEST",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LDK1620+70530000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-15T09:50:44Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-115043/004-booking-109-unregistered-access-point.request.json",
+    "sha256": "c119808d81fb2755b65617537d7ba4bf69183c3ba3fa0039d6ca6f6bc596c59e"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-115043/004-booking-109-unregistered-access-point.response.json",
+    "sha256": "3471ca948a60d2a203909159df8f1bc47399f7c6c64d42b550cf926122c2739f"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906788449"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906788449.pdf",
+      "content": "<base64 omitted: 107824 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   },
+   "label": {
+    "pdf_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015/label_2906788449.pdf",
+     "sha256": "584b4f628df678836569ee51e656c6c4ecf66a670db033f6f6cc15fe8ce69210"
+    },
+    "page_size_pt": [
+     297.638,
+     595.276
+    ],
+    "text_extraction": "pdftotext -layout",
+    "text_source": {
+     "path": "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015/label_2906788449.txt",
+     "sha256": "2d3373a8000b5d60846c1c928143dcae8759970bdbf9114fa2f8bb8b69940dde"
+    },
+    "text": "              DHL PARCEL CONNECT\n\n\n\n\n                                ST\n     Test Shipper AB                                Cust. No.\n     Kungsgatan 1                                   116768\n     11143 Stockholm                                Phn.\n     SWEDEN                                         +46 8 123 456\n\n                                                    Cust. No.\n     Mette Hansen\n\n\n\n\n                                   T\n     SHOP 777777\n     Vesterbrogade 10\n     1620 KØBENHAVN V\n     DENMARK\n\n\n\n Domestic routing\n\n                    200-DK-E\n\n  Shipment Id:\n\n\n\n                    TE\n                  2906788449\n  Date created: 2026-10-15\n  Senders ref:\n  Receivers ref:\n  Payer Acc No: 116768\n  Weight:         1.0 / 1.0\n  Shipping mark: SANDBOX-TEST\n  Delivery instr:\n                                                                  1/1\n\n\n\n\nWe are working exclusively on basis of our current GTB in force and CMR\n\n\n\n\nTE\n Mette Hansen Vesterbrogade 10\n DK 1620 København V\n\n\n\n\n  ST                      (2L)DK1620+70530000\n\n\n\n\n                        (00)373221512525060286\n                                                  Print By DHL API FARM\n\f"
+   }
+  }
+ ]
+}
