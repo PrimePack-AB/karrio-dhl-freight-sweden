@@ -18,6 +18,7 @@ The returned shipment declares the format read from the decoded document's magic
 The `label_page_type` connection setting selects the Print API page type, `Label` by default, and the `dhl_freight_sweden_label_page_type` option overrides it per shipment.
 The page types of the vendored print spec 2.10.0 are `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, and `LabelCompact2x2PortraitA4`.
 The 112 label to FR is a 100 × 150 mm label in a different layout that carries the Chronopost reference from the booking response ([label-2906761867-112-se-fr.json](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json)).
+A two-parcel 102 booking's print call returned one report bundling both parcel labels as a two-page PDF, one 105 × 210 mm page per parcel carrying its piece id as the (00) barcode text and an x/N counter ([label-2906788993-102-se-se-two-parcels.json](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json)).
 
 ## Phone numbers
 
