@@ -440,6 +440,47 @@ class TestSandboxProbePayloads(unittest.TestCase):
             },
         )
 
+    def test_102_two_parcels_serialize_two_piece_rows(self):
+        serialized = _serialize(
+            gateway.mapper.create_shipment_request(
+                shipment_request(
+                    service="102",
+                    shipper=booking.SHIPPER,
+                    recipient=booking.RECIPIENTS["SE"],
+                    parcels=probes.TWO_PARCELS,
+                )
+            )
+        )
+
+        self.assertEqual(serialized["productCode"], "102")
+        self.assertEqual(serialized["totalNumberOfPieces"], 2)
+        self.assertEqual(serialized["totalWeight"], 2.0)
+        # Each karrio parcel becomes one pieces[] row; the piece references
+        # distinguish the rows on the label.
+        self.assertEqual(
+            serialized["pieces"],
+            [
+                {
+                    "height": 10.0,
+                    "length": 30.0,
+                    "marksAndNumbers": "SANDBOX-PIECE-1",
+                    "numberOfPieces": 1,
+                    "volume": 0.01,
+                    "weight": 1.0,
+                    "width": 20.0,
+                },
+                {
+                    "height": 10.0,
+                    "length": 30.0,
+                    "marksAndNumbers": "SANDBOX-PIECE-2",
+                    "numberOfPieces": 1,
+                    "volume": 0.01,
+                    "weight": 1.0,
+                    "width": 20.0,
+                },
+            ],
+        )
+
 
 class TestSandboxDeclarationPayloads(unittest.TestCase):
     def test_601_declarations_serialize_as_not_free(self):
