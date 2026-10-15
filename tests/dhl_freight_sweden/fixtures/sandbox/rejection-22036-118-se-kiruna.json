@@ -1,0 +1,89 @@
+{
+ "kind": "rejection",
+ "summary": "118 within SE to the consignee postal code 98138 Kiruna, whose PostalCode route answers bookable true and homeDeliveryParcel false, sent unmutated with the address validation pre-flight off, was rejected with 22036 'The postal code code 98138 is not supported for this product'.",
+ "captured_at": "2026-10-15T09:50:13Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "118",
+ "route": "SE 11143 -> SE 98138",
+ "booking_id": null,
+ "error_code": "22036",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: TestSandboxBookingProbes.test_book_118_postcode_without_home_delivery",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-15T09:50:13Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-115013/001-booking-118-kiruna-postcode.request.json",
+    "sha256": "d6f2330407baa06f0b4f37daa9e2649cabda937899f78410c2535b3e72026f63"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-115013/001-booking-118-kiruna-postcode.response.json",
+    "sha256": "849e9697eb9c64c0bdfff6f21a718ff063c1a3dd22503a641e6e439b4c6366ad"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "999999",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Kiruna",
+       "countryCode": "SE",
+       "postalCode": "98138",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "118",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22036,
+      "message": "The postal code code 98138 is not supported for this product"
+     }
+    ]
+   }
+  }
+ ]
+}
