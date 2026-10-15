@@ -4,8 +4,13 @@ a single question and spending a booking only when this segment is named.
 The access-point phone probe books the same 103 SE service-point payload as
 ``booking-pudo`` and adds a ``phone`` to the serialized AccessPoint party via
 ``harness.mutated_request``, to learn whether the Print API then prints it on
-the label's ``Phn.`` line. Unlike ``rejections``, the probe asserts DHL
-accepts and returns a label; a failure is the finding, and the outcome is
+the label's ``Phn.`` line. The 98138 Kiruna probe books 118 unmutated to the
+postal code whose route answers ``homeDeliveryParcel`` false, to learn whether
+the booking API rejects the postal code itself. The unregistered-id probe
+books the 109 SE-DK payload of ``booking-pudo`` with the AccessPoint ``id``
+replaced by an invented six-digit value, to learn whether DHL checks the id
+against its service point registry. Unlike ``rejections``, each probe asserts
+DHL accepts and returns a label; a failure is the finding, and the outcome is
 recorded once, never retried.
 """
 
@@ -23,6 +28,20 @@ from . import booking, harness
 # service point.
 ACCESS_POINT_PHONE = "+46 8 982 000"
 
+# Sandbox-only invented access point id: six digits shaped like the
+# ServicePointLocator's id values (e.g. 115191), matching no lookup response.
+UNREGISTERED_ACCESS_POINT_ID = "777777"
+
+# Consignee in 98138 Kiruna, whose committed PostalCode route answers
+# bookable true and homeDeliveryParcel false (tests/dhl_freight_sweden/
+# fixtures/sandbox/lookup-postal-code-se-98138-no-home-delivery.json). The
+# route lookup carries no street, so the stock SE recipient fills the rest.
+KIRUNA = {
+    **booking.RECIPIENTS["SE"],
+    "city": "Kiruna",
+    "postal_code": "98138",
+}
+
 
 def with_access_point_phone(phone: str) -> typing.Callable[[dict], dict]:
     """A mutation adding ``phone`` to the instruction's AccessPoint parties."""
@@ -32,6 +51,23 @@ def with_access_point_phone(phone: str) -> typing.Callable[[dict], dict]:
             **instruction,
             "parties": [
                 {**party, "phone": phone}
+                if party.get("type") == provider_units.PartyType.AccessPoint.value
+                else party
+                for party in instruction.get("parties") or []
+            ],
+        }
+
+    return mutate
+
+
+def with_access_point_id(id: str) -> typing.Callable[[dict], dict]:
+    """A mutation replacing the ``id`` of the instruction's AccessPoint parties."""
+
+    def mutate(instruction: dict) -> dict:
+        return {
+            **instruction,
+            "parties": [
+                {**party, "id": id}
                 if party.get("type") == provider_units.PartyType.AccessPoint.value
                 else party
                 for party in instruction.get("parties") or []
@@ -135,4 +171,58 @@ class TestSandboxBookingProbes(unittest.TestCase):
                 options=booking.service_point_options(point),
             ),
             with_access_point_phone(ACCESS_POINT_PHONE),
+        )
+
+    def test_book_118_postcode_without_home_delivery(self):
+        # The consignee postal code is the probe, so the instruction is sent
+        # unmutated. The 118 route pre-flight is a proxy connection setting
+        # (address_validation) and the session gateway runs it off, so no
+        # PostalCode lookup precedes this booking.
+        book_mutated(
+            self,
+            self.session,
+            self.gateway,
+            "booking-118-kiruna-postcode",
+            "118",
+            dict(
+                service="118",
+                shipper=booking.SHIPPER,
+                recipient=KIRUNA,
+                parcels=[booking.PARCEL],
+            ),
+            lib.identity,
+        )
+
+    def test_book_109_unregistered_access_point_id(self):
+        booking.require_booking(self, self.session, "109", "DK")
+        recipient = booking.RECIPIENTS["DK"]
+        point, messages = booking.nearest_service_point(
+            self.session,
+            self.gateway,
+            "service-points-109-unregistered-access-point",
+            "109",
+            recipient,
+        )
+
+        self.assertEqual(lib.to_dict(messages), [])
+        if point is None:
+            self.fail(f"no service point candidate for 109 near {recipient['city']}")
+
+        book_mutated(
+            self,
+            self.session,
+            self.gateway,
+            "booking-109-unregistered-access-point",
+            "109",
+            dict(
+                service="109",
+                shipper=booking.SHIPPER,
+                recipient=recipient,
+                parcels=[booking.PARCEL],
+                options=dict(
+                    **booking.service_point_options(point),
+                    dhl_freight_sweden_payer_code="022",
+                ),
+            ),
+            with_access_point_id(UNREGISTERED_ACCESS_POINT_ID),
         )
