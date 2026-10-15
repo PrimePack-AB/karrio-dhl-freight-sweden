@@ -1,0 +1,201 @@
+{
+ "kind": "booking",
+ "summary": "102 within SE sent unmutated with two 1 kg parcels carrying the piece references SANDBOX-PIECE-1 and SANDBOX-PIECE-2, then printed; the response's transportInstruction.pieces holds one row per parcel in request order, each with a single-item id list.",
+ "captured_at": "2026-10-15T10:58:28Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "102",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": "2906788993",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: TestSandboxBookingProbes.test_book_102_two_parcels",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 200,
+   "date": "2026-10-15T10:58:28Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/001-booking-102-two-parcels.request.json",
+    "sha256": "55c08fcab7c08fd22bc48bed278b3ae2455f193b36c1856bc6eb8e3608550532"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/001-booking-102-two-parcels.response.json",
+    "sha256": "4f80fd4284a3986816c649b56359c93448321e0d016660c258dffc7c6cadcd9d"
+   },
+   "request": {
+    "additionalServices": {},
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "116768",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-PIECE-1",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     },
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-PIECE-2",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "102",
+    "totalNumberOfPieces": 2,
+    "totalWeight": 2.0
+   },
+   "response": {
+    "status": "Succes",
+    "transportInstruction": {
+     "id": "2906788993",
+     "productCode": "102",
+     "totalNumberOfPieces": 2,
+     "totalWeight": 2.0,
+     "totalVolume": 0.02,
+     "totalLoadingMeters": 0.0,
+     "totalPalletPlaces": 0.0,
+     "maxPieceWeight": 1.0,
+     "minPieceWeight": 1.0,
+     "maxPieceHeight": 10.0,
+     "minPieceHeight": 10.0,
+     "payerCode": {
+      "code": "1"
+     },
+     "parties": [
+      {
+       "id": "116768",
+       "type": "Consignor",
+       "name": "Test Shipper AB",
+       "contactName": "Sven Svensson",
+       "address": {
+        "street": "Kungsgatan 1",
+        "cityName": "Stockholm",
+        "postalCode": "11143",
+        "countryCode": "SE"
+       },
+       "phone": "+46 8 123 456",
+       "email": "shipper@example.se"
+      },
+      {
+       "type": "Consignee",
+       "name": "Anna Andersson",
+       "contactName": "Anna Andersson",
+       "address": {
+        "street": "Drottninggatan 10",
+        "cityName": "Stockholm",
+        "postalCode": "11151",
+        "countryCode": "SE"
+       },
+       "phone": "+46 70 123 45 67",
+       "email": "anna.andersson@example.se"
+      }
+     ],
+     "additionalServices": {},
+     "pieces": [
+      {
+       "id": [
+        "373221512525060842"
+       ],
+       "marksAndNumbers": "SANDBOX-PIECE-1",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      },
+      {
+       "id": [
+        "373221512525060859"
+       ],
+       "marksAndNumbers": "SANDBOX-PIECE-2",
+       "numberOfPieces": 1,
+       "weight": 1.0,
+       "volume": 0.01,
+       "width": 20.0,
+       "height": 10.0,
+       "length": 30.0
+      }
+     ],
+     "routingCode": "2LSE11151+02000000"
+    }
+   }
+  },
+  {
+   "endpoint": "POST /printapi/v1/print/printdocumentsbyid",
+   "http_status": 200,
+   "date": "2026-10-15T10:58:29Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/002-booking-102-two-parcels.request.json",
+    "sha256": "1124ea5f73a3020527ecbfa3efb4d1e5c62b9d1fbbbd7967ff121c2d88e1c76d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261015-125828/002-booking-102-two-parcels.response.json",
+    "sha256": "d6847a398e979cc9872193eb4cddaa4fc57330bc638f6d47442ea65f5dc84634"
+   },
+   "request": {
+    "options": {
+     "label": true,
+     "pageOptions": {
+      "pageType": "Label"
+     }
+    },
+    "shipmentIds": [
+     "2906788993"
+    ]
+   },
+   "response": {
+    "reports": [
+     {
+      "name": "label_2906788993.pdf",
+      "content": "<base64 omitted: 108000 characters>",
+      "contentType": "application/pdf",
+      "type": "Label",
+      "valid": true
+     }
+    ]
+   }
+  }
+ ]
+}
