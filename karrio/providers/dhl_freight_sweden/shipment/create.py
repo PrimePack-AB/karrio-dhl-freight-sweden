@@ -250,12 +250,41 @@ def _extract_details(
         label_type=_label_type(report, settings),
         docs=models.Documents(label=getattr(report, "content", None) or ""),
         meta=dict(
-            tracking_numbers=[tracking_number],
+            tracking_numbers=_tracking_numbers(instruction, tracking_number),
             shipment_identifiers=[tracking_number],
             carrier_tracking_link=settings.tracking_url.format(tracking_number),
             product_code=str(product_code) if product_code is not None else None,
         ),
     )
+
+
+def _tracking_numbers(
+    instruction: typing.Optional[dhl_freight_sweden_res.TransportInstructionType],
+    tracking_number: str,
+) -> typing.List[str]:
+    """Tracking numbers for the booked parcels, in parcel order.
+
+    The karrio server writes ``tracking_numbers[i]`` into parcel ``i``'s
+    ``reference_number``, so a multi-parcel booking lists its piece ids
+    positionally: booking 2906788993 answered one ``pieces[]`` row per
+    parcel in request order, each with a single-element id list
+    (tests/dhl_freight_sweden/fixtures/sandbox/
+    booking-2906788993-102-se-se-two-parcels.json). A row may stand for
+    several identical parcels, so the flattened ids are used only when
+    their count equals the response's parcel count, and every other shape
+    — single-parcel bookings included — keeps the transport instruction id.
+    """
+    parcel_count = instruction.totalNumberOfPieces if instruction else None
+    piece_ids = [
+        piece_id
+        for piece in ((instruction.pieces if instruction else None) or [])
+        for piece_id in (piece.id or [])
+    ]
+
+    if parcel_count and parcel_count > 1 and len(piece_ids) == parcel_count:
+        return piece_ids
+
+    return [tracking_number]
 
 
 # The Print API has no raster-format parameter, so the emitted document
