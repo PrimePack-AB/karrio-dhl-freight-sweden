@@ -9,9 +9,11 @@ postal code whose route answers ``homeDeliveryParcel`` false, to learn whether
 the booking API rejects the postal code itself. The unregistered-id probe
 books the 109 SE-DK payload of ``booking-pudo`` with the AccessPoint ``id``
 replaced by an invented six-digit value, to learn whether DHL checks the id
-against its service point registry. Unlike ``rejections``, each probe asserts
-DHL accepts and returns a label; a failure is the finding, and the outcome is
-recorded once, never retried.
+against its service point registry. The two-parcel probe books 102 unmutated
+with exactly two parcels, to learn whether the booking API accepts and labels
+a multi-piece instruction, which no committed booking carries. Unlike
+``rejections``, each probe asserts DHL accepts and returns a label; a failure
+is the finding, and the outcome is recorded once, never retried.
 """
 
 import typing
@@ -41,6 +43,14 @@ KIRUNA = {
     "city": "Kiruna",
     "postal_code": "98138",
 }
+
+# The two-parcel probe payload: the stock sandbox parcel twice, with piece
+# references distinguishing the serialized ``pieces`` rows. The parcel list
+# itself is the probe; every other field is the stock 102 SE domestic payload.
+TWO_PARCELS = [
+    {**booking.PARCEL, "reference_number": "SANDBOX-PIECE-1"},
+    {**booking.PARCEL, "reference_number": "SANDBOX-PIECE-2"},
+]
 
 
 def with_access_point_phone(phone: str) -> typing.Callable[[dict], dict]:
@@ -225,4 +235,21 @@ class TestSandboxBookingProbes(unittest.TestCase):
                 ),
             ),
             with_access_point_id(UNREGISTERED_ACCESS_POINT_ID),
+        )
+
+    def test_book_102_two_parcels(self):
+        # The parcel list is the probe, so the instruction is sent unmutated.
+        book_mutated(
+            self,
+            self.session,
+            self.gateway,
+            "booking-102-two-parcels",
+            "102",
+            dict(
+                service="102",
+                shipper=booking.SHIPPER,
+                recipient=booking.RECIPIENTS["SE"],
+                parcels=TWO_PARCELS,
+            ),
+            lib.identity,
         )
