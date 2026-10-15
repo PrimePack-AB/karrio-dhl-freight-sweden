@@ -117,7 +117,10 @@ def shipment_request() -> models.ShipmentRequest:
 
 Book it with `details, messages = karrio.Shipment.create(shipment_request()).from_(gateway).parse()`.
 `details.tracking_number` is the DHL transport instruction id, `details.docs.label` is the base64 PDF label, and `details.meta["carrier_tracking_link"]` is the public tracking page.
-`details.meta["tracking_numbers"]` and `details.meta["shipment_identifiers"]` repeat the transport instruction id as one-element lists, as karrio's carrier integration guide prescribes, and `details.meta["product_code"]` is the booked DHL product code.
+`details.meta["shipment_identifiers"]` repeats the transport instruction id as a one-element list.
+`details.meta["tracking_numbers"]` lists one tracking number per parcel, as karrio's carrier integration guide prescribes: a multi-parcel booking carries its piece ids, flattened from the response's `pieces[]` rows in request order when their count equals the parcel count, and any other booking carries the transport instruction id alone.
+A two-parcel 102 booking answered one row per parcel in request order, each with a single-element id list ([booking-2906788993-102-se-se-two-parcels.json](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json)).
+`details.meta["product_code"]` is the booked DHL product code.
 `python -m examples.domestic_parcel` prints the TransportInstruction body the connector builds for this request without contacting DHL, and the [service-point](examples/service_point_parcel.py) and [Switzerland](examples/export_to_switzerland.py) examples work the same way.
 The Karrio server accepts the same fields at `POST /api/v1/shipments`.
 
