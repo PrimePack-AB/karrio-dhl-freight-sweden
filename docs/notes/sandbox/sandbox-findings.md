@@ -48,11 +48,11 @@ A manual capacity probe with the connector also ran once.
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
-The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, 2906761867, and 2906788324.
+The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, 2906761867, 2906788324, and 2906788449.
 
 ## Bookings
 
-All 46 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 47 bookings returned status `Succes`, a transport instruction id, a piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm.
 None was cancelled, because the API Farm has no cancellation operation.
 The evidence files keep each booking's routing code; the routing codes that bear on a finding are quoted under [Deviations from manual v5.26](#deviations-from-manual-v526).
@@ -104,6 +104,7 @@ The direct-script bookings 2906761073 and 2906761081 and the connector-script bo
 | 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the five-digit 12345, an expected rejection DHL accepted | 2906784463 | [booking][b-463] |
 | 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the seven-digit 1234567, an expected rejection DHL accepted | 2906784471 | [booking][b-471] |
 | 2026-10-13 | 109 | SE → DK 1620 | 022, ParcelShop sent as the lookup's `id` 115191 rather than its `servicePointId` 8009-115191 | 2906785361 | [booking][b-361] |
+| 2026-10-15 | 109 | SE → DK 1620 | 022, the lookup's ParcelShop with the AccessPoint id replaced by the invented six-digit 777777 by the booking probe | 2906788449 | [label][lb-449] |
 
 The response to 2906761867 (112 to FR) carried three `additionalInformation` entries the request did not send, `ChronoPostReference` `XY222000028`, `ChronopostLicencePlate` `0075004XY222000028336835250C`, and `CHRONOPOST` `"true"` ([booking-2906761867][b-867]).
 
@@ -134,7 +135,7 @@ No booking was sent to LI, and no CH booking used 202, 233, HDI, or customs hand
 
 ## Labels
 
-All nine labels with evidence files were printed with page type `Label`.
+All ten labels with evidence files were printed with page type `Label`.
 Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone.
 The 2026-10-05 103 booking sent no AccessPoint phone, and the 2026-10-15 103 booking probe added the AccessPoint phone +46 8 982 000 to the serialized request.
 
@@ -149,6 +150,7 @@ The 2026-10-05 103 booking sent no AccessPoint phone, and the 2026-10-15 103 boo
 | 2906761354 | 109 SE → DK, ParcelShop 8009-115191 | one page, 297.638 × 595.276 pt (105 × 210 mm) | the Consignee name below the sender block and the Consignee name and address at the bottom; the sender's +46 8 123 456 as the only `Phn.` line, and not the consignee phone +45 20 12 34 56 | [label-2906761354][lb-354] |
 | 2906761867 | 112 SE → FR | one page, 283.46 × 425.2 pt (100 × 150 mm), in a different layout from the other labels | the Chronopost reference XY22 2000 028, the licence plate, and the routing code (403)25075004+74000000; no `Phn.` line, and not the consignee phone +33 6 12 34 56 78 | [label-2906761867][lb-867] |
 | 2906788324 | 103 SE → SE, service point terminal id 9820 | one page, 105 × 210 mm | a `Phn.` line with no number, and not the AccessPoint phone +46 8 982 000 the booking probe sent | [label-2906788324][lb-324] |
+| 2906788449 | 109 SE → DK, the lookup's ParcelShop with the AccessPoint id replaced by the invented 777777 | one page, 105 × 210 mm | SHOP 777777 in the access point block, where the `servicePointId` booking 2906761354 printed SHOP 8009-115191; the sender's +46 8 123 456 as the only `Phn.` line, and the same routing code 2LDK1620+70530000 | [label-2906788449][lb-449] |
 
 The print calls for 2906762477 (601 to CH) and 2906762592 (109 to Åland) each returned one PDF label, the first as one report of type `Label`.
 
@@ -163,7 +165,7 @@ The 103 labels are the one deviation, listed under [Deviations from manual v5.26
 ## Rejections
 
 Every answer below was HTTP 400 and created no booking.
-The rejection segment built a valid request through the connector and changed the serialized payload just before sending (the four 2026-10-05 rows); the booking-export segment sent the GB and 205 cases without their product matches check and the two Åland cases after it.
+The rejection segment built a valid request through the connector and changed the serialized payload just before sending (the four 2026-10-05 rows); the booking-export segment sent the GB and 205 cases without their product matches check and the two Åland cases after it; the booking-probes segment booked 118 to Kiruna 98138 unmutated with the route pre-flight off.
 
 | Date | Product | Lane | Mutation or request | DHL code and message | Evidence |
 |------|---------|------|---------------------|----------------------|----------|
@@ -175,6 +177,7 @@ The rejection segment built a valid request through the connector and changed th
 | 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling full service, one commodity, proforma invoice, after product matches offered 112 | 24003 `customsHandlingFullService` "customsHandlingFullService is not available for this country combination" | [rejection-24003-112-fi-aland][r-24003-ax] |
 | 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling Standard, made-up EORI number SE0000000000, one commodity, proforma invoice | 24003 `customsHandlingStandard` "customsHandlingStandard is not available for this country combination" | [rejection-24003-112-fi-aland-standard][r-24003-ax-std] |
 | 2026-10-06 | 205 | SE → NO 0154 | payer code DAP, customs handling full service, one commodity, one 1 kg piece, sent without the product matches check | 22020 `ChargeableWeight` "ChargeableWeight is lower than product min 2500.0" | [rejection-22020-205-no][r-22020-205-no] |
+| 2026-10-15 | 118 | SE → SE 98138 Kiruna | consignee postal code 98138, whose PostalCode route answers `bookable` `true` and `homeDeliveryParcel` `false`, sent unmutated with the route pre-flight off | 22036 "The postal code code 98138 is not supported for this product" | [rejection-22036-118-se-kiruna][r-22036] |
 
 ## Lookup errors
 
@@ -211,6 +214,7 @@ The PL route answer matches the manual, which lists the route service only for d
 | 2026-10-06 | ServicePointLocator, five points | Mariehamn 22100, before booking 2906761917 | five Posti points in Åland of type `postoffice`, with ids 8011-221003201 to 8011-224103201 | [booking-2906761917][b-917] |
 
 Every pre-flight above ran with the connection setting `address_validation` `enforce`.
+On 2026-10-15 the booking-probes segment booked 118 unmutated to SE 98138 with the route pre-flight off, and the booking API rejected the postal code itself with 22036 "The postal code code 98138 is not supported for this product" ([rejection-22036-118-se-kiruna][r-22036]), so the server enforces the `homeDeliveryParcel` flag that the `enforce` pre-flight mirrors.
 
 ## Product matches
 
@@ -291,7 +295,7 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 | Customs to Åland | Customs handling - Full service valid to "zones outside the EU tax area such as Åland Islands (FI 22)" (§6.5 p92) and Standard to "NO and Åland Islands (FI 22)" (§6.6 p94); Åland (FI 22) is outside the tax area and customs proceedings are mandatory (§7.4 p162) | rejected full service and Standard with 24003 ([full service][r-24003-ax], [Standard][r-24003-ax-std]), and booked 109 without customs data ([2906761917][b-917]) and with customs data and no customs service ([2906762592][b-592]) | refuses both customs handling services to or from FI 22000-22999, the sandbox having rejected both where the manual allows them, and the two 112 Åland suite cases assert that refusal; also refuses any booking crossing the EU VAT area border without customs data, so the 109 Åland case without customs data asserts that refusal | [destinations.md#åland](../../concepts/destinations.md#åland) |
 | Service point capacity filter | no manual citation recorded | applied the piece filter for PL but not for SE ([SE][l-sp-se], [PL][l-sp-pl]) | sends the caller's parcel as the `piece` filter | [lookups.md#service-points](../../guides/lookups.md#service-points) |
 | Service point id for 103 | use only the four-digit part nnnn of an id like SE-nnnn00 (§10.14.2.1 p231) | booking 2906761230 used the full id SE-982000 ([2906761230][b-230]) and booking 2906771650 used the four-digit terminal id 9820 ([2906771650][b-650]); the lookup's `id` and `servicePointId` are equal in SE and differ elsewhere | sends the four-digit terminal id nnnn and refuses other 103 ids, since 2026-10-09 | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
-| Service point id for 109 | names the field `id` for the 109 AccessPoint party (§10.14.2.2 p232), and DHL's 2026-10-13 clarification says the short id is the lookup response's `id` field | all ten earlier 109 bookings sent the `servicePointId` (for example 8009-129635) and were accepted ([2906761073][b-073], [2906761123][b-123], [2906761263][b-263], [2906761289][b-289], [2906761305][b-305], [2906761354][b-354], [2906761917][b-917], [2906762105][b-105], [2906762592][b-592], [2906769613][b-613]); booking 2906785361 sent the lookup's `id` 115191 and was accepted, with the same routing code as the `servicePointId` booking 2906761354 ([2906785361][b-361]) | sends the lookup's `id` and refuses servicePointId-shaped values, since 2026-10-13 | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
+| Service point id for 109 | names the field `id` for the 109 AccessPoint party (§10.14.2.2 p232), and DHL's 2026-10-13 clarification says the short id is the lookup response's `id` field | all ten earlier 109 bookings sent the `servicePointId` (for example 8009-129635) and were accepted ([2906761073][b-073], [2906761123][b-123], [2906761263][b-263], [2906761289][b-289], [2906761305][b-305], [2906761354][b-354], [2906761917][b-917], [2906762105][b-105], [2906762592][b-592], [2906769613][b-613]); booking 2906785361 sent the lookup's `id` 115191 and was accepted, with the same routing code as the `servicePointId` booking 2906761354 ([2906785361][b-361]); booking 2906788449, whose AccessPoint id was the invented 777777, was accepted and printed the invented id in the label's access point block ([2906788449][lb-449]) | sends the lookup's `id` and refuses servicePointId-shaped values, since 2026-10-13 | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | AccessPoint sub type | Appendix M: the sub type carries the location type `servicepoint`, `locker`, or `postoffice` (§10.14.2.2 p232), while the vendored spec enumerates `ParcelShop` and `ParcelStation` | booked `ParcelShop` for PL, RO, NO, and DK ([2906761123][b-123], [2906761263][b-263], [2906761305][b-305], [2906761354][b-354]) and `ParcelStation` for a HU locker ([2906761289][b-289]); their routing codes carry 53 and 54 respectively (for example 2LPL30079+70530000 and 2LHU1826+70540000), which matches the routing code column of the table on p232 | sends `ParcelShop` and `ParcelStation`; which values the sub type takes is an open question for DHL API Farm | [booking-rules.md#access-points](../../concepts/booking-rules.md#access-points) |
 | Service type for 109 | only shops and stations with service type `parcel:pick-up` can be selected for 109 (§10.14.2.2 p232) | booked 109 to the HU locker 8013-118530, whose lookup entry lists only `parcel:pick-up-unregistered` ([2906761289][b-289]) | drops points without `parcel:pick-up` from 109 lookups that name the service, since 2026-10-09, and does not re-check the id at booking | [lookups.md#service-points](../../guides/lookups.md#service-points) |
 | Lookup size for 103 | always search the ten closest service points (§5.12 p57) | the suite's 103 booking searched five ([2906761230][b-230]); the lookup segment's capacity check searched ten ([SE][l-sp-se]) | sends the caller's `max_items`, else ten since 2026-10-09 | [lookups.md#service-points](../../guides/lookups.md#service-points) |
@@ -343,7 +347,7 @@ Every cell's evidence is in the tables above.
 | 107 | not offered | untested; returns from the EU countries the manual lists to SE | untested; returns from NO to SE |
 | 109 | not offered | booked to PL, RO, HU, and DK; rejected and later booked to PL without SENT entries | booked to NO and FI 22100 |
 | 112 | not offered | booked to PL, RO, HU, and FR; rejected to PL with an AccessPoint and with payer code 1 | booked to NO; rejected to GB and FI 22100 |
-| 118 | booked | not offered | not offered |
+| 118 | booked; rejected to 98138 Kiruna with 22036 | not offered | not offered |
 | 202 | not offered | booked to DK, HU, and RO | booked to NO and GB BT1 1AA |
 | 205 | not offered | untested, not matched to DK 1620, HU 1052, or RO 030031 | rejected to NO below the chargeable-weight minimum |
 | 209, 210, 212 | untested | not offered | not offered |
@@ -465,6 +469,8 @@ These were never exercised:
 [lb-354]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json
 [lb-867]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json
 [lb-324]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788324-103-se-se-service-point-phone.json
+[lb-449]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788449-109-se-dk-unregistered-access-point-id.json
+[r-22036]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
 [l-t-fi-22100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json
 [l-t-ax]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json

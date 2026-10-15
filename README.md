@@ -43,7 +43,7 @@ A Karrio server builds its reference models at boot, so restart the API after in
 
 A connection needs the client key of a DHL Freight Sweden API Farm account and the DHL customer numbers, which the connector sends as the consignor's party id.
 DHL books the international products 202, 205, 233, SPI, and 601 in a separate system that numbers customers separately, so they take the international customer number (utrikeskundnummer) from `international_account_number`, and every other product takes the 6-digit domestic customer number from `account_number`.
-Booking an international product without `international_account_number`, with one longer than the 15 characters the Transport Instruction API accepts, or with one containing non-digit characters, which the DHL sandbox rejected with 22014, fails with `InternationalAccountNumberError`; rating is unaffected, and [Booking rules](docs/concepts/booking-rules.md#customer-numbers) gives the sources.
+Booking an international product without `international_account_number`, with one longer than the 15 characters the Transport Instruction API accepts, or with one containing non-digit characters, which the DHL sandbox rejected with 22014 ([103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-consignor-103.json), [ABC123](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22014-202-se-dk-consignor-abc123.json)), fails with `InternationalAccountNumberError`; rating is unaffected, and [Booking rules](docs/concepts/booking-rules.md#customer-numbers) gives the sources.
 
 ```python
 import karrio.sdk as karrio
@@ -130,8 +130,8 @@ Most labels do not print the receiver's phone number, which the manual forbids f
 
 ### Home delivery with address validation
 
-Hemleverans Paket B2C (118) delivers only to postal codes with home-delivery coverage, and the booking API does not fully validate postal codes.
-The PostalCodes route's `homeDeliveryParcel` flag answers the question for 118 (§10.14.7 p235).
+Hemleverans Paket B2C (118) delivers only to postal codes with home-delivery coverage.
+The PostalCodes route's `homeDeliveryParcel` flag answers the question before booking (§10.14.7 p235), the connector's `enforce` pre-flight mirrors the route, and the booking API itself enforces the coverage: 118 to Kiruna 98138, whose route answers `homeDeliveryParcel` false, was rejected with 22036 "The postal code code 98138 is not supported for this product" ([rejection-22036-118-se-kiruna.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json)).
 
 ```python
 details, messages = karrio.Address.validate(
@@ -152,7 +152,7 @@ A code DHL refuses returns DHL's error as a message, and the `address_validation
 | 16011 | rural (Landsbygd) post code ([lookup-postal-code-se-84094-16011.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-84094-16011.json)) | warning, books | `PostalCodeNotServableError`, no booking |
 | 16012 | post code known but not supported ([lookup-postal-code-se-98060-16012.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-98060-16012.json)) | warning, books | `PostalCodeNotServableError`, no booking |
 
-DHL enables the PostalCode API per developer application, so a client key whose application lacks it cannot verify a location.
+DHL API Farm support's 2026-10-09 review of the application lists its APIs one by one as needing more tests before use, so the PostalCode API is enabled per developer application; a client key whose application lacks it cannot verify a location.
 `karrio.Address.validate` then returns no details and a `postal_code_api_unavailable` warning, which says the location was not verified rather than that the address is invalid.
 The sandbox answers an unknown client key with HTTP 401 ([lookup-postal-code-se-11151-401-unknown-client-key.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-postal-code-se-11151-401-unknown-client-key.json)); the answer to a valid key without the PostalCode API is not captured, so the connector treats 401 and 403 alike.
 Any other failed lookup, such as a timeout, a 5xx answer, a body that is not JSON, or a 4xx error outside 16009 to 16012, returns no details and an `address_validation_unavailable` warning.
@@ -177,7 +177,7 @@ Service Point B2C (103) serves Sweden and Parcel Connect B2C (109) serves the co
 
 The two lookups are called on the proxy, because karrio has no unified interface for them, and [Service-point lookups](docs/guides/lookups.md) documents their inputs and outputs and a REST-only variant.
 
-The connector does not pick the point itself: the rules that narrow which points DHL accepts are specific to DHL Freight Sweden's own API — the 109 lookup keeps only `parcel:pick-up` service points (§10.14.2.2 p232) — and DHL checks no id against its registry at booking, so a wrong choice would misroute rather than fail.
+The connector does not pick the point itself: the rules that narrow which points DHL accepts are specific to DHL Freight Sweden's own API — the 109 lookup keeps only `parcel:pick-up` service points (§10.14.2.2 p232) — and DHL checks no id against its registry at booking, as the accepted booking with the invented access point id 777777 shows ([label-2906788449](tests/dhl_freight_sweden/fixtures/sandbox/label-2906788449-109-se-dk-unregistered-access-point-id.json)), so a wrong choice would misroute rather than fail.
 Distance limits and locker fit stay the merchant's to set.
 A one-click booking that chooses the point itself may come later.
 
@@ -219,11 +219,11 @@ points, messages = service_points.parse_service_points_response(
 ```
 
 The lookup asks for the ten closest points, as the manual says to (§5.12 p57), unless `max_items` sets another number.
-With `service` set to `dhl_freight_sweden_parcel_connect_b2c`, the lookup keeps only points whose service types include `parcel:pick-up`, the ones the manual allows for 109 (§10.14.2.2 p232); booking does not re-check this for the id it is given.
+With `service` set to `dhl_freight_sweden_parcel_connect_b2c`, the lookup keeps only points whose service types include `parcel:pick-up`, the ones the manual allows for 109 (§10.14.2.2 p232); booking does not re-check this for the id it is given ([booking-2906761289](tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761289-109-se-hu.json)).
 
 Filter and rank the candidates in this order, so that the fallback loop works through a fixed list.
 
-1. Keep points with an `id` and all four address fields, because DHL does not check ids or names against its registry at booking, so an incomplete or invented point misroutes rather than fails.
+1. Keep points with an `id` and all four address fields, because DHL does not check ids or names against its registry at booking ([label-2906788449](tests/dhl_freight_sweden/fixtures/sandbox/label-2906788449-109-se-dk-unregistered-access-point-id.json)), so an incomplete or invented point misroutes rather than fails.
 2. Pass the parcel the point must fit as `parcel`, and keep a local margin for lockers.
 3. Apply your distance limit with `distance` and `distance_unit`.
 4. Keep only the sub types the destination accepts, for example ParcelShop only for 109 to DE.
@@ -274,7 +274,7 @@ Product matches decide what DHL offers on a lane; this catalogue maps karrio ser
 | `dhl_freight_sweden_standard_pallet_international` | SPI | Standard Pallet International | to and from SE | none |
 
 Rating and booking accept each product only on the lanes the manual's valid countries allow, so none of 109, 112, 107, 202, 205, 233, SPI, and 601 rates or books within SE, and a booking on another lane fails with `ProductLaneError`; [Products](docs/concepts/products.md#lanes) lists the countries.
-Each product section of the manual states minimum piece dimensions, for example 15 × 11 × 2 cm for 102 and 112 and 15 × 11 × 3 cm for 601, and DHL checks them at booking; [Products](docs/concepts/products.md) lists them all.
+Each product section of the manual states minimum piece dimensions, for example 15 × 11 × 2 cm for 102 and 112 and 15 × 11 × 3 cm for 601, and the committed sandbox evidence of DHL checking them at booking is one rejection, 205's chargeable-weight minimum ([rejection-22020-205-se-no.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)); [Products](docs/concepts/products.md) lists them all.
 Home Delivery B2C (401) takes its door access code through `dhl_freight_sweden_doorstep_access_code`.
 
 ### Payer codes and Incoterms
@@ -467,6 +467,7 @@ DHL's own validation errors seen in the sandbox are these.
 | 22006 | no linehaul for the AccessPoint postal code | [103](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json) |
 | 22015 | an AccessPoint party on a product without one | [112 PL](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json) |
 | 22020 | an invalid payer code, or a chargeable weight under the product minimum | [112 PL](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-112-se-pl-payer-code-1.json), [205 NO](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json) |
+| 22036 | a postal code without the product's home-delivery coverage | [118 Kiruna 98138](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json) |
 | 24003 | a customs service not available for the lane | [112 Åland](tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json) |
 
 ## Operational notes

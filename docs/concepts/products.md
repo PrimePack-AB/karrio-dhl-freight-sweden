@@ -8,7 +8,7 @@ Manual references are to [product manual v5.26](../development/index.md#product-
 ## Minimum piece dimensions
 
 Parcel dimensions are sent in centimetres, and each product section of the manual states the minimum piece dimensions in its "Minimum and maximum weight and dimensions etc" table.
-DHL validates these minimums server-side at booking; the connector does not check them and forwards the dimensions as given.
+The connector does not check these minimums and forwards the dimensions as given; the committed evidence that DHL validates them server-side is one rejection, the 205 chargeable-weight minimum below.
 
 | Product | Minimum L × W × H | Manual |
 |---------|-------------------|--------|

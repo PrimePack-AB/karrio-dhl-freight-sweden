@@ -535,10 +535,15 @@ class BookingSystem(lib.StrEnum):
 # connector's products under 7330924000002 are domestic, and 202, 205, 233,
 # SPI, and 601 under 7381000065002 international. p10 also lists 501
 # (domestic) and 232 and PPI (international), which the connector does not
-# implement. 104 goes to DPST, and its "DHL account number format" row of product manual
-# v5.26 (§5.13 p60) asks for 6 digits like the domestic products' rows; the
-# international products' rows ask for up to 35 alphanumeric characters
-# (§5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83). 107 has no such row.
+# implement. The manual's per-product "Information to be sent via EDI or
+# API" tables corroborate the p10 mapping, printing Standard UNB address
+# 7330924000002 for the parcel products (first occurrence §5.2 p16; 109 at
+# §5.14 p64), 7381000065002 for 202, 205, 233, SPI, and 601, and DPST for
+# 104 (§5.13's table, p61). 104 goes to DPST, and its "DHL account number
+# format" row of product manual v5.26 (§5.13 p60) asks for 6 digits like the
+# domestic products' rows; the international products' rows ask for up to 35
+# alphanumeric characters (§5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53,
+# §5.19 p83). 107 has no such row.
 PRODUCT_BOOKING_SYSTEMS: typing.Dict[str, BookingSystem] = {
     **{
         product.value: BookingSystem.domestic
