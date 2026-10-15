@@ -33,6 +33,7 @@ BOOKING_SEGMENTS = frozenset(
         "booking-pudo",
         "booking-export",
         "booking-declarations",
+        "booking-probes",
         "rejections",
     }
 )

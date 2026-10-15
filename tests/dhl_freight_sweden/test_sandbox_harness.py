@@ -11,6 +11,7 @@ from sandbox_tests.dhl_freight_sweden import (
     rejection,
     test_booking_declarations as declarations,
     test_booking_export as export,
+    test_booking_probes as probes,
 )
 
 from .fixture import gateway, serialize_request, shipment_request
@@ -94,6 +95,10 @@ class TestSandboxHarnessConfig(unittest.TestCase):
 
     def test_skip_reasons(self):
         booking = {**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS": "booking-approved"}
+        probes_segment = {
+            **LIVE,
+            "DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS": "booking-probes",
+        }
         cases = (
             ({**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX": "true"}, "lookups", "DHL_FREIGHT_SWEDEN_SANDBOX is not 1"),
             ({**LIVE, "KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY": ""}, "lookups", "KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY is not set"),
@@ -101,6 +106,9 @@ class TestSandboxHarnessConfig(unittest.TestCase):
             (LIVE, "booking-approved", "segment booking-approved is not in DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"),
             (booking, "booking-approved", None),
             ({**booking, "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER": ""}, "booking-approved", "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER is not set"),
+            (LIVE, "booking-probes", "segment booking-probes is not in DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"),
+            (booking, "booking-probes", "segment booking-probes is not in DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"),
+            (probes_segment, "booking-probes", None),
         )
         for environ, segment, reason in cases:
             with self.subTest(segment=segment, reason=reason):
@@ -319,6 +327,47 @@ class TestSandboxRejectionPayloads(unittest.TestCase):
             ],
         )
         self.assertEqual({**mutated, "parties": original["parties"]}, original)
+
+
+class TestSandboxProbePayloads(unittest.TestCase):
+    def setUp(self):
+        self.maxDiff = None
+
+    def test_access_point_phone_reaches_only_the_access_point_party(self):
+        request = gateway.mapper.create_shipment_request(
+            shipment_request(
+                service="103",
+                shipper=booking.SHIPPER,
+                recipient=booking.RECIPIENTS["SE"],
+                parcels=[booking.PARCEL],
+                options=booking.service_point_options(SE_SERVICE_POINT),
+            )
+        )
+        original = _serialize(request)
+
+        mutated = _serialize(
+            harness.mutated_request(
+                request, probes.with_access_point_phone(probes.ACCESS_POINT_PHONE)
+            )
+        )
+
+        access_point = original["parties"][-1]
+        self.assertEqual(access_point["type"], "AccessPoint")
+        self.assertNotIn("phone", access_point)
+        self.assertEqual(
+            [party for party in mutated["parties"] if party["type"] != "AccessPoint"],
+            original["parties"][:-1],
+        )
+        self.assertEqual(
+            mutated,
+            {
+                **original,
+                "parties": [
+                    *original["parties"][:-1],
+                    {**access_point, "phone": probes.ACCESS_POINT_PHONE},
+                ],
+            },
+        )
 
 
 class TestSandboxDeclarationPayloads(unittest.TestCase):

@@ -15,10 +15,12 @@ It is opt-in and sits outside `tests/`, so the default offline run never discove
 | `booking-pudo` | 103, 109 | service point as AccessPoint party |
 | `booking-export` | 109, 112, 202, 205, 233, 601 | export lanes, special territories, customs handling |
 | `booking-declarations` | 601, 202, 233 | SENT, EKAER, and UIT entries |
+| `booking-probes` | one per probe | one-off mutated bookings answering a single question |
 | `rejections` | nothing accepted | expected DHL error codes |
 
 Before each booking a free product-match lookup, and for 109 a service-point lookup, checks that DHL offers the product on the lane, and the case skips otherwise; the few cases that book past this check exist to record DHL's answer.
 The `rejections` cases build a valid request through the connector and `harness.mutated_request` changes the serialized TransportInstruction just before the call, so connector validation stays intact, and a response carrying a shipment id fails the test and reports the id as a finding.
+The `booking-probes` cases mutate a valid request the same way but assert acceptance, and the segment is deliberately absent from every default run: a probe spends its booking only when `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` names `booking-probes`.
 Results, with every booking, rejection, and deviation from the product manual, are in [docs/notes/sandbox/sandbox-findings.md](../../notes/sandbox/sandbox-findings.md).
 
 ## Captures
