@@ -24,6 +24,14 @@ class ProductMatchPartiesError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class ProductNotOfferedError(errors.ShippingSDKDetailedError):
+    """Raised before booking when product matches do not offer the product for the lane."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
+MATCH_PIECE_FIELDS = ("weight", "length", "width", "height", "volume")
+
 ACCEPTED_PAYLOAD_KEYS = frozenset(
     {
         "shipper",
@@ -227,4 +235,170 @@ def _normalize_rule(rule: dict) -> dict:
             "shipment": rule.get("shipment"),
             "piece": rule.get("piece"),
         }
+    )
+
+
+def booking_match_criteria(request: dict) -> typing.Optional[dict]:
+    """The ``MatchCriteria`` for a serialized transport instruction.
+
+    The Consignor and Consignee addresses and the piece measurements are
+    taken from the transport instruction itself, so territory country codes
+    are already their parent country and pieces are in KG/CM/m³. Returns
+    None for ``PRODUCT_MATCH_UNGUARDED`` products and when either party
+    lacks a country or postal code.
+    """
+    product = str(request.get("productCode") or "")
+    parties = {
+        party.get("type"): (party.get("address") or {})
+        for party in request.get("parties") or []
+        if party.get("type") in ("Consignor", "Consignee")
+    }
+    addresses = [parties.get("Consignor") or {}, parties.get("Consignee") or {}]
+
+    if (
+        not product
+        or product in provider_units.PRODUCT_MATCH_UNGUARDED
+        or not all(a.get("countryCode") and a.get("postalCode") for a in addresses)
+    ):
+        return None
+
+    return dict(
+        parties=[
+            dict(
+                type=party_type,
+                address=dict(
+                    countryCode=address["countryCode"],
+                    postalCode=address["postalCode"],
+                ),
+            )
+            for party_type, address in zip(("Consignor", "Consignee"), addresses)
+        ],
+        pieces=[
+            {
+                field: piece[field]
+                for field in MATCH_PIECE_FIELDS
+                if piece.get(field) is not None
+            }
+            for piece in request.get("pieces") or []
+        ],
+    )
+
+
+def check_booking_product(
+    criteria: dict,
+    product: str,
+    products: typing.List[dict],
+    messages: typing.List[models.Message],
+    settings: provider_utils.Settings,
+    mode: str,
+    separate_agreement: typing.Optional[dict] = None,
+) -> typing.List[models.Message]:
+    """Apply the booking guard to a product matches answer.
+
+    A lookup that produced messages leaves availability unverified and
+    yields a warning in every mode. A product missing from the matched
+    codes raises ``ProductNotOfferedError`` in ``enforce`` and yields a
+    warning in ``warn``.
+    """
+    if any(messages):
+        return [_unverified_warning(messages, settings)]
+
+    offered = [str(item.get("code")) for item in products if item.get("code")]
+    if product in offered:
+        return []
+
+    message = _not_offered_message(criteria, product, offered, separate_agreement)
+    if mode == provider_units.ServabilityMode.enforce:
+        raise ProductNotOfferedError(
+            message,
+            details={"service": dict(code="product_not_offered", message=message)},
+        )
+
+    return [
+        models.Message(
+            carrier_name=settings.carrier_name,
+            carrier_id=settings.carrier_id,
+            code="product_not_offered",
+            level="warning",
+            message=message,
+            details=dict(product=product, offered=offered),
+        )
+    ]
+
+
+def lookup_failure(
+    exception: Exception, settings: provider_utils.Settings
+) -> models.Message:
+    """A Message for a product matches lookup that raised instead of answering."""
+    return models.Message(
+        carrier_id=settings.carrier_id,
+        carrier_name=settings.carrier_name,
+        code="SHIPPING_SDK_INTERNAL_ERROR",
+        message=str(exception),
+    )
+
+
+def _not_offered_message(
+    criteria: dict,
+    product: str,
+    offered: typing.List[str],
+    separate_agreement: typing.Optional[dict],
+) -> str:
+    names = {
+        service.value: service.name
+        for service in provider_units.ShippingService.__members__.values()
+    }
+    origin, destination = (
+        f"{party['address']['countryCode']} {party['address']['postalCode']}"
+        for party in criteria["parties"]
+    )
+    supported = [f"{code} ({names[code]})" for code in offered if code in names]
+    unsupported = [code for code in offered if code not in names]
+    listing = ", ".join(
+        [
+            *supported,
+            *lib.identity(
+                [
+                    f"and {', '.join(unsupported)}, which the connector does not support"
+                ]
+                if unsupported
+                else []
+            ),
+        ]
+    )
+    agreement = lib.identity(
+        " "
+        + provider_units.separate_agreement_message(
+            separate_agreement["product"], separate_agreement["country"]
+        )
+        if separate_agreement
+        else ""
+    )
+
+    return (
+        f"Product {product} ({names.get(product, product)}) is not offered from "
+        f"{origin} to {destination} by DHL product matches; "
+        + lib.identity(
+            f"offered for this lane: {listing}."
+            if offered
+            else "no product is offered for this lane."
+        )
+        + agreement
+    )
+
+
+def _unverified_warning(
+    messages: typing.List[models.Message], settings: provider_utils.Settings
+) -> models.Message:
+    return models.Message(
+        carrier_name=settings.carrier_name,
+        carrier_id=settings.carrier_id,
+        code="product_availability_unverified",
+        level="warning",
+        message=(
+            "Product availability was not verified (product matches lookup "
+            f"failed: {'; '.join(str(m.message) for m in messages)}); the booking "
+            "proceeded without the check"
+        ),
+        details=dict(errors=[dict(code=m.code, message=m.message) for m in messages]),
     )

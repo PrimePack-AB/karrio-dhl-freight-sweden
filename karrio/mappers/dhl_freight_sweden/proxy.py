@@ -8,6 +8,7 @@ import karrio.api.proxy as proxy
 import karrio.core.models as models
 import karrio.mappers.dhl_freight_sweden.settings as provider_settings
 import karrio.providers.dhl_freight_sweden.address as provider_address
+import karrio.providers.dhl_freight_sweden.product_matches as provider_product_matches
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 import karrio.schemas.dhl_freight_sweden.print_request_by_id as dhl_freight_sweden_print
 from karrio.universal.mappers.rating_proxy import RatingMixinProxy
@@ -68,15 +69,19 @@ class Proxy(proxy.Proxy):
         The shipment id only exists once the booking response returns, so the
         by-id print request is completed here with the runtime id and posted
         to ``/print/printdocumentsbyid`` — the booked shipment is not re-sent.
-        A config-gated address-validation pre-flight runs first; its verdict
-        travels to the parser as an optional trailing element.
+        Two config-gated pre-flights run first, product matches and then
+        address validation; their warnings travel to the parser as optional
+        trailing elements.
         """
         ctx = request.ctx or {}
         headers = {
             "Content-Type": "application/json",
             "client-key": self.settings.client_key,
         }
-        warnings = self._destination_route_messages(request)
+        warnings = [
+            *self._product_match_messages(request),
+            *self._destination_route_messages(request),
+        ]
 
         booking = lib.request(
             url=f"{self.settings.transport_instruction_url}/transportinstruction/sendtransportinstruction",
@@ -131,14 +136,9 @@ class Proxy(proxy.Proxy):
         call; the mode branch and fail-open semantics live in the provider's
         ``check_booking_route``.
         """
-        # Config values are stored free-form: resolve case-insensitively and
-        # treat anything that names no mode as off, so an unrecognized value
-        # never silently enables the check.
-        mode = str(
-            self.settings.connection_config.address_validation.state or ""
-        ).lower()
-        if mode not in ("warn", "enforce"):
-            mode = "off"
+        mode = _preflight_mode(
+            self.settings.connection_config.address_validation.state
+        )
         destination = _booking_destination(provider_utils.to_dict(request.serialize()))
 
         if mode == "off" or destination is None:
@@ -154,6 +154,46 @@ class Proxy(proxy.Proxy):
         )
         return provider_address.check_booking_route(
             self.validate_address(lookup), self.settings, mode
+        )
+
+    def _product_match_messages(
+        self, request: lib.Serializable
+    ) -> typing.List[models.Message]:
+        """Run the config-gated product matches booking guard.
+
+        Off mode, ``PRODUCT_MATCH_UNGUARDED`` products, and bookings without
+        both party postal codes skip the lookup with no HTTP call. A lookup
+        that raises (a non-JSON HTTP error body, a network error) is turned
+        into a message, so it leaves availability unverified rather than
+        failing the booking.
+        """
+        mode = _preflight_mode(self.settings.connection_config.product_matches.state)
+        data = provider_utils.to_dict(request.serialize())
+        criteria = provider_product_matches.booking_match_criteria(data)
+
+        if mode == "off" or criteria is None:
+            return []
+
+        try:
+            products, messages = provider_product_matches.parse_product_matches_response(
+                self.find_product_matches(
+                    lib.Serializable(criteria, provider_utils.to_dict)
+                ),
+                self.settings,
+            )
+        except Exception as exception:
+            products, messages = [], [
+                provider_product_matches.lookup_failure(exception, self.settings)
+            ]
+
+        return provider_product_matches.check_booking_product(
+            criteria,
+            str(data.get("productCode")),
+            products,
+            messages,
+            self.settings,
+            mode,
+            (request.ctx or {}).get("separate_agreement"),
         )
 
     def find_product_matches(
@@ -203,6 +243,17 @@ class Proxy(proxy.Proxy):
         )
 
         return lib.Deserializable(response, provider_utils.to_json_body, request.ctx)
+
+
+def _preflight_mode(state: typing.Any) -> str:
+    """Resolve a pre-flight mode setting to off, warn, or enforce.
+
+    Config values are stored free-form: resolve case-insensitively and treat
+    anything that names no mode as off, so an unrecognized value never
+    silently enables a check.
+    """
+    mode = str(state or "").lower()
+    return mode if mode in ("warn", "enforce") else "off"
 
 
 def _booking_destination(data: dict) -> typing.Optional[dict]:

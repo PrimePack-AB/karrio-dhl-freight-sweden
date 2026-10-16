@@ -22,6 +22,11 @@ import karrio.sdk as karrio
 
 
 def _gateway(config: dict):
+    """An offline gateway; the product matches booking guard is off unless ``config`` sets it.
+
+    The guard's extra lookup would shift the mocked ``lib.request`` answers of
+    every booking test, so only test_product_match_guard.py turns it on.
+    """
     return karrio.gateway["dhl_freight_sweden"].create(
         dict(
             id="123456789",
@@ -30,7 +35,7 @@ def _gateway(config: dict):
             client_key="TEST_CLIENT_KEY",
             account_number="1234567",
             international_account_number="123456",
-            config=config,
+            config={"product_matches": "off", **config},
         )
     )
 
