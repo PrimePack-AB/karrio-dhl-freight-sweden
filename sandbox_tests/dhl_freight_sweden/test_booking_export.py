@@ -3,7 +3,8 @@
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
 Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
 ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
-GB only according to a separate agreement. Åland (FI 22100) is booked with
+GB only according to a separate agreement, as it lists GB for 109; 109 is
+booked to a London ParcelShop past the product matches check. Åland (FI 22100) is booked with
 109, customs data, and no customs handling service; the connector's refusals
 of 112 with a customs handling service and of 109 without customs data are
 asserted without booking. Northern Ireland (GB BT1 1AA), inside the EU VAT
@@ -70,6 +71,28 @@ ALAND_PARCEL_SHOP = {
     "dhl_freight_sweden_service_point_city": "Mariehamn",
     "dhl_freight_sweden_service_point_postal_code": "22100",
     "dhl_freight_sweden_service_point_country_code": "FI",
+}
+
+
+# A London recipient near the ParcelShop below.
+LONDON = {
+    "person_name": "John Smith",
+    "address_line1": "10 Rotherhithe New Road",
+    "city": "London",
+    "postal_code": "SE16 2BE",
+    "country_code": "GB",
+    "phone_number": "+44 7700 900123",
+    "email": "john.smith@example.co.uk",
+    "residential": True,
+}
+LONDON_PARCEL_SHOP = {
+    "dhl_freight_sweden_service_point": "60753",
+    "dhl_freight_sweden_service_point_type": "ParcelShop",
+    "dhl_freight_sweden_service_point_name": "DHL Servicepoint",
+    "dhl_freight_sweden_service_point_street": "173-181 Rotherhithe New Road",
+    "dhl_freight_sweden_service_point_city": "London",
+    "dhl_freight_sweden_service_point_postal_code": "SE16 2BE",
+    "dhl_freight_sweden_service_point_country_code": "GB",
 }
 
 
@@ -169,6 +192,7 @@ class TestSandboxBookingExport(unittest.TestCase):
         standard_customs: bool = False,
         parcel: dict = booking.PARCEL,
         extra_customs: typing.Optional[dict] = None,
+        service_point: typing.Optional[dict] = None,
     ):
         """Book ``product`` from SE to ``country``.
 
@@ -178,7 +202,8 @@ class TestSandboxBookingExport(unittest.TestCase):
         country's default recipient, and ``with_customs`` False books
         without customs data, and ``customs_service`` False without a
         customs handling service. ``extra_customs`` is merged into the
-        customs payload when there is one.
+        customs payload when there is one. ``service_point`` books 109 to
+        the given service point options without the service point lookup.
         """
         booking.require_booking(self, self.session, product, country)
         lane = f"{product}-{country.lower()}"
@@ -198,8 +223,8 @@ class TestSandboxBookingExport(unittest.TestCase):
         if product not in codes and require_product_match:
             self.skipTest(f"product matches do not offer {product} from SE to {country}")
 
-        options: dict = {}
-        if product == "109":
+        options: dict = dict(service_point or {})
+        if product == "109" and service_point is None:
             point, messages = booking.nearest_service_point(
                 self.session, self.gateway, f"service-points-{lane}", product, recipient, sub_types
             )
@@ -260,6 +285,18 @@ class TestSandboxBookingExport(unittest.TestCase):
         # Product matches did not offer 112 to GB (fixtures/sandbox/
         # lookup-product-matches-se-gb.json); the booking records DHL's answer.
         self.export("112", "GB", require_product_match=False)
+
+    def test_book_109_gb_parcel_shop(self):
+        # Product matches did not offer 109 to GB (fixtures/sandbox/
+        # lookup-product-matches-se-gb.json); like the 112 GB case, the
+        # booking records DHL's answer.
+        self.export(
+            "109",
+            "GB",
+            require_product_match=False,
+            recipient=LONDON,
+            service_point=LONDON_PARCEL_SHOP,
+        )
 
     def test_book_112_no_customs_standard(self):
         self.export("112", "NO", standard_customs=True)
