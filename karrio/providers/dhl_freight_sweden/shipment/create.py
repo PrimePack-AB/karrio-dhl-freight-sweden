@@ -906,7 +906,10 @@ def _qr_code(
     return True
 
 
-def _check_territory_postal_codes(addresses: typing.Dict[str, models.Address]) -> None:
+def _check_territory_postal_codes(
+    addresses: typing.Dict[str, models.Address],
+    detail_keys: typing.Optional[typing.Dict[str, str]] = None,
+) -> None:
     mismatched = next(
         (
             (party, country, territory, address.postal_code)
@@ -932,7 +935,7 @@ def _check_territory_postal_codes(addresses: typing.Dict[str, models.Address]) -
             else f"got {party} postal code {postal_code!r}"
         ),
         details={
-            f"{party}.postal_code": dict(
+            (detail_keys or {}).get(party, f"{party}.postal_code"): dict(
                 code="required" if missing else "invalid",
                 message=f"{territory.describe()} required",
             )
@@ -1606,14 +1609,15 @@ def _service_point_party(
         access_point_id = service_point
 
     # Keys double as the ``dhl_freight_sweden_service_point_{key}`` option names.
+    point_country = (
+        options.dhl_freight_sweden_service_point_country_code.state or ""
+    ).upper()
     details = dict(
         name=options.dhl_freight_sweden_service_point_name.state,
         street=options.dhl_freight_sweden_service_point_street.state,
         city=options.dhl_freight_sweden_service_point_city.state,
         postal_code=options.dhl_freight_sweden_service_point_postal_code.state,
-        country_code=provider_units.parent_country(
-            (options.dhl_freight_sweden_service_point_country_code.state or "").upper()
-        ),
+        country_code=provider_units.parent_country(point_country),
     )
     missing = [key for key, value in details.items() if not value]
 
@@ -1634,6 +1638,9 @@ def _service_point_party(
             },
         )
 
+    _check_service_point_postal_code(
+        product_code, point_country, details["country_code"], str(details["postal_code"])
+    )
     _check_service_point_country(
         product_code, details["country_code"], shipper_country_code, country_code
     )
@@ -1651,6 +1658,52 @@ def _service_point_party(
             postalCode=str(details["postal_code"]) if details["postal_code"] else None,  # pyright: ignore[reportArgumentType]
             countryCode=details["country_code"],
         ),
+    )
+
+
+def _check_service_point_postal_code(
+    product_code: str,
+    point_country: str,
+    sent_country: typing.Optional[str],
+    postal_code: str,
+) -> None:
+    """Apply the recipient's territory and excluded-region rules to the DP address."""
+    detail_key = "dhl_freight_sweden_service_point_postal_code"
+    _check_territory_postal_codes(
+        {"service point": models.Address(country_code=point_country, postal_code=postal_code)},
+        {"service point": detail_key},
+    )
+    excluded = provider_units.excluded_party(
+        product_code,
+        {"recipient": dict(country_code=sent_country, postal_code=postal_code)},
+    )
+
+    if excluded is None:
+        return
+
+    excluded_codes = excluded.exclusion.excluded_codes()
+    raise ExcludedDestinationError(
+        lib.identity(
+            f"Product {product_code} does not ship to {excluded_codes}; "
+            f"got service point postal code {postal_code}"
+            if excluded.well_formed
+            else f"Product {product_code} to {excluded.exclusion.country} requires a "
+            f"service point {excluded.exclusion.required_code()} to rule out "
+            f"{excluded_codes}; got {postal_code!r}"
+        ),
+        details={
+            detail_key: lib.identity(
+                dict(
+                    code="invalid",
+                    message=f"excluded postal codes {excluded.exclusion.describe()}",
+                )
+                if excluded.well_formed
+                else dict(
+                    code="required",
+                    message=f"{excluded.exclusion.required_code()} required",
+                )
+            )
+        },
     )
 
 
