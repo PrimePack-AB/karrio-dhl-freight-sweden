@@ -1081,21 +1081,20 @@ SEPARATE_AGREEMENT_LANE = "separate_agreement_lane"
 GB_ADDRESS_DELIVERY_SERVICES: typing.Tuple[ShippingService, ...] = (
     ShippingService.dhl_freight_sweden_road_freight_priority,
     ShippingService.dhl_freight_sweden_road_freight_standard,
-    ShippingService.dhl_freight_sweden_home_delivery_international_b2c,
 )
 
 
 def separate_agreement_message(product_code: str, country_code: str) -> str:
-    *others, last = [
+    alternatives = ", ".join(
         f"{service.name} ({service.value})" for service in GB_ADDRESS_DELIVERY_SERVICES
-    ]
-    alternatives = f"{', '.join(others)}, or {last}"
+    )
     return (
         f"Product {product_code} reaches {country_code} only by separate agreement with DHL "
         f"(product manual v5.26 {PRODUCT_LANE_CITATIONS[product_code]}), which the booking "
         "account must hold. The sandbox account is offered neither 109 nor 112 to GB, so this "
         "lane cannot be exercised in the sandbox; test 109 service point delivery to another "
-        f"listed country, and GB address delivery with {alternatives}."
+        f"listed country, and GB address delivery with {alternatives}, or another product "
+        "that product matches offers for the lane."
     )
 
 
