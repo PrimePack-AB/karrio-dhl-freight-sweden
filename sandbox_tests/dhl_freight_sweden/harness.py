@@ -242,6 +242,19 @@ def redact(value: typing.Any, secrets: typing.Iterable[typing.Optional[str]]) ->
     return _redact(value)
 
 
+def gateway_config(connection_config: typing.Optional[dict]) -> dict:
+    """The connection config of a sandbox gateway.
+
+    The connector's product matches booking guard is off: the booking
+    segments run their own product matches gate (``require_product_match``)
+    and record DHL's answer to bookings sent past it, and the guard's extra
+    lookup would add an exchange to every booking capture.
+    """
+    if "server_url" in (connection_config or {}):
+        raise SandboxConfigError("The sandbox suite does not accept a server_url")
+    return {"product_matches": "off", **(connection_config or {})}
+
+
 class Session:
     """Process-wide sandbox state: config, budget, captures, transport guard."""
 
@@ -262,8 +275,6 @@ class Session:
         ``client_key`` replaces the configured key, for a case that probes how
         the sandbox answers a key it does not accept.
         """
-        if "server_url" in (connection_config or {}):
-            raise SandboxConfigError("The sandbox suite does not accept a server_url")
         gateway = karrio.gateway["dhl_freight_sweden"].create(
             dict(
                 id="sandbox",
@@ -272,7 +283,7 @@ class Session:
                 client_key=client_key or self.config.client_key,
                 account_number=self.config.account_number,
                 international_account_number=self.config.international_account_number,
-                config=connection_config or {},
+                config=gateway_config(connection_config),
             )
         )
         if not gateway.settings.test_mode:
