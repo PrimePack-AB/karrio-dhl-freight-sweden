@@ -383,6 +383,7 @@ DHL has not said whether this still applies to API bookings that carry full cust
 ### Norway, Switzerland, and Great Britain
 
 Bookings to NO, CH, and GB carry customs data like any lane outside the EU VAT area, but the products differ: on account 999999 product matches to CH offered HDI, 202, 601, and 233 and none of 109, 112, and 107 ([lookup-product-matches-se-ch-8001.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json)), and the manual lists GB for 109 and 112 only under a separate agreement with DHL (§5.3 p18, §5.14 p63).
+The sandbox rejected both to GB with 22005 and 22026 ([rejection-22005-112-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json), [rejection-22005-109-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-109-se-gb.json)), and the connector adds a `separate_agreement_lane` message explaining the agreement to such a rejection.
 [Products](docs/concepts/products.md) has the bookings, rejections, and lookups for each destination.
 
 ## Special territories and excluded postal codes
