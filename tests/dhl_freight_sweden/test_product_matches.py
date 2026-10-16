@@ -14,6 +14,7 @@ from .fixture import (
     as_list,
     detail_keys,
     gateway,
+    http_error,
     proxy_of,
     serialize_request,
     settings_of,
@@ -22,6 +23,7 @@ from .fixture import (
 import karrio.lib as lib
 import karrio.core.errors as errors
 import karrio.providers.dhl_freight_sweden.product_matches as product_matches
+import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
 
 class TestDHLFreightSwedenProductMatches(unittest.TestCase):
@@ -121,6 +123,49 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
                 proxy_of(gateway).find_product_matches(request), settings_of(gateway)
             )
             self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedErrorResponse)
+
+    def test_parse_product_matches_unknown_client_key(self):
+        # The API Farm's 401 body for an unknown client key
+        # (fixtures/sandbox/lookup-postal-code-se-11151-401-unknown-client-key.json).
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.side_effect = http_error(
+                401, '{"error": "No valid application matching client key"}'
+            )
+            request = product_matches.product_matches_request(
+                ProductMatchParams, settings_of(gateway)
+            )
+            products, messages = product_matches.parse_product_matches_response(
+                proxy_of(gateway).find_product_matches(request), settings_of(gateway)
+            )
+
+        self.assertEqual(products, [])
+        self.assertEqual(
+            [message.message for message in messages],
+            ["No valid application matching client key"],
+        )
+
+    def test_parse_product_matches_unrecognized_error_body(self):
+        for body in ('{"message": "Gateway timeout"}', "{}", '"maintenance"', "null"):
+            with self.subTest(body=body):
+                products, messages = product_matches.parse_product_matches_response(
+                    lib.Deserializable(body, provider_utils.to_json_body), settings_of(gateway)
+                )
+
+                self.assertEqual(products, [])
+                self.assertEqual(
+                    [message.code for message in messages],
+                    ["SHIPPING_SDK_INTERNAL_ERROR"],
+                )
+                self.assertIn(
+                    "expected a JSON array", messages[0].message
+                )
+
+    def test_parse_product_matches_empty_list_has_no_messages(self):
+        products, messages = product_matches.parse_product_matches_response(
+            lib.Deserializable("[]", provider_utils.to_json_body), settings_of(gateway)
+        )
+
+        self.assertEqual((products, messages), ([], []))
 
 
 ProductMatchParams = {
