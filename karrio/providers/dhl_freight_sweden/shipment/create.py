@@ -192,6 +192,9 @@ def parse_shipment_response(
             else []
         ),
     ]
+    messages += _separate_agreement_messages(
+        (_response.ctx or {}).get("separate_agreement"), messages, settings
+    )
 
     instruction = (booking or {}).get("transportInstruction") or {}
     tracking_number = instruction.get("id")
@@ -202,6 +205,55 @@ def parse_shipment_response(
     )
 
     return details, messages
+
+
+def separate_agreement_lane(request: dict) -> typing.Optional[dict]:
+    """The product and country of a booking that needs a separate agreement with DHL.
+
+    ``request`` is the serialized TransportInstruction, whose territory
+    country codes are already sent as their parent country; the Consignee
+    and AccessPoint parties are checked.
+    """
+    product = str(request.get("productCode") or "")
+    countries = provider_units.SEPARATE_AGREEMENT_COUNTRIES.get(product, frozenset())
+    country = next(
+        (
+            code
+            for party in request.get("parties") or []
+            if party.get("type") in ("Consignee", "AccessPoint")
+            for code in [str((party.get("address") or {}).get("countryCode") or "").upper()]
+            if code in countries
+        ),
+        None,
+    )
+    return dict(product=product, country=country) if country else None
+
+
+def _separate_agreement_messages(
+    lane: typing.Optional[dict],
+    messages: typing.List[models.Message],
+    settings: provider_utils.Settings,
+) -> typing.List[models.Message]:
+    rejected = any(
+        message.code in provider_units.SEPARATE_AGREEMENT_REJECTION_CODES
+        for message in messages
+    )
+    return lib.identity(
+        [
+            models.Message(
+                carrier_name=settings.carrier_name,
+                carrier_id=settings.carrier_id,
+                code=provider_units.SEPARATE_AGREEMENT_LANE,
+                level="info",
+                message=provider_units.separate_agreement_message(
+                    lane["product"], lane["country"]
+                ),
+                details=lane,
+            )
+        ]
+        if lane and rejected
+        else []
+    )
 
 
 def _customs_omitted_message(
@@ -547,6 +599,7 @@ def shipment_request(
         provider_utils.to_dict,
         dict(
             print_options=provider_utils.to_dict(print_options),
+            separate_agreement=separate_agreement_lane(provider_utils.to_dict(request)),
             customs_omitted=lib.identity(
                 dict(
                     shipper_country_code=shipper.country_code,
