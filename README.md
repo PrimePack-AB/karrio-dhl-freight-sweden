@@ -450,6 +450,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `PayerCodeError` | no valid payer code, or 023 on 109 without the joint declaration | the option, `customs.incoterm`, or `dhl_freight_sweden_customs_joint_declaration` |
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
+| `ServicePointCountryError` | a 103 service point outside SE, or a 109 service point outside the recipient's country on a lane from or to a country outside the EU | `dhl_freight_sweden_service_point_country_code` |
 | `ServicePointIdError` | a 103 id that is neither SE-nnnn00 nor a four-digit terminal id, or a 109 id shaped like the lookup's `servicePointId` instead of its `id` | the service-point option |
 | `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
 | `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code` or `recipient.postal_code` |
