@@ -113,7 +113,8 @@ def parse_product_matches_response(
     A successful body is a list of ``ProductMatchResult``; any dict body is
     routed through the shared error parser so the productapi's defensive
     ``BadRequestError`` shape and in-band ``errorMessage`` strings both
-    surface as Messages.
+    surface as Messages. Any body that is not a list yields at least one
+    Message, so a failed lookup never reads as an empty match list.
     """
     response = _response.deserialize()
     matches = response if isinstance(response, list) else []
@@ -123,12 +124,30 @@ def parse_product_matches_response(
         for match in matches
         if isinstance(match, dict)
     ]
-    messages = error.parse_error_response(
-        response if isinstance(response, dict) else {},
-        settings,
+    messages = lib.identity(
+        []
+        if isinstance(response, list)
+        else error.parse_error_response(
+            response if isinstance(response, dict) else {}, settings
+        )
+        or [_unexpected_response(response, settings)]
     )
 
     return products, messages
+
+
+def _unexpected_response(
+    response: typing.Any, settings: provider_utils.Settings
+) -> models.Message:
+    return models.Message(
+        carrier_id=settings.carrier_id,
+        carrier_name=settings.carrier_name,
+        code="SHIPPING_SDK_INTERNAL_ERROR",
+        message=(
+            "Unexpected product matches response: expected a JSON array, "
+            f"got {lib.to_json(response)[:200]}"
+        ),
+    )
 
 
 def _address_match_criteria(party: dict) -> dict:
