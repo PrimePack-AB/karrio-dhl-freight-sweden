@@ -17,9 +17,11 @@ import unittest
 
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import (
+    ExcludedDestinationError,
     ServicePointCountryError,
     ServicePointEligibilityError,
     ServicePointIdError,
+    TerritoryPostalCodeError,
 )
 
 from .fixture import detail_keys, gateway, serialize_request
@@ -473,7 +475,7 @@ class TestDHLFreightAccessPointCountry(unittest.TestCase):
 
     def test_parcel_connect_sends_a_territory_service_point_as_its_parent(self):
         cases = [
-            (_recipient_gb, "JE", "GB"),
+            (_recipient_gb, "IM", "GB"),
             ({**_recipient_gb, "country_code": "IM", "postal_code": "IM1 1AA"}, "GB", "GB"),
             (_recipient_fi, "AX", "FI"),
         ]
@@ -505,6 +507,95 @@ class TestDHLFreightAccessPointCountry(unittest.TestCase):
         self.assertEqual(access_point["address"]["countryCode"], "SE")
 
 
+class TestDHLFreightAccessPointPostalCode(unittest.TestCase):
+    """The service point postal code meets the recipient's excluded regions.
+
+    The service point is the delivery address (DP), so the manual's excluded
+    regions of 109, Jersey, Guernsey, Northern Ireland, Greenland, and the
+    Faroe Islands among them (§5.14 p63), apply to it as to the recipient,
+    and a territory code needs a postal code of the territory.
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+    def _book(self, recipient: dict, point_country: str, postal_code: str):
+        return gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(
+                **{
+                    **_payload(
+                        "dhl_freight_sweden_parcel_connect_b2c",
+                        recipient,
+                        {
+                            **_service_point("123456", "ParcelShop", point_country),
+                            "dhl_freight_sweden_service_point_postal_code": postal_code,
+                        },
+                    ),
+                    "customs": Customs,
+                }
+            )
+        )
+
+    def test_refuses_an_excluded_service_point(self):
+        cases = [
+            (_recipient_gb, "JE", "JE2 3AB", "GB postal codes JE*, GY*, BT* (Jersey, Guernsey, and Northern Ireland)"),
+            (_recipient_gb, "GB", "GY1 1AA", "GB postal codes JE*, GY*, BT* (Jersey, Guernsey, and Northern Ireland)"),
+            (_recipient_dk, "DK", "3900", "DK postal codes 3800-3999 (Greenland and the Faroe Islands)"),
+            (_recipient_dk, "FO", "100", "DK postal codes 3800-3999 (Greenland and the Faroe Islands)"),
+        ]
+
+        for recipient, point_country, postal_code, excluded in cases:
+            with self.subTest(point=point_country, postal_code=postal_code):
+                with self.assertRaises(ExcludedDestinationError) as context:
+                    self._book(recipient, point_country, postal_code)
+
+                self.assertEqual(
+                    detail_keys(context.exception),
+                    {"dhl_freight_sweden_service_point_postal_code"},
+                )
+                self.assertEqual(
+                    str(context.exception),
+                    f"Product 109 does not ship to {excluded}; "
+                    f"got service point postal code {postal_code}",
+                )
+
+    def test_accepts_a_served_service_point(self):
+        cases = [
+            (_recipient_gb, "GB", "SE16 2BE", "GB"),
+            (_recipient_dk, "DK", "1620", "DK"),
+            (_recipient_fi, "AX", "22100", "FI"),
+        ]
+
+        for recipient, point_country, postal_code, sent_country in cases:
+            with self.subTest(point=point_country, postal_code=postal_code):
+                access_point = next(
+                    party
+                    for party in serialize_request(
+                        self._book(recipient, point_country, postal_code)
+                    )["parties"]
+                    if party["type"] == "AccessPoint"
+                )
+
+                self.assertEqual(
+                    access_point["address"],
+                    {**access_point["address"], "countryCode": sent_country, "postalCode": postal_code},
+                )
+
+    def test_refuses_a_territory_service_point_outside_the_territory(self):
+        with self.assertRaises(TerritoryPostalCodeError) as context:
+            self._book(_recipient_fi, "AX", "00100")
+
+        self.assertEqual(
+            detail_keys(context.exception),
+            {"dhl_freight_sweden_service_point_postal_code"},
+        )
+        self.assertEqual(
+            str(context.exception),
+            "Country code AX (Åland) is booked as FI and needs an FI postal code "
+            "in 22000-22999; got service point postal code '00100'",
+        )
+
+
 def _service_point(service_point_id: str, sub_type: str, country_code: str) -> dict:
     return {
         "dhl_freight_sweden_service_point": service_point_id,
@@ -512,9 +603,21 @@ def _service_point(service_point_id: str, sub_type: str, country_code: str) -> d
         "dhl_freight_sweden_service_point_name": "DHL Parcelshop",
         "dhl_freight_sweden_service_point_street": "Main Street 1",
         "dhl_freight_sweden_service_point_city": "City",
-        "dhl_freight_sweden_service_point_postal_code": "10001",
+        "dhl_freight_sweden_service_point_postal_code": _POSTAL_CODES.get(
+            country_code.upper(), "10001"
+        ),
         "dhl_freight_sweden_service_point_country_code": country_code,
     }
+
+
+_POSTAL_CODES = {
+    "AX": "22100",
+    "DK": "1620",
+    "GB": "SE16 2BE",
+    "IM": "IM1 1AA",
+    "NO": "0154",
+    "SE": "11143",
+}
 
 
 _recipient_dk = {
