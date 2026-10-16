@@ -338,6 +338,10 @@ One further question for DHL API Farm, drafted on 2026-10-13: the lookup `id` is
 All five Posti points in Åland share the id 3201, their 8011-… values being the `servicePointId` field ([2906761917][b-917]), and the id 101 covers two shops in Kraków ([2906769613][b-613]) and eight in Warsaw ([lookup-service-points-pl-capacity-too-large.json][l-sp-pl]).
 When the id is shared, does the mandatory AccessPoint name and address disambiguate the point, and how is the point then selected?
 
+One further question for DHL API Farm, drafted on 2026-10-16: the manual requires the 109 consignee (CN) and delivery address (DP) in the same country only for shipments from or to countries outside the EU (§5.14 p63).
+May a 109 AccessPoint party within the EU lie in another country than the consignee, or must CN and DP always share a country?
+No sandbox booking has sent a service point in another country than the consignee's, and the connector refuses such a booking only from or to a country outside the EU ([access points](../../concepts/booking-rules.md#access-points)).
+
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
 ## Coverage
