@@ -1067,6 +1067,37 @@ PRODUCT_LANE_CITATIONS: typing.Dict[str, str] = {
     ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: "§5.19 p82",
 }
 
+# Countries a product reaches only by separate agreement with DHL (§5.3 p18,
+# §5.14 p63). The sandbox rejected both products to GB with these
+# codes (tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json,
+# rejection-22005-109-se-gb.json); the connector books them and explains the
+# rejection.
+SEPARATE_AGREEMENT_COUNTRIES: typing.Dict[str, typing.FrozenSet[str]] = {
+    ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: frozenset({"GB"}),
+    ShippingService.dhl_freight_sweden_parcel_connect_plus.value: frozenset({"GB"}),
+}
+SEPARATE_AGREEMENT_REJECTION_CODES: typing.FrozenSet[str] = frozenset({"22005", "22026"})
+SEPARATE_AGREEMENT_LANE = "separate_agreement_lane"
+GB_ADDRESS_DELIVERY_SERVICES: typing.Tuple[ShippingService, ...] = (
+    ShippingService.dhl_freight_sweden_road_freight_priority,
+    ShippingService.dhl_freight_sweden_road_freight_standard,
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c,
+)
+
+
+def separate_agreement_message(product_code: str, country_code: str) -> str:
+    *others, last = [
+        f"{service.name} ({service.value})" for service in GB_ADDRESS_DELIVERY_SERVICES
+    ]
+    alternatives = f"{', '.join(others)}, or {last}"
+    return (
+        f"Product {product_code} reaches {country_code} only by separate agreement with DHL "
+        f"(product manual v5.26 {PRODUCT_LANE_CITATIONS[product_code]}), which the booking "
+        "account must hold. The sandbox account is offered neither 109 nor 112 to GB, so this "
+        "lane cannot be exercised in the sandbox; test 109 service point delivery to another "
+        f"listed country, and GB address delivery with {alternatives}."
+    )
+
 
 def lane_served(
     product_code: str,
