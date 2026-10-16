@@ -439,13 +439,13 @@ The connector checks these rules before it sends a booking, and each fails with 
 | ------- | ------------- | --------------- |
 | `LabelTypeError` | a label type other than PDF | `label_type` or `config.label_type` |
 | `OptionValueError` | a boolean option that spells neither true nor false | each such option |
-| `CustomsInformationRequiredError` | no customs data across the EU VAT area border | `customs` |
+| `CustomsInformationRequiredError` | no customs data across the EU VAT area border, including a service point outside the area | `customs` |
 | `CommercialInvoiceRequiredError` | a sale without `customs.commercial_invoice` | `customs.commercial_invoice` |
 | `CustomsInvoiceNumberError` | neither `customs.invoice` nor a reference | `customs.invoice` |
 | `DeclarationCurrencyError` | commodity currencies that conflict | `customs.commodities.value_currency` |
 | `CustomsServiceCombinationError` | more than one customs service across the EU VAT area border | each selected option |
 | `CustomsServiceIdentifierError` | a customs service without its EORI, MRN, or SFID | the missing field |
-| `AlandCustomsServiceError` | full service or Standard to or from Åland | the option |
+| `AlandCustomsServiceError` | full service or Standard to or from Åland, including a service point in Åland | the option |
 | `JointDeclarationDestinationError` | the joint declaration across the EU VAT area border to a recipient country other than NO or CH | `dhl_freight_sweden_customs_joint_declaration` |
 | `PayerCodeError` | no valid payer code, or 023 on 109 without the joint declaration | the option, `customs.incoterm`, or `dhl_freight_sweden_customs_joint_declaration` |
 | `ServicePointDetailsError` | an incomplete AccessPoint party | the missing service-point option |
