@@ -15,6 +15,8 @@ Another lane fails with `ProductLaneError`, for example "Product 107 does not sh
 ## Product matches
 
 Before a booking the connector asks the DHL Product API for the products matching the booking's Consignor and Consignee country and postal code and its piece weights and measurements, taken from the transport instruction it is about to send, so a territory is matched under its parent country.
+A Consignee without a country or postal code is matched by the AccessPoint party's address, the delivery address (DP) of a service point booking (§5.12 p56, §5.14 p63).
+When neither yields a postal code, or the Consignor lacks one, the booking proceeds in every mode but `off` with a `product_availability_unverified` warning naming the missing code, for example "Product availability was not verified (no consignee or access point postal code for product matches); the booking proceeded without the check".
 The `product_matches` connection setting decides what happens when the product is not among the matched codes: `enforce`, the default, fails with `ProductNotOfferedError` keyed by `service` and sends no booking, `warn` books and adds a `product_not_offered` warning, and `off` makes no lookup.
 The message names the product's code and service name, the lane, and the offered products, with the codes the connector does not implement, such as HDI, listed by code only.
 For 109 to GB the sandbox exchange offered HDI, 202, 601, and 233 ([rejection-22005-109-se-gb.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-109-se-gb.json)), and a refusal of 109 or 112 to GB adds the [separate-agreement](products.md#fr-gb-ch-and-li) explanation.
@@ -95,6 +97,12 @@ The `dhl_freight_sweden_service_point` options produce an AccessPoint party only
 | 109 | DE, ES, FR, GB, HR, NO, PT, RO, SI | ParcelShop | Appendix C.3, §10.4.2 p192-193 |
 
 Every other product and country accepts no AccessPoint party, including 109 to IE and LU and all of 112 (§5.3 p19), for which DHL answers 22015 "AccessPoint Party is not allowed for this product" ([rejection-22015-112-se-pl-access-point.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json)).
+The service point's country, `dhl_freight_sweden_service_point_country_code`, is sent as its parent country for a territory code, so a JE point goes as GB and an AX point as FI, and it is checked after that mapping.
+For 103 it must be SE, the product's only valid country, whose delivery address (DP) is the service point (§5.12 p56).
+For 109 it must be the recipient's country when the shipper, the recipient, or the service point is outside the EU, because the manual requires the consignee (CN) and the delivery address (DP) in the same country for shipments from or to countries outside the EU (§5.14 p63); among 109's countries that concerns GB and NO.
+A mismatch fails with `ServicePointCountryError` keyed by `dhl_freight_sweden_service_point_country_code`, for example "Product 109 from or to a country outside the EU delivers to a service point in the consignee's country; the service point country DK differs from the recipient country GB".
+The manual is silent on a service point in another EU country than an EU recipient's, so the connector sends such a 109 booking unchanged, and whether DHL delivers it is an open question for DHL API Farm.
+
 A `dhl_freight_sweden_service_point` value that is a sub type or location type name (`ParcelShop`, `ParcelStation`, `servicepoint`, `locker`, `postoffice`, `postbank`, in any case) is rejected: the option takes the service point id, and the sub type goes in `dhl_freight_sweden_service_point_type`.
 
 Appendix M (§10.14.2.2 p232) states that the AccessPoint `subtype` carries the location type (`servicepoint`, `locker`, `postoffice`), while the transport-instruction booking spec enumerates `ParcelShop` and `ParcelStation`.
