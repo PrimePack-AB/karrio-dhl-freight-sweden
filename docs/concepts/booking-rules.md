@@ -12,6 +12,15 @@ Customs rules are in the README's exporting section, and destination rules (the 
 A product books only from the shipper's country to the recipient's on a lane its valid countries in the manual allow, comparing territory codes as their parent country; [Products](products.md#lanes) lists the lanes.
 Another lane fails with `ProductLaneError`, for example "Product 107 does not ship from CH to SE (product manual v5.26 §5.15 p66)", keyed by `shipper.country_code` when no lane starts in the shipper's country and by `recipient.country_code` otherwise.
 
+## Product matches
+
+Before a booking the connector asks the DHL Product API for the products matching the booking's Consignor and Consignee country and postal code and its piece weights and measurements, taken from the transport instruction it is about to send, so a territory is matched under its parent country.
+The `product_matches` connection setting decides what happens when the product is not among the matched codes: `enforce`, the default, fails with `ProductNotOfferedError` keyed by `service` and sends no booking, `warn` books and adds a `product_not_offered` warning, and `off` makes no lookup.
+The message names the product's code and service name, the lane, and the offered products, with the codes the connector does not implement, such as HDI, listed by code only.
+For 109 to GB the sandbox exchange offered HDI, 202, 601, and 233 ([rejection-22005-109-se-gb.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-109-se-gb.json)), and a refusal of 109 or 112 to GB adds the [separate-agreement](products.md#fr-gb-ch-and-li) explanation.
+A lookup that fails, whether with an error answer, an HTTP error, a client key whose DHL application lacks the Product API, or a network error, leaves availability unverified: the booking proceeds in every mode with a `product_availability_unverified` warning that carries DHL's error text.
+The check skips 205, 209, 210, 212, SPI, and 107, because no committed product matches answer lists them: 205 was not listed from SE to NO ([rejection-22020-205-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)), the only SE to SE answer used a parcel-sized piece ([lookup-product-matches-se-se.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se.json)), and no SPI or inbound 107 lookup has been captured.
+
 ## Customer numbers
 
 The Consignor party id carries the DHL customer number, and DHL Freight Sweden books products in two systems that number customers separately.

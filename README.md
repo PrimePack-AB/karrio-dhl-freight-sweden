@@ -65,6 +65,7 @@ The `config` dict holds these settings.
 | --------- | --------- | -------- |
 | `label_type` | `PDF` | Only `PDF` is accepted, in any letter case; any other value fails every booking with `LabelTypeError`. |
 | `label_page_type` | `Label` | The Print API page layout: `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, or `LabelCompact2x2PortraitA4`. |
+| `product_matches` | `enforce` | `off`, `warn`, or `enforce` the product matches check before every booking, which refuses or warns when DHL does not offer the product for the lane, as [Booking rules](docs/concepts/booking-rules.md#product-matches) describes. |
 | `address_validation` | `off` | `off`, `warn`, or `enforce` the PostalCodes check for 118 bookings, which needs the PostalCode API on the DHL application, as described under home delivery below. |
 | `server_url` | | Overrides the host that `test_mode` selects. |
 | `shipping_services` | all | A list of karrio service codes; karrio returns only rates for these services. |
@@ -383,7 +384,8 @@ DHL has not said whether this still applies to API bookings that carry full cust
 ### Norway, Switzerland, and Great Britain
 
 Bookings to NO, CH, and GB carry customs data like any lane outside the EU VAT area, but the products differ: on account 116768 product matches to CH offered HDI, 202, 601, and 233 and none of 109, 112, and 107 ([lookup-product-matches-se-ch-8001.json](tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ch-8001.json)), and the manual lists GB for 109 and 112 only under a separate agreement with DHL (§5.3 p18, §5.14 p63).
-The sandbox rejected both to GB with 22005 and 22026 ([rejection-22005-112-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json), [rejection-22005-109-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-109-se-gb.json)), and the connector adds a `separate_agreement_lane` message explaining the agreement to such a rejection.
+The sandbox rejected both to GB with 22005 and 22026 ([rejection-22005-112-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json), [rejection-22005-109-se-gb.json](tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-109-se-gb.json)), and the connector adds a `separate_agreement_lane` warning explaining the agreement to such a rejection.
+Product matches did not offer 109 or 112 for the GB lane in the same exchanges, so with the default `product_matches` setting the connector refuses these bookings with `ProductNotOfferedError` before sending them.
 [Products](docs/concepts/products.md) has the bookings, rejections, and lookups for each destination.
 
 ## Special territories and excluded postal codes
@@ -457,6 +459,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `PartyTaxIdError` | 202, SPI, or 601 to or from GR without both VAT numbers or TINs | `shipper.federal_tax_id` or `recipient.federal_tax_id` |
 | `QrCodeEligibilityError` | a QR code outside 107 from the listed countries | `dhl_freight_sweden_qr_code` |
 | `AdditionalInformationError` | an entry without a code, or a SENT, EKAER, or UIT code where its option applies | `dhl_freight_sweden_additional_information` |
+| `ProductNotOfferedError` | `enforce` product matches that do not list the product for the booking's postal codes and pieces | `service` |
 | `PostalCodeNotServableError` | `enforce` validation of an unservable 118 postal code | `recipient.postal_code` |
 | `PostalCodeApiUnavailableError` | `enforce` validation with a client key whose DHL application lacks the PostalCode API | `recipient.postal_code` |
 | `ProductMatchPartiesError`, `UnexpectedPayloadKeysError` | a lookup without both parties, or with an unknown key | the party or key |
@@ -477,7 +480,7 @@ DHL's own validation errors seen in the sandbox are these.
 ## Operational notes
 
 The lookups are live carrier calls, so cache them per address pair when volume justifies it.
-Product eligibility is decided by DHL, while the static rate sheet can drift, so query product matches before offering a service.
+Product eligibility is decided by DHL, while the static rate sheet can drift, so query product matches before offering a service; the booking itself repeats the check unless `product_matches` is `off`.
 A booking that DHL accepted stays booked, so never retry a request that returned a booking id.
 Duplicating a shipment in the Karrio dashboard is reported to copy hidden service-point and SENT options that can make a changed service fail; the [working note](docs/notes/ux/duplicate-shipment-carries-connector-options.md) records the report, which is unverified and has no fix yet.
 A driver that cannot import the connector can call the lookups over REST and book through the Karrio REST API, as [Service-point lookups](docs/guides/lookups.md#lookups-and-booking-over-rest) describes.
