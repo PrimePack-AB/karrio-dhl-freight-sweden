@@ -161,8 +161,9 @@ class Proxy(proxy.Proxy):
     ) -> typing.List[models.Message]:
         """Run the config-gated product matches booking guard.
 
-        Off mode, ``PRODUCT_MATCH_UNGUARDED`` products, and bookings without
-        both party postal codes skip the lookup with no HTTP call. A lookup
+        Off mode and ``PRODUCT_MATCH_UNGUARDED`` products skip the lookup
+        silently; a booking whose consignor, or whose consignee and access
+        point, lack a postal or country code skips it with a warning. A lookup
         that raises (a non-JSON HTTP error body, a network error) is turned
         into a message, so it leaves availability unverified rather than
         failing the booking.
@@ -173,6 +174,13 @@ class Proxy(proxy.Proxy):
 
         if mode == "off" or criteria is None:
             return []
+
+        if isinstance(criteria, provider_product_matches.CriteriaUnavailable):
+            return [
+                provider_product_matches.criteria_unavailable_warning(
+                    criteria, self.settings
+                )
+            ]
 
         try:
             products, messages = provider_product_matches.parse_product_matches_response(

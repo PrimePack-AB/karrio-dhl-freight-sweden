@@ -238,29 +238,57 @@ def _normalize_rule(rule: dict) -> dict:
     )
 
 
-def booking_match_criteria(request: dict) -> typing.Optional[dict]:
+class CriteriaUnavailable(typing.NamedTuple):
+    """A guarded booking whose parties do not yield product matches criteria."""
+
+    reason: str
+
+
+def booking_match_criteria(
+    request: dict,
+) -> typing.Union[dict, CriteriaUnavailable, None]:
     """The ``MatchCriteria`` for a serialized transport instruction.
 
     The Consignor and Consignee addresses and the piece measurements are
     taken from the transport instruction itself, so territory country codes
-    are already their parent country and pieces are in KG/CM/m³. Returns
-    None for ``PRODUCT_MATCH_UNGUARDED`` products and when either party
-    lacks a country or postal code.
+    are already their parent country and pieces are in KG/CM/m³. A
+    Consignee without country or postal code is matched by the AccessPoint
+    party's address, the DP delivery address. Returns None for
+    ``PRODUCT_MATCH_UNGUARDED`` products and ``CriteriaUnavailable`` naming
+    the missing postal or country code otherwise.
     """
     product = str(request.get("productCode") or "")
+    if not product or product in provider_units.PRODUCT_MATCH_UNGUARDED:
+        return None
+
     parties = {
         party.get("type"): (party.get("address") or {})
         for party in request.get("parties") or []
-        if party.get("type") in ("Consignor", "Consignee")
+        if party.get("type") in ("Consignor", "Consignee", "AccessPoint")
     }
-    addresses = [parties.get("Consignor") or {}, parties.get("Consignee") or {}]
-
-    if (
-        not product
-        or product in provider_units.PRODUCT_MATCH_UNGUARDED
-        or not all(a.get("countryCode") and a.get("postalCode") for a in addresses)
-    ):
-        return None
+    consignor = parties.get("Consignor") or {}
+    consignee: dict = next(
+        (
+            address
+            for address in (parties.get("Consignee"), parties.get("AccessPoint"))
+            if address and _is_matchable(address)
+        ),
+        parties.get("Consignee") or {},
+    )
+    consignee_name = lib.identity(
+        "consignee or access point" if "AccessPoint" in parties else "consignee"
+    )
+    missing = next(
+        (
+            f"no {name} {field}"
+            for name, address in (("consignor", consignor), (consignee_name, consignee))
+            for key, field in (("countryCode", "country code"), ("postalCode", "postal code"))
+            if not address.get(key)
+        ),
+        None,
+    )
+    if missing:
+        return CriteriaUnavailable(missing)
 
     return dict(
         parties=[
@@ -271,7 +299,7 @@ def booking_match_criteria(request: dict) -> typing.Optional[dict]:
                     postalCode=address["postalCode"],
                 ),
             )
-            for party_type, address in zip(("Consignor", "Consignee"), addresses)
+            for party_type, address in (("Consignor", consignor), ("Consignee", consignee))
         ],
         pieces=[
             {
@@ -281,6 +309,27 @@ def booking_match_criteria(request: dict) -> typing.Optional[dict]:
             }
             for piece in request.get("pieces") or []
         ],
+    )
+
+
+def _is_matchable(address: dict) -> bool:
+    return bool(address.get("countryCode") and address.get("postalCode"))
+
+
+def criteria_unavailable_warning(
+    unavailable: CriteriaUnavailable, settings: provider_utils.Settings
+) -> models.Message:
+    """The warning for a guarded booking that proceeds without a lookup."""
+    return models.Message(
+        carrier_name=settings.carrier_name,
+        carrier_id=settings.carrier_id,
+        code="product_availability_unverified",
+        level="warning",
+        message=(
+            f"Product availability was not verified ({unavailable.reason} for "
+            "product matches); the booking proceeded without the check"
+        ),
+        details=dict(reason=unavailable.reason),
     )
 
 
