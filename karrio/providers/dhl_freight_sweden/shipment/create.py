@@ -246,7 +246,7 @@ def _separate_agreement_messages(
                 code=provider_units.SEPARATE_AGREEMENT_LANE,
                 level="warning",
                 message=provider_units.separate_agreement_message(
-                    lane["product"], lane["country"]
+                    lane["product"], lane["country"], bool(settings.test_mode)
                 ),
                 details=lane,
             )
