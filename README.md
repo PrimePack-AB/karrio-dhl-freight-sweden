@@ -452,8 +452,8 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `ServicePointEligibilityError` | a sub type or product without that access point, or a type name as id | the service-point option |
 | `ServicePointCountryError` | a 103 service point outside SE, or a 109 service point outside the recipient's country on a lane from or to a country outside the EU | `dhl_freight_sweden_service_point_country_code` |
 | `ServicePointIdError` | a 103 id that is neither SE-nnnn00 nor a four-digit terminal id, or a 109 id shaped like the lookup's `servicePointId` instead of its `id` | the service-point option |
-| `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code` or `recipient.postal_code` |
-| `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code` or `recipient.postal_code` |
+| `ExcludedDestinationError` | an excluded postal code | `shipper.postal_code`, `recipient.postal_code`, or `dhl_freight_sweden_service_point_postal_code` |
+| `TerritoryPostalCodeError` | a territory code AX, IC, EA, FO, or GL with a missing postal code or one outside the territory | `shipper.postal_code`, `recipient.postal_code`, or `dhl_freight_sweden_service_point_postal_code` |
 | `ProductLaneError` | a lane outside the product's valid countries in the manual | `shipper.country_code` or `recipient.country_code` |
 | `InternationalAccountNumberError` | 202, 205, 233, SPI, or 601 without `international_account_number`, or with one longer than 15 characters | `international_account_number` |
 | `SentInformationError`, `TransportDeclarationError` | a missing or contradictory SENT, EKAER, or UIT declaration, including an undeclared EKAER or UIT shipment at or above 500 kg | the option |
