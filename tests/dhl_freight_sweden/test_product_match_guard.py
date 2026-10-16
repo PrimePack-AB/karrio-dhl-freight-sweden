@@ -20,11 +20,15 @@ import karrio.core.models as models
 import karrio.lib as lib
 import karrio.sdk as karrio
 from karrio.providers.dhl_freight_sweden import units
-from karrio.providers.dhl_freight_sweden.product_matches import ProductNotOfferedError
+from karrio.providers.dhl_freight_sweden.product_matches import (
+    CriteriaUnavailable,
+    ProductNotOfferedError,
+    booking_match_criteria,
+)
 
 from .fixture import _gateway, as_dict, http_error, proxy_of
 from .test_separate_agreement import LONDON_PAYLOAD
-from .test_shipment import _payload, _recipient_se
+from .test_shipment import _payload, _recipient_de, _recipient_se
 
 FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures" / "sandbox"
 MATCHES_PATH = "/productapi/v1/productmatches"
@@ -340,6 +344,105 @@ class TestProductMatchGuard(unittest.TestCase):
         consignee = as_dict(lib.to_dict(mock.call_args_list[0].kwargs["data"]))["parties"][1]
         self.assertEqual(consignee["address"], {"countryCode": "GB", "postalCode": "IM1 1AA"})
 
+
+    def test_access_point_stands_in_for_a_consignee_without_postal_code(self):
+        # The AccessPoint party is the DP delivery address (manual v5.26
+        # §5.14 p63), so its postal code is matched when the consignee has none.
+        payload = _payload(
+            "dhl_freight_sweden_parcel_connect_b2c",
+            {**_recipient_de, "postal_code": ""},
+            {
+                **LONDON["options"],
+                "dhl_freight_sweden_service_point_city": "Berlin",
+                "dhl_freight_sweden_service_point_postal_code": "10117",
+                "dhl_freight_sweden_service_point_country_code": "DE",
+                "dhl_freight_sweden_customs_handling_full_service": False,
+            },
+        )
+        request = enforce_gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(**payload)
+        )
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.side_effect = _answers("[]")
+            with self.assertRaises(ProductNotOfferedError) as context:
+                proxy_of(enforce_gateway).create_shipment(request)
+
+        consignee = as_dict(lib.to_dict(mock.call_args_list[0].kwargs["data"]))["parties"][1]
+        self.assertEqual(
+            consignee, {"type": "Consignee", "address": {"countryCode": "DE", "postalCode": "10117"}}
+        )
+        self.assertIn("to DE 10117", str(context.exception))
+
+    def test_access_point_criteria_for_a_gb_consignee_without_postal_code(self):
+        request = {
+            "productCode": "109",
+            "parties": [
+                {"type": "Consignor", "address": {"countryCode": "SE", "postalCode": "11143"}},
+                {"type": "Consignee", "address": {"countryCode": "GB", "postalCode": ""}},
+                {"type": "AccessPoint", "address": {"countryCode": "GB", "postalCode": "SE16 2BE"}},
+            ],
+        }
+
+        criteria = booking_match_criteria(request)
+
+        self.assertIsInstance(criteria, dict)
+        self.assertEqual(
+            typing.cast(dict, criteria)["parties"][1],
+            {"type": "Consignee", "address": {"countryCode": "GB", "postalCode": "SE16 2BE"}},
+        )
+
+    def test_missing_postal_codes_book_with_unverified_warning(self):
+        payload = _payload("dhl_freight_sweden_paket", {**_recipient_se, "postal_code": ""})
+        (details, messages), urls, _ = _book(
+            enforce_gateway, payload, *DOMESTIC_BOOKING
+        )
+
+        self.assertIsNotNone(details)
+        self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
+        (warning,) = messages
+        self.assertEqual(warning.code, "product_availability_unverified")
+        self.assertEqual(warning.level, "warning")
+        self.assertEqual(
+            warning.message,
+            "Product availability was not verified (no consignee postal code "
+            "for product matches); the booking proceeded without the check",
+        )
+
+    def test_missing_consignee_and_access_point_postal_codes_are_named(self):
+        request = {
+            "productCode": "109",
+            "parties": [
+                {"type": "Consignor", "address": {"countryCode": "SE", "postalCode": "11143"}},
+                {"type": "Consignee", "address": {"countryCode": "GB", "postalCode": ""}},
+                {"type": "AccessPoint", "address": {"countryCode": "GB"}},
+            ],
+        }
+        missing_consignor = {
+            "productCode": "102",
+            "parties": [
+                {"type": "Consignor", "address": {"countryCode": "SE"}},
+                {"type": "Consignee", "address": {"countryCode": "SE", "postalCode": "11143"}},
+            ],
+        }
+
+        self.assertEqual(
+            booking_match_criteria(request),
+            CriteriaUnavailable("no consignee or access point postal code"),
+        )
+        self.assertEqual(
+            booking_match_criteria(missing_consignor),
+            CriteriaUnavailable("no consignor postal code"),
+        )
+        self.assertIsNone(booking_match_criteria({**request, "productCode": "107"}))
+
+    def test_off_mode_stays_silent_without_postal_codes(self):
+        payload = _payload("dhl_freight_sweden_paket", {**_recipient_se, "postal_code": ""})
+        (details, messages), urls, _ = _book(
+            _gateway({"product_matches": "off"}), payload, *DOMESTIC_BOOKING
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
 
 if __name__ == "__main__":
     unittest.main()
