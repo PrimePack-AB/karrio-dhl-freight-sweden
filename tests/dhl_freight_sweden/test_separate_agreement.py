@@ -125,6 +125,7 @@ class TestSeparateAgreementNote(unittest.TestCase):
                 self.assertIn(units.PRODUCT_LANE_CITATIONS[product], note.message)
                 self.assertIn("separate agreement", note.message)
                 self.assertEqual(note.details, dict(product=product, country="GB"))
+                self.assertEqual(note.level, "warning")
 
     def test_shipment_create_rejected_to_gb_carries_the_note(self):
         exchange = booking_exchange(GB_REJECTIONS["109"])
