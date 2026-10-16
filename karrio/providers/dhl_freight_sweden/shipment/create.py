@@ -244,7 +244,7 @@ def _separate_agreement_messages(
                 carrier_name=settings.carrier_name,
                 carrier_id=settings.carrier_id,
                 code=provider_units.SEPARATE_AGREEMENT_LANE,
-                level="info",
+                level="warning",
                 message=provider_units.separate_agreement_message(
                     lane["product"], lane["country"]
                 ),
