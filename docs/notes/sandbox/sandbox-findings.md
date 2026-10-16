@@ -45,6 +45,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-08 | 15:27 | suite | PostalCode route lookup and `enforce` pre-flight with an unknown client key |
 | 2026-10-09 | 07:49 | suite | 103 service point booking with the four-digit terminal id |
 | 2026-10-13 | 13:04 | suite | 202 Consignor id account-number probes |
+| 2026-10-16 | 12:18 | suite | 109 GB ParcelShop case without the product matches check |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -178,6 +179,7 @@ The rejection segment built a valid request through the connector and changed th
 | 2026-10-05 | 112 | SE → PL 30-079 | payer code changed to 1, `SENT_FREE` `"true"` | 22020 `PayerCode.Code` "Payercode 1 is not valid for product" | [rejection-22020][r-22020] |
 | 2026-10-05 | 103 | SE → SE 11151 | AccessPoint SE-982000 reduced to id, type, and sub type | 22001 `Parties[2].Address.Address` "Address is mandatory for party AccessPoint"; 22001 `Parties[2].Name` "Name is mandatory for party AccessPoint"; 22026 `Parties[2]` "AccessPoint CountryCode is not valid for this product"; 22006 `Parties[2].PostalCode` "Error retrieving gateway linehaul for shipment" | [rejection-22001-103][r-22001-103] |
 | 2026-10-06 | 112 | SE → GB W1D 1AN | payer code 023, customs handling full service, one commodity, sent without the product matches check | 22005 `ProductCode` "No valid product was found for given productcode and countries"; 22026 `Parties[1]` "Consignee CountryCode is not valid for this product" | [rejection-22005-112-gb][r-22005-gb] |
+| 2026-10-16 | 109 | SE → GB SE16 2BE | payer code 022, customs handling full service, one commodity, commercial invoice, AccessPoint ParcelShop 60753 (DHL Servicepoint, 173-181 Rotherhithe New Road, London SE16 2BE), sent without the product matches check | 22005 `ProductCode` "No valid product was found for given productcode and countries"; 22026 `Parties[2]` "AccessPoint CountryCode is not valid for this product" | [rejection-22005-109-gb][r-22005-109-gb] |
 | 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling full service, one commodity, proforma invoice, after product matches offered 112 | 24003 `customsHandlingFullService` "customsHandlingFullService is not available for this country combination" | [rejection-24003-112-fi-aland][r-24003-ax] |
 | 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling Standard, made-up EORI number SE0000000000, one commodity, proforma invoice | 24003 `customsHandlingStandard` "customsHandlingStandard is not available for this country combination" | [rejection-24003-112-fi-aland-standard][r-24003-ax-std] |
 | 2026-10-06 | 205 | SE → NO 0154 | payer code DAP, customs handling full service, one commodity, one 1 kg piece, sent without the product matches check | 22020 `ChargeableWeight` "ChargeableWeight is lower than product min 2500.0" | [rejection-22020-205-no][r-22020-205-no] |
@@ -255,6 +257,7 @@ Every product matches call answered HTTP 200 without an error message, each with
 
 No lane matched 205 or SPI, so the booking-export 205 cases to DK 1620 and NO 0154 skip, and the EKAER and UIT entries could not be tried on 205 or SPI to HU or RO.
 No GB postal code matched 109 or 112, so the booking-export 112 GB case skipped until it was sent without the check (see [Rejections](#rejections)).
+On 2026-10-16 product matches for SE16 2BE, London, again offered HDI, 202, 601, and 233, and the 109 GB ParcelShop case was sent without the check ([rejection-22005-109-gb][r-22005-109-gb]).
 The territory codes AX, JE, GG, and FO matched no product, while the same postal codes under FI and GB did, and FI 22100 matched like mainland Finland, offering 109 and 112 to Åland.
 No CH lane matched 109, 112, or 107, and the manual lists CH, but not LI, among the valid countries of 601 (§5.19 p82).
 Every product matched to CH marks its CH entry `customs` `true` with no `postalCodeExcludes`, and DDP is the only payer code each of them flags `customs` `true`.
@@ -349,7 +352,7 @@ Every cell's evidence is in the tables above.
 | 103 | booked; rejected with an id-only AccessPoint | not offered | not offered |
 | 104 | untested, matched to SE 41101 | not offered | not offered |
 | 107 | not offered | untested; returns from the EU countries the manual lists to SE | untested; returns from NO to SE |
-| 109 | not offered | booked to PL, RO, HU, and DK; rejected and later booked to PL without SENT entries | booked to NO and FI 22100 |
+| 109 | not offered | booked to PL, RO, HU, and DK; rejected and later booked to PL without SENT entries | booked to NO and FI 22100; rejected to GB |
 | 112 | not offered | booked to PL, RO, HU, and FR; rejected to PL with an AccessPoint and with payer code 1 | booked to NO; rejected to GB and FI 22100 |
 | 118 | booked; rejected to 98138 Kiruna with 22036 | not offered | not offered |
 | 202 | not offered | booked to DK, HU, and RO | booked to NO and GB BT1 1AA |
@@ -376,7 +379,7 @@ These were never exercised:
 - EKAER and UIT entries on 205 or SPI
 - whether DHL production checks SENT, EKAER, and UIT identifiers, which the sandbox accepted as placeholders; the connector checks only their length and combination and passes them through
 - 109 with home addressing and no AccessPoint party
-- 109 to GB, which the manual lists for 109 and 112 only according to a separate agreement (§5.3 p18, §5.14 p63, Appendix G p200)
+- 109 or 112 to GB under the separate agreement the manual requires for GB on both (§5.3 p18, §5.14 p63, Appendix G p200); the sandbox rejected both to GB (see [Rejections](#rejections))
 - any booking to LI or GR, and any 107 booking with `qrCode`
 - pieces below the minimum dimensions the manual states for 102 (§5.2 p14) and 112 (§5.3 p17)
 
@@ -430,6 +433,7 @@ These were never exercised:
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json
 [r-22005-gb]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json
+[r-22005-109-gb]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-109-se-gb.json
 [r-22015]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22015-112-se-pl-access-point.json
 [r-24003-ax]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland.json
 [r-24003-ax-std]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json
