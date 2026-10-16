@@ -78,7 +78,7 @@ The connector enforces the FR exclusion of 112 from postal codes 97100-99999 wit
 
 Rating offers 109 and 112 to GB, and the connector books them without checking the separate agreement, which the account must hold; account 999999 holds none.
 When DHL rejects a 109 or 112 booking whose consignee or access point is in GB, territories sent as GB included, with 22005 or 22026, the connector keeps DHL's messages and adds an `info` message with code `separate_agreement_lane`.
-It names the agreement and the manual section, and suggests testing 109 service point delivery to another listed country and GB address delivery with 233 or 202, or another product that product matches offers for the lane.
+It names the agreement and the manual section, and suggests testing 109 service point delivery to another listed country and GB address delivery with 233, 202, or 601, or another product that product matches offers for the lane.
 Appendix C.3 delivers 109 to GB at the doorstep with residential addressing or to a Parcelshop, with no Parcelstation (§10.4.2 p193), which the [access-point table](booking-rules.md#access-points) follows.
 GB is outside the EU VAT area, so 109 and 112 to GB carry customs information as they do to NO.
 

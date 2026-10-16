@@ -1081,6 +1081,7 @@ SEPARATE_AGREEMENT_LANE = "separate_agreement_lane"
 GB_ADDRESS_DELIVERY_SERVICES: typing.Tuple[ShippingService, ...] = (
     ShippingService.dhl_freight_sweden_road_freight_priority,
     ShippingService.dhl_freight_sweden_road_freight_standard,
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c,
 )
 
 
