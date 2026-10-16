@@ -1,0 +1,209 @@
+{
+ "kind": "rejection",
+ "summary": "109 SE to GB SE16 2BE with payer code 022, customs handling full service, a commercial invoice, and the AccessPoint party of ParcelShop 60753 (DHL Servicepoint, 173-181 Rotherhithe New Road, London SE16 2BE), booked although product matches did not offer 109 to GB, was rejected with 22005 'No valid product was found for given productcode and countries' and 22026 'AccessPoint CountryCode is not valid for this product'.",
+ "captured_at": "2026-10-16T12:18:56Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "109",
+ "route": "SE 11143 -> GB SE16 2BE",
+ "booking_id": null,
+ "error_code": "22005",
+ "http_status": 400,
+ "captured_by": "sandbox_tests suite: test_booking_export.test_book_109_gb_parcel_shop",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-16T12:18:56Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261016-141855/001-product-matches-109-gb-se162be.request.json",
+    "sha256": "aac75d80da8e1049b140bd823f9177c0e71b303e35bc5afd2f94a09cf6f819b9"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261016-141855/001-product-matches-109-gb-se162be.response.json",
+    "sha256": "09be1e17cd229f4e44946d87a902da6758c9ce84cadcdab935165728dedce040"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "GB",
+       "postalCode": "SE16 2BE"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "601",
+      "name": "DHL Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, and isDomestic; the full body is identified by response_source.sha256"
+  },
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-16T12:18:56Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261016-141855/003-booking-109.request.json",
+    "sha256": "47b3f44c54282ead9e5da67c74565e0967eaa9cffcc2cff8d6b3bbe38e7bda5d"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261016-141855/003-booking-109.response.json",
+    "sha256": "c644a62954c1055715750aa3851f6df5a5ec3573871639883425d4e03e430024"
+   },
+   "request": {
+    "additionalServices": {
+     "customsHandlingFullService": true
+    },
+    "customsInformation": {
+     "customsCommodities": [
+      {
+       "commodityDescription": "Cotton T-shirt",
+       "countryCodeOfOrigin": "SE",
+       "customsValue": 200.0,
+       "customsValueCurrency": "SEK",
+       "hsItemId": "610910",
+       "netWeight": 0.5,
+       "numberOfUnits": 1,
+       "procedureCode": "1042"
+      }
+     ],
+     "customsDocuments": [
+      {
+       "id": "SANDBOX-INV-1",
+       "invoiceAmount": 200.0,
+       "invoiceCurrency": "SEK",
+       "invoiceDate": "2026-10-16",
+       "transportMovement": "Export",
+       "type": "CommercialInvoice"
+      }
+     ]
+    },
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "999999",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "London",
+       "countryCode": "GB",
+       "postalCode": "SE16 2BE",
+       "street": "10 Rotherhithe New Road"
+      },
+      "contactName": "John Smith",
+      "email": "john.smith@example.co.uk",
+      "name": "John Smith",
+      "phone": "+44 7700 900123",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "London",
+       "countryCode": "GB",
+       "postalCode": "SE16 2BE",
+       "street": "173-181 Rotherhithe New Road"
+      },
+      "id": "60753",
+      "name": "DHL Servicepoint",
+      "subType": "ParcelShop",
+      "type": "AccessPoint"
+     }
+    ],
+    "payerCode": {
+     "code": "022"
+    },
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.01,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "109",
+    "totalNumberOfPieces": 1,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 22005,
+      "field": "ProductCode",
+      "message": "No valid product was found for given productcode and countries"
+     },
+     {
+      "errorCode": 22026,
+      "field": "Parties[2]",
+      "message": "AccessPoint CountryCode is not valid for this product"
+     }
+    ]
+   }
+  }
+ ]
+}

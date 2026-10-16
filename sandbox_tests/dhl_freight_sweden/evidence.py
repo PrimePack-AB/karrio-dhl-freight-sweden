@@ -647,6 +647,23 @@ def _(b: Builder) -> Json:
     )
 
 
+@evidence("rejection-22005-109-se-gb.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "rejection",
+        "109 SE to GB SE16 2BE with payer code 022, customs handling full service, a commercial invoice, "
+        "and the AccessPoint party of ParcelShop 60753 (DHL Servicepoint, 173-181 Rotherhithe New Road, "
+        "London SE16 2BE), booked although product matches did not offer 109 to GB, was rejected with "
+        "22005 'No valid product was found for given productcode and countries' and 22026 "
+        "'AccessPoint CountryCode is not valid for this product'.",
+        "109", "SE 11143 -> GB SE16 2BE", None, "22005",
+        f"{SUITE_RUN}: test_booking_export.test_book_109_gb_parcel_shop",
+        [reduce_product_matches(b.suite_exchange("20261016-141855", "001-product-matches-109-gb-se162be")),
+         b.suite_exchange("20261016-141855", "003-booking-109")],
+        primary=1,
+    )
+
+
 @evidence("rejection-24003-112-se-fi-aland.json")
 def _(b: Builder) -> Json:
     return b.document(
