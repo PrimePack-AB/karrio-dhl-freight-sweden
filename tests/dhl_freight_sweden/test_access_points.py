@@ -17,6 +17,7 @@ import unittest
 
 import karrio.core.models as models
 from karrio.providers.dhl_freight_sweden.shipment.create import (
+    ServicePointCountryError,
     ServicePointEligibilityError,
     ServicePointIdError,
 )
@@ -27,6 +28,7 @@ from .test_shipment import (
     _payload,
     _recipient_de,
     _recipient_gb,
+    _recipient_no,
     _recipient_pl,
     _recipient_se,
 )
@@ -380,6 +382,129 @@ class TestDHLFreightParcelConnectLookupId(unittest.TestCase):
                 self.assertIn("servicePointId", str(context.exception))
 
 
+class TestDHLFreightAccessPointCountry(unittest.TestCase):
+    """The AccessPoint party country is checked after territory mapping.
+
+    103 is valid for SE only and its DP party is the service point
+    (manual v5.26 §5.12 p56).
+    109 requires CN and DP in the same country for shipments from or to a
+    country outside the EU (§5.14 p63); EU-to-EU differences are left to DHL.
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+    def _access_point(self, payload: dict) -> dict:
+        request = gateway.mapper.create_shipment_request(
+            models.ShipmentRequest(**payload)
+        )
+        return next(
+            party
+            for party in serialize_request(request)["parties"]
+            if party["type"] == "AccessPoint"
+        )
+
+    def _error(self, payload: dict) -> ServicePointCountryError:
+        with self.assertRaises(ServicePointCountryError) as context:
+            gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
+        return context.exception
+
+    def test_service_point_b2c_refuses_a_service_point_outside_se(self):
+        error = self._error(
+            _payload(
+                "dhl_freight_sweden_service_point_b2c",
+                _recipient_se,
+                _service_point("SE-230500", "ParcelShop", "DK"),
+            )
+        )
+
+        self.assertEqual(
+            detail_keys(error), {"dhl_freight_sweden_service_point_country_code"}
+        )
+        self.assertEqual(
+            str(error),
+            "Product 103 delivers to a service point in SE; "
+            "the service point country DK is not SE",
+        )
+
+    def test_parcel_connect_refuses_a_mismatch_to_a_country_outside_the_eu(self):
+        cases = [
+            (_recipient_gb, "DK", "GB"),
+            (_recipient_no, "SE", "NO"),
+            (_recipient_dk, "NO", "DK"),
+            (_recipient_dk, "GB", "DK"),
+        ]
+
+        for recipient, point_country, recipient_country in cases:
+            with self.subTest(point=point_country, recipient=recipient_country):
+                error = self._error(
+                    {
+                        **_payload(
+                            "dhl_freight_sweden_parcel_connect_b2c",
+                            recipient,
+                            _service_point("123456", "ParcelShop", point_country),
+                        ),
+                        "customs": Customs,
+                    }
+                )
+
+                self.assertEqual(
+                    detail_keys(error),
+                    {"dhl_freight_sweden_service_point_country_code"},
+                )
+                self.assertEqual(
+                    str(error),
+                    "Product 109 from or to a country outside the EU delivers "
+                    "to a service point in the consignee's country; the service "
+                    f"point country {point_country} differs from the recipient "
+                    f"country {recipient_country}",
+                )
+
+    def test_parcel_connect_leaves_eu_mismatches_to_dhl(self):
+        access_point = self._access_point(
+            _payload(
+                "dhl_freight_sweden_parcel_connect_b2c",
+                _recipient_dk,
+                _service_point("123456", "ParcelShop", "DE"),
+            )
+        )
+
+        self.assertEqual(access_point["address"]["countryCode"], "DE")
+
+    def test_parcel_connect_sends_a_territory_service_point_as_its_parent(self):
+        cases = [
+            (_recipient_gb, "JE", "GB"),
+            ({**_recipient_gb, "country_code": "IM", "postal_code": "IM1 1AA"}, "GB", "GB"),
+            (_recipient_fi, "AX", "FI"),
+        ]
+
+        for recipient, point_country, sent_country in cases:
+            with self.subTest(point=point_country, recipient=recipient["country_code"]):
+                access_point = self._access_point(
+                    {
+                        **_payload(
+                            "dhl_freight_sweden_parcel_connect_b2c",
+                            recipient,
+                            _service_point("123456", "ParcelShop", point_country),
+                        ),
+                        "customs": Customs,
+                    }
+                )
+
+                self.assertEqual(access_point["address"]["countryCode"], sent_country)
+
+    def test_service_point_b2c_accepts_a_service_point_in_se(self):
+        access_point = self._access_point(
+            _payload(
+                "dhl_freight_sweden_service_point_b2c",
+                _recipient_se,
+                _service_point("SE-230500", "ParcelShop", "se"),
+            )
+        )
+
+        self.assertEqual(access_point["address"]["countryCode"], "SE")
+
+
 def _service_point(service_point_id: str, sub_type: str, country_code: str) -> dict:
     return {
         "dhl_freight_sweden_service_point": service_point_id,
@@ -416,3 +541,10 @@ _recipient_it = {
 
 if __name__ == "__main__":
     unittest.main()
+
+_recipient_fi = {
+    **_recipient_se,
+    "city": "Helsinki",
+    "postal_code": "00100",
+    "country_code": "FI",
+}

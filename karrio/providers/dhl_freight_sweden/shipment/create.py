@@ -85,6 +85,12 @@ class ServicePointEligibilityError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class ServicePointCountryError(errors.ShippingSDKDetailedError):
+    """Raised when the access point lies in a country the product does not deliver to."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class AdditionalInformationError(errors.ShippingSDKDetailedError):
     """Raised when a pass-through additionalInformation entry is invalid."""
 
@@ -438,7 +444,7 @@ def shipment_request(
         options.dhl_freight_sweden_customs_procedure_code.state or "1042"
     )
     service_point_party = _service_point_party(
-        options, service, recipient.country_code
+        options, service, shipper.country_code, recipient.country_code
     )
     lane_countries = {shipper.country_code, recipient.country_code}
     additional_information = [
@@ -1536,6 +1542,7 @@ def _parcel_connect_access_point_id(service_point: str) -> str:
 def _service_point_party(
     options,
     product_code: str,
+    shipper_country_code: typing.Optional[str],
     country_code: typing.Optional[str],
 ) -> typing.Optional[dhl_freight_sweden_req.PartyType]:
     service_point = options.dhl_freight_sweden_service_point.state
@@ -1604,7 +1611,9 @@ def _service_point_party(
         street=options.dhl_freight_sweden_service_point_street.state,
         city=options.dhl_freight_sweden_service_point_city.state,
         postal_code=options.dhl_freight_sweden_service_point_postal_code.state,
-        country_code=options.dhl_freight_sweden_service_point_country_code.state,
+        country_code=provider_units.parent_country(
+            (options.dhl_freight_sweden_service_point_country_code.state or "").upper()
+        ),
     )
     missing = [key for key, value in details.items() if not value]
 
@@ -1625,6 +1634,10 @@ def _service_point_party(
             },
         )
 
+    _check_service_point_country(
+        product_code, details["country_code"], shipper_country_code, country_code
+    )
+
     return dhl_freight_sweden_req.PartyType(
         id=access_point_id,
         type=provider_units.PartyType.AccessPoint.value,
@@ -1638,6 +1651,53 @@ def _service_point_party(
             postalCode=str(details["postal_code"]) if details["postal_code"] else None,  # pyright: ignore[reportArgumentType]
             countryCode=details["country_code"],
         ),
+    )
+
+
+def _check_service_point_country(
+    product_code: str,
+    point_country: typing.Optional[str],
+    shipper_country: typing.Optional[str],
+    recipient_country: typing.Optional[str],
+) -> None:
+    if (
+        product_code
+        == provider_units.ShippingService.dhl_freight_sweden_service_point_b2c.value
+        and point_country != "SE"
+    ):
+        # Manual v5.26 §5.12 p56: valid countries SE; DP is the SERVICE POINT.
+        message = (
+            f"Product {product_code} delivers to a service point in SE; "
+            f"the service point country {point_country} is not SE"
+        )
+    elif (
+        product_code
+        == provider_units.ShippingService.dhl_freight_sweden_parcel_connect_b2c.value
+        and point_country != recipient_country
+        and any(
+            country not in provider_units.EU_MEMBER_STATES
+            for country in (shipper_country, recipient_country, point_country)
+        )
+    ):
+        # Manual v5.26 §5.14 p63: from/to countries outside of EU the CN and
+        # DP parties must be within the same country; it is silent within the EU.
+        message = (
+            f"Product {product_code} from or to a country outside the EU "
+            "delivers to a service point in the consignee's country; the "
+            f"service point country {point_country} differs from the "
+            f"recipient country {recipient_country}"
+        )
+    else:
+        return
+
+    raise ServicePointCountryError(
+        message,
+        details={
+            "dhl_freight_sweden_service_point_country_code": dict(
+                code="invalid",
+                message="service point country not valid for product and recipient",
+            )
+        },
     )
 
 

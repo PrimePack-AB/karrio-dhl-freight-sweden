@@ -241,6 +241,13 @@ def with_parent_country(address: models.Address) -> models.Address:
     )
 
 
+# EU member states by ISO code; the SDK EUCountry enum lists Greece as EL.
+# Territory codes are mapped to their parent first, so AX counts as FI.
+EU_MEMBER_STATES: typing.FrozenSet[str] = frozenset(
+    [*(country.name for country in units.EUCountry if country.name != "EL"), "GR"]
+)
+
+
 # The SDK EUCountry enum lists Greece under its VAT prefix EL, so the ISO
 # code GR is added, and Monaco, which Tullverket treats as EU, is likewise
 # appended. Special fiscal territories outside the EU VAT area (Tullverket,
