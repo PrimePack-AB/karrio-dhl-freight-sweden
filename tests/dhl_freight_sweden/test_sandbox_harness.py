@@ -93,6 +93,15 @@ class TestSandboxHarnessConfig(unittest.TestCase):
                 with self.assertRaises(harness.SandboxConfigError):
                     harness.check_host(url)
 
+    def test_gateway_config_turns_the_product_matches_guard_off(self):
+        self.assertEqual(harness.gateway_config(None), {"product_matches": "off"})
+        self.assertEqual(
+            harness.gateway_config({"address_validation": "enforce"}),
+            {"product_matches": "off", "address_validation": "enforce"},
+        )
+        with self.assertRaises(harness.SandboxConfigError):
+            harness.gateway_config({"server_url": "https://example.com"})
+
     def test_skip_reasons(self):
         booking = {**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS": "booking-approved"}
         probes_segment = {
