@@ -36,6 +36,13 @@ ALAND_PARCEL_SHOP = {
     "dhl_freight_sweden_service_point_country_code": "FI",
 }
 
+MAINLAND_PARCEL_SHOP = {
+    **ALAND_PARCEL_SHOP,
+    "dhl_freight_sweden_service_point": "1001",
+    "dhl_freight_sweden_service_point_city": "Helsinki",
+    "dhl_freight_sweden_service_point_postal_code": "00100",
+}
+
 
 def _recipient(country: str, postal_code: str) -> dict:
     return {**_recipient_se, "city": "City", "country_code": country, "postal_code": postal_code}
@@ -180,6 +187,95 @@ class TestDHLFreightCustomsInformationRequired(unittest.TestCase):
             with self.subTest(error=error_type.__name__):
                 with self.assertRaises(error_type):
                     gateway.mapper.create_shipment_request(models.ShipmentRequest(**payload))
+
+
+class TestDHLFreightAlandServicePoint(unittest.TestCase):
+    """The service point is the delivery address (DP) and meets the Åland rules.
+
+    A mainland FI recipient with a service point in Åland receives the parcel
+    across the EU VAT area border, so the booking needs customs data and
+    refuses the customs handling services DHL answered with 24003 to Åland.
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+    def test_mainland_recipient_with_aland_point_requires_customs(self):
+        for point in (ALAND_PARCEL_SHOP, {**ALAND_PARCEL_SHOP, "dhl_freight_sweden_service_point_country_code": "AX"}):
+            with self.subTest(country=point["dhl_freight_sweden_service_point_country_code"]):
+                with self.assertRaises(CustomsInformationRequiredError) as context:
+                    gateway.mapper.create_shipment_request(
+                        models.ShipmentRequest(
+                            **_payload(PARCEL_CONNECT, _recipient("FI", "00100"), point)
+                        )
+                    )
+
+                self.assertTrue(
+                    str(context.exception).startswith(
+                        "Shipment from SE 11143 to FI 00100 via service point FI 22100 "
+                        "crosses the EU VAT area border without customs data; "
+                    ),
+                    str(context.exception),
+                )
+
+    def test_mainland_recipient_with_aland_point_books_with_customs(self):
+        serialized = _serialized(
+            _with_customs(
+                _payload(PARCEL_CONNECT, _recipient("FI", "00100"), ALAND_PARCEL_SHOP),
+                Customs,
+            )
+        )
+
+        self.assertIn("customsInformation", serialized)
+
+    def test_mainland_recipient_with_aland_point_refuses_customs_handling(self):
+        with self.assertRaises(AlandCustomsServiceError) as context:
+            gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(
+                    **_with_customs(
+                        _payload(
+                            PARCEL_CONNECT,
+                            _recipient("FI", "00100"),
+                            {**ALAND_PARCEL_SHOP, "dhl_freight_sweden_customs_handling_full_service": True},
+                        ),
+                        Customs,
+                    )
+                )
+            )
+
+        self.assertIn("(FI 22000-22999, service point)", str(context.exception))
+        self.assertEqual(
+            detail_keys(context.exception),
+            {"dhl_freight_sweden_customs_handling_full_service"},
+        )
+
+    def test_aland_recipient_with_mainland_point_is_unchanged(self):
+        recipient = _recipient("AX", "22100")
+        with self.assertRaises(CustomsInformationRequiredError) as context:
+            gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(**_payload(PARCEL_CONNECT, recipient, MAINLAND_PARCEL_SHOP))
+            )
+        self.assertIn("to FI 22100 crosses", str(context.exception))
+
+        with self.assertRaises(AlandCustomsServiceError) as context:
+            gateway.mapper.create_shipment_request(
+                models.ShipmentRequest(
+                    **_with_customs(
+                        _payload(
+                            PARCEL_CONNECT,
+                            recipient,
+                            {**MAINLAND_PARCEL_SHOP, "dhl_freight_sweden_customs_handling_full_service": True},
+                        ),
+                        Customs,
+                    )
+                )
+            )
+        self.assertIn("(FI 22000-22999, recipient)", str(context.exception))
+
+        self.assertIn(
+            "customsInformation",
+            _serialized(_with_customs(_payload(PARCEL_CONNECT, recipient, MAINLAND_PARCEL_SHOP), Customs)),
+        )
 
 
 if __name__ == "__main__":

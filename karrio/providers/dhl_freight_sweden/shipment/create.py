@@ -446,6 +446,23 @@ def shipment_request(
     service_point_party = _service_point_party(
         options, service, shipper.country_code, recipient.country_code
     )
+    # The service point is the delivery address (DP), so an Åland point
+    # carries the parcel across the EU VAT area border like an Åland recipient.
+    service_point = lib.identity(
+        models.Address(
+            country_code=service_point_party.address.countryCode or "",
+            postal_code=str(service_point_party.address.postalCode),
+        )
+        if service_point_party and service_point_party.address
+        else None
+    )
+    delivery_parties = dict(
+        shipper=shipper,
+        recipient=recipient,
+        **({"service point": service_point} if service_point else {}),
+    )
+    if service_point:
+        _check_aland_customs_services(options, {"service point": service_point})
     lane_countries = {shipper.country_code, recipient.country_code}
     additional_information = [
         *_sent_information(options, lane_countries),
@@ -480,7 +497,7 @@ def shipment_request(
     # customs services are dropped instead of validated.
     within_eu_vat_area = all(
         provider_units.in_eu_vat_area(address.country_code, address.postal_code)
-        for address in (shipper, recipient)
+        for address in delivery_parties.values()
     )
     requested_customs_services = _customs_services(options, customs_options)
     customs_services = lib.identity(
@@ -494,7 +511,7 @@ def shipment_request(
         ]
     )
     if not (within_eu_vat_area or has_customs_data):
-        _refuse_without_customs_data(shipper, recipient)
+        _refuse_without_customs_data(shipper, recipient, service_point)
     if not within_eu_vat_area:
         _check_customs_service_combination(options)
         _check_joint_declaration_destination(options, recipient.country_code)
@@ -1120,11 +1137,22 @@ def _check_commercial_invoice(
 
 
 def _refuse_without_customs_data(
-    shipper: units.ComputedAddress, recipient: units.ComputedAddress
+    shipper: units.ComputedAddress,
+    recipient: units.ComputedAddress,
+    service_point: typing.Optional[models.Address] = None,
 ) -> typing.NoReturn:
-    lane = " to ".join(
-        " ".join(part for part in (address.country_code, address.postal_code) if part)
-        for address in (shipper, recipient)
+    def described(address) -> str:
+        return " ".join(
+            part for part in (address.country_code, address.postal_code) if part
+        )
+
+    lane = f"{described(shipper)} to {described(recipient)}" + lib.identity(
+        f" via service point {described(service_point)}"
+        if service_point
+        and not provider_units.in_eu_vat_area(
+            service_point.country_code, service_point.postal_code
+        )
+        else ""
     )
 
     raise CustomsInformationRequiredError(
