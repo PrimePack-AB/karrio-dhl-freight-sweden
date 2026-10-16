@@ -73,8 +73,19 @@ REFUSAL_109_GB = (
     "601 (dhl_freight_sweden_home_delivery_international_b2c), "
     "233 (dhl_freight_sweden_road_freight_priority), "
     "and HDI, which the connector does not support. "
-    + units.separate_agreement_message("109", "GB")
+    "Product 109 reaches GB only by separate agreement with DHL (product manual "
+    "v5.26 §5.14 p63), which the booking account must hold."
 )
+SANDBOX_SENTENCE_109_GB = (
+    " The sandbox account is offered neither 109 nor 112 to GB, so this lane "
+    "cannot be exercised in the sandbox; test 109 service point delivery to another "
+    "listed country, and GB address delivery with "
+    "dhl_freight_sweden_road_freight_priority (233), "
+    "dhl_freight_sweden_road_freight_standard (202), "
+    "dhl_freight_sweden_home_delivery_international_b2c (601), or another product "
+    "that product matches offers for the lane."
+)
+REFUSAL_109_GB_TEST_MODE = REFUSAL_109_GB + SANDBOX_SENTENCE_109_GB
 
 
 def _book(gateway_, payload: dict, *responses: typing.Any):
@@ -166,16 +177,37 @@ class TestProductMatchGuard(unittest.TestCase):
                     [{"weight": 1.0, "length": 30.0, "width": 20.0, "height": 10.0, "volume": 0.01}],
                     "the booking's own piece measurements, as its transport instruction sends them",
                 )
-                self.assertEqual(str(context.exception), REFUSAL_109_GB)
+                self.assertEqual(str(context.exception), REFUSAL_109_GB_TEST_MODE)
                 self.assertEqual(context.exception.code, "SHIPPING_SDK_FIELD_ERROR")
                 self.assertEqual(
                     context.exception.details,
                     {
                         "service": dict(
-                            code="product_not_offered", message=REFUSAL_109_GB
+                            code="product_not_offered",
+                            message=REFUSAL_109_GB_TEST_MODE,
                         )
                     },
                 )
+
+    def test_production_refusal_omits_the_sandbox_sentence(self):
+        production = karrio.gateway["dhl_freight_sweden"].create(
+            dict(
+                test_mode=False,
+                carrier_id="dhl_freight_sweden",
+                client_key="TEST_CLIENT_KEY",
+                account_number="1234567",
+                international_account_number="123456",
+            )
+        )
+        request = production.mapper.create_shipment_request(
+            models.ShipmentRequest(**LONDON)
+        )
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.side_effect = _answers(lib.to_json(GB_MATCHES["response"]))
+            with self.assertRaises(ProductNotOfferedError) as context:
+                proxy_of(production).create_shipment(request)
+
+        self.assertEqual(str(context.exception), REFUSAL_109_GB)
 
     def test_empty_match_list_refuses(self):
         request = enforce_gateway.mapper.create_shipment_request(
@@ -201,7 +233,7 @@ class TestProductMatchGuard(unittest.TestCase):
         self.assertEqual(len(urls), 1)
         self.assertEqual(
             [(m.code, m.message) for m in messages],
-            [("SHIPPING_SDK_FIELD_ERROR", REFUSAL_109_GB)],
+            [("SHIPPING_SDK_FIELD_ERROR", REFUSAL_109_GB_TEST_MODE)],
         )
 
     def test_warn_mode_books_and_warns(self):
@@ -217,7 +249,7 @@ class TestProductMatchGuard(unittest.TestCase):
         self.assertTrue(urls[1].endswith(TI_PATH))
         warning = next(m for m in messages if m.code == "product_not_offered")
         self.assertEqual(warning.level, "warning")
-        self.assertEqual(warning.message, REFUSAL_109_GB)
+        self.assertEqual(warning.message, REFUSAL_109_GB_TEST_MODE)
 
     def test_off_mode_sends_no_lookup(self):
         (details, messages), urls, _ = _book(

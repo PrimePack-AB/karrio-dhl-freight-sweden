@@ -36,16 +36,41 @@ def booking_exchange(name: str) -> typing.Dict[str, typing.Any]:
     )
 
 
-def parse(request: dict, response: dict) -> typing.List[models.Message]:
+def parse(request: dict, response: dict, gateway_=gateway) -> typing.List[models.Message]:
     _, messages = create.parse_shipment_response(
         lib.Deserializable(
             [response, None],
             lib.identity,
             dict(separate_agreement=create.separate_agreement_lane(request)),
         ),
-        settings_of(gateway),
+        settings_of(gateway_),
     )
     return messages
+
+
+production_gateway = karrio.gateway["dhl_freight_sweden"].create(
+    dict(
+        test_mode=False,
+        carrier_id="dhl_freight_sweden",
+        client_key="TEST_CLIENT_KEY",
+        account_number="1234567",
+        international_account_number="123456",
+        config={"product_matches": "off"},
+    )
+)
+AGREEMENT_SENTENCES = {
+    "112": "Product 112 reaches GB only by separate agreement with DHL (product manual v5.26 §5.3 p18), which the booking account must hold.",
+    "109": "Product 109 reaches GB only by separate agreement with DHL (product manual v5.26 §5.14 p63), which the booking account must hold.",
+}
+SANDBOX_SENTENCE = (
+    " The sandbox account is offered neither 109 nor 112 to GB, so this lane "
+    "cannot be exercised in the sandbox; test 109 service point delivery to another "
+    "listed country, and GB address delivery with "
+    "dhl_freight_sweden_road_freight_priority (233), "
+    "dhl_freight_sweden_road_freight_standard (202), "
+    "dhl_freight_sweden_home_delivery_international_b2c (601), or another product "
+    "that product matches offers for the lane."
+)
 
 
 def dhl_messages(response: dict) -> typing.List[typing.Tuple[str, str]]:
@@ -126,6 +151,17 @@ class TestSeparateAgreementNote(unittest.TestCase):
                 self.assertIn("separate agreement", note.message)
                 self.assertEqual(note.details, dict(product=product, country="GB"))
                 self.assertEqual(note.level, "warning")
+
+    def test_note_names_the_sandbox_only_in_test_mode(self):
+        for product, name in GB_REJECTIONS.items():
+            exchange = booking_exchange(name)
+            for mode, gateway_, expected in (
+                ("test", gateway, AGREEMENT_SENTENCES[product] + SANDBOX_SENTENCE),
+                ("production", production_gateway, AGREEMENT_SENTENCES[product]),
+            ):
+                with self.subTest(product=product, mode=mode):
+                    (note,) = notes(parse(exchange["request"], exchange["response"], gateway_))
+                    self.assertEqual(note.message, expected)
 
     def test_shipment_create_rejected_to_gb_carries_the_note(self):
         exchange = booking_exchange(GB_REJECTIONS["109"])

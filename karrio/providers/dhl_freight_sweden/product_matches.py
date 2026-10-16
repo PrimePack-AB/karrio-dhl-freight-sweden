@@ -307,7 +307,9 @@ def check_booking_product(
     if product in offered:
         return []
 
-    message = _not_offered_message(criteria, product, offered, separate_agreement)
+    message = _not_offered_message(
+        criteria, product, offered, separate_agreement, bool(settings.test_mode)
+    )
     if mode == provider_units.ServabilityMode.enforce:
         raise ProductNotOfferedError(
             message,
@@ -343,6 +345,7 @@ def _not_offered_message(
     product: str,
     offered: typing.List[str],
     separate_agreement: typing.Optional[dict],
+    test_mode: bool,
 ) -> str:
     names = {
         service.value: service.name
@@ -369,7 +372,7 @@ def _not_offered_message(
     agreement = lib.identity(
         " "
         + provider_units.separate_agreement_message(
-            separate_agreement["product"], separate_agreement["country"]
+            separate_agreement["product"], separate_agreement["country"], test_mode
         )
         if separate_agreement
         else ""
