@@ -7,8 +7,9 @@ Manual references are to [product manual v5.26](../development/index.md#product-
 
 ## The EU VAT area
 
-The connector sends customs information and the requested customs services only when the shipper or the recipient lies outside the EU VAT area for goods; within it, customs data and customs services are dropped with a `customs_omitted_intra_eu` warning.
+The connector sends customs information and the requested customs services only when the shipper, the recipient, or the service point lies outside the EU VAT area for goods; within it, customs data and customs services are dropped with a `customs_omitted_intra_eu` warning.
 Outside the area a booking without customs data fails before the booking request, as the README's exporting section explains.
+The service point counts because it is the delivery address (DP), so a mainland FI recipient with a service point in FI 22000-22999 crosses the border, and the refusal names the point: "Shipment from SE 11143 to FI 00100 via service point FI 22100 crosses the EU VAT area border without customs data; ...".
 To or from Åland the customs handling services Standard and full service fail before the booking request: the manual lists Åland for both, and the sandbox rejected both with 24003 (see [Åland](#åland)).
 The manual makes customs proceedings mandatory for deliveries outside the European Union or the tax area and names Åland (FI 22) and the Canary Islands as areas outside the tax area (§7.4 p162).
 An address lies inside the area when its country is an EU member state, GR, or MC, its postal code is not in one of the ranges below, and, for DK, the code is neither led by FO or GL nor a three-digit Faroese code, or when it is a GB postcode starting with `BT` (Northern Ireland), which is inside the area for goods.
@@ -73,7 +74,9 @@ The sandbox answered bookings from SE to FI 22100 as follows.
 | yes, with an EORI number | Standard | 112 rejected with 24003 "customsHandlingStandard is not available for this country combination"; the manual lists "NO and Åland Islands (FI 22)" for Standard (§6.6 p94) | refuses | [rejection-24003-112-se-fi-aland-standard](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-24003-112-se-fi-aland-standard.json) |
 | `CommercialInvoice` and one commodity | none | 109 booked, customs document and commodity echoed | books | [booking-2906762592](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762592-109-se-fi-aland-customs.json) |
 
-The connector refuses `dhl_freight_sweden_customs_handling_standard` and `dhl_freight_sweden_customs_handling_full_service` before the booking request when the shipper or the recipient lies in FI 22000-22999, also under AX or written `FI-22100` or `AX-22100`, with a `SHIPPING_SDK_FIELD_ERROR` keyed by the option.
+The connector refuses `dhl_freight_sweden_customs_handling_standard` and `dhl_freight_sweden_customs_handling_full_service` before the booking request when the shipper, the recipient, or the service point lies in FI 22000-22999, also under AX or written `FI-22100` or `AX-22100`, with a `SHIPPING_SDK_FIELD_ERROR` keyed by the option.
+The message names the Åland party, for example "(FI 22000-22999, service point)" for a mainland recipient with a Mariehamn service point.
+A service point on the mainland does not lift the rules for a recipient in Åland.
 Customs information without either customs handling service is the one way to book Åland.
 The evidence shows that the sandbox stored the customs information, not how DHL clears customs for Åland after booking.
 Rating is unchanged.
