@@ -36,6 +36,12 @@ class ConnectionConfig(lib.Enum):
     address_validation = lib.OptionEnum(
         "address_validation", ServabilityMode, "off"
     )
+    # Booking pre-flight against Product API product matches: off skips the
+    # lookup, warn annotates the shipment when the product is not offered,
+    # enforce refuses the booking before the transport instruction is sent.
+    product_matches = lib.OptionEnum(
+        "product_matches", ServabilityMode, default="enforce"
+    )
     shipping_options = lib.OptionEnum("shipping_options", list)
     shipping_services = lib.OptionEnum("shipping_services", list)
 
@@ -1067,11 +1073,29 @@ PRODUCT_LANE_CITATIONS: typing.Dict[str, str] = {
     ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: "§5.19 p82",
 }
 
+# Products the product matches booking guard skips: no committed product
+# matches answer lists them (tests/dhl_freight_sweden/fixtures/sandbox/
+# lookup-product-matches-*.json and the matches exchanges in rejection-*.json).
+# 205 was not listed for SE to NO and the forced booking was rejected 22020
+# (rejection-22020-205-se-no.json); no pallet-sized SE to SE lookup (209, 210,
+# 212), no SPI lane lookup, and no inbound 107 lookup has been captured.
+PRODUCT_MATCH_UNGUARDED: typing.FrozenSet[str] = frozenset(
+    {
+        ShippingService.dhl_freight_sweden_road_freight_direct.value,
+        ShippingService.dhl_freight_sweden_special.value,
+        ShippingService.dhl_freight_sweden_pall.value,
+        ShippingService.dhl_freight_sweden_parti.value,
+        ShippingService.dhl_freight_sweden_standard_pallet_international.value,
+        ShippingService.dhl_freight_sweden_parcel_return_connect_c2b.value,
+    }
+)
+
 # Countries a product reaches only by separate agreement with DHL (§5.3 p18,
 # §5.14 p63). The sandbox rejected both products to GB with these
 # codes (tests/dhl_freight_sweden/fixtures/sandbox/rejection-22005-112-se-gb.json,
-# rejection-22005-109-se-gb.json); the connector books them and explains the
-# rejection.
+# rejection-22005-109-se-gb.json); the product matches guard refuses them
+# when DHL does not offer the lane, and a booking sent anyway carries a note
+# explaining the rejection.
 SEPARATE_AGREEMENT_COUNTRIES: typing.Dict[str, typing.FrozenSet[str]] = {
     ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: frozenset({"GB"}),
     ShippingService.dhl_freight_sweden_parcel_connect_plus.value: frozenset({"GB"}),
