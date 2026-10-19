@@ -16,12 +16,14 @@ It is opt-in and sits outside `tests/`, so the default offline run never discove
 | `booking-export` | 109, 112, 202, 205, 233, 601 | export lanes, special territories, customs handling |
 | `booking-declarations` | 601, 202, 233 | SENT, EKAER, and UIT entries |
 | `booking-probes` | one per probe | one-off mutated bookings answering a single question |
+| `pickup-probes` | one pickup request per probe | the PickupRequest API, which no connector operation calls yet |
 | `rejections` | nothing accepted | expected DHL error codes |
 
 Before each booking a free product-match lookup, and for 109 a service-point lookup, checks that DHL offers the product on the lane, and the case skips otherwise; the few cases that book past this check exist to record DHL's answer.
 Sandbox gateways set the connector's `product_matches` setting to `off` (`harness.gateway_config`), so the connector's own product matches check neither refuses those cases nor adds an exchange to booking captures.
 The `rejections` cases build a valid request through the connector and `harness.mutated_request` changes the serialized TransportInstruction just before the call, so connector validation stays intact, and a response carrying a shipment id fails the test and reports the id as a finding.
 The `booking-probes` cases mutate a valid request the same way but assert acceptance, and the segment is deliberately absent from every default run: a probe spends its booking only when `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` names `booking-probes`.
+The `pickup-probes` segment is absent from every default run in the same way, and its pickup requests draw on the booking budget, because a booked pickup cannot be cancelled electronically (manual §5.2 p14).
 Results, with every booking, rejection, and deviation from the product manual, are in [docs/notes/sandbox/sandbox-findings.md](../../notes/sandbox/sandbox-findings.md).
 
 ## Captures
@@ -43,7 +45,7 @@ flowchart TD
 ```
 
 Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](../../../tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256.
-Evidence files are named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, or `label-<id>-...`.
+Evidence files are named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, `label-<id>-...`, or `pickup-...`, the last holding one PickupRequest API call with the booking number in its name when DHL accepts it.
 A file's metadata names the endpoint, product, route, booking id or error code, and the capturing script or suite test, and each call records the path of its original capture relative to `$XDG_STATE_HOME` and the sha256 of that capture, so the original can be checked against the committed copy.
 The committed copies drop the `client-key` header and the response headers, and replace label and document base64 with a length marker.
 The earliest captures masked the account number in the Consignor party id; they predate the international customer number and booked every product with the domestic 999999, so their evidence files restore that number and record the masked placeholders under `account_number_restored`.
