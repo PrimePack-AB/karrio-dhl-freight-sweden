@@ -34,7 +34,7 @@ ACCOUNT_NUMBER = "999999"
 # international customer number. Earlier captures booked them with
 # ACCOUNT_NUMBER.
 INTERNATIONAL_ACCOUNT_NUMBER_SINCE = "2026-10-09"
-KINDS = ("booking", "rejection", "lookup", "label")
+KINDS = ("booking", "rejection", "lookup", "label", "pickup")
 METADATA_KEYS = (
     "kind",
     "summary",
@@ -65,6 +65,10 @@ OPTIONAL_EXCHANGE_KEYS = {"response_reduced", "label"}
 LABEL_KEYS = ("pdf_source", "page_size_pt", "text_extraction", "text_source", "text")
 TI_PATH = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
 PRINT_PATH = "/printapi/v1/print/printdocumentsbyid"
+PICKUP_PATH = "/pickuprequestapi/v1/pickuprequest/pickuprequest"
+PICKUP_SPEC = (
+    pathlib.Path(__file__).parents[2] / "vendor" / "se-api-farm" / "pickup-request-api-2.10.0.json"
+)
 CAPTURED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 TOKEN = re.compile(r"^[A-Za-z0-9_\-+/=]{30,}$")
@@ -343,6 +347,32 @@ class TestSandboxEvidenceParses(unittest.TestCase):
                         self.assertEqual(
                             error.parse_error_response(item["response"], settings_of(gateway)), []
                         )
+
+
+class TestSandboxPickupEvidence(unittest.TestCase):
+    def test_pickup_responses_carry_a_spec_status(self):
+        """The live status is the index into the spec's ResponseStatus names."""
+        statuses = json.loads(PICKUP_SPEC.read_text())["components"]["schemas"][
+            "ResponseStatus"
+        ]["enum"]
+        pickups = 0
+        for path in EVIDENCE_FILES:
+            evidence = load(path)
+            if evidence["kind"] != "pickup":
+                continue
+            pickups += 1
+            with self.subTest(path.name):
+                (item,) = evidence["exchanges"]
+                self.assertTrue(item["endpoint"].endswith(PICKUP_PATH))
+                response = item["response"]
+                self.assertIsInstance(response["status"], int)
+                accepted = statuses[response["status"]] == "Accepted"
+                self.assertEqual(
+                    evidence["booking_id"], response["bookingNumber"] if accepted else None
+                )
+                if evidence["booking_id"]:
+                    self.assertIn(evidence["booking_id"], path.name)
+        self.assertGreater(pickups, 0)
 
 
 if __name__ == "__main__":

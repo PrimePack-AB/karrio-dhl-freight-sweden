@@ -862,6 +862,26 @@ def _(b: Builder) -> Json:
     )
 
 
+PICKUP_RUN = "20261019-120925"
+PICKUP_TEST = "TestSandboxPickupProbes.test_pickup_request_102_se"
+
+
+@evidence("pickup-102-se-se-customer-number-unknown.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "pickup",
+        "PickupRequest for 102 within SE with payer code 1, Consignor id 999999, a Consignee in "
+        "11151 Stockholm, a Pickup party at the Consignor's address, one 1 kg piece, and pickupDate "
+        "2026-10-20T10:00:00 answered HTTP 200 with status 1 (Rejected in the spec's ResponseStatus "
+        "order), an empty bookingNumber, pickupDateTime 2026-10-20T10:00:00+02:00, and the message "
+        "\"Ej accepterad! Din bokning '11151 Stockholm' har inte accepterats. Angivet kundnr 999999 "
+        "är okänt.\" (its line break and double space collapsed here).",
+        "102", "SE 11143 -> SE 11151", None, None,
+        f"{SUITE_RUN}: {PICKUP_TEST}",
+        [b.suite_exchange(PICKUP_RUN, "001-pickup-102-se")],
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 

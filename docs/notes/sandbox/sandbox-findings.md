@@ -1,5 +1,5 @@
 ---
-title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-15"
+title: "DHL Freight SE sandbox findings, 2026-10-05 to 2026-10-19"
 ---
 
 ## Method
@@ -46,6 +46,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-09 | 07:49 | suite | 103 service point booking with the four-digit terminal id |
 | 2026-10-13 | 13:04 | suite | 202 Consignor id account-number probes |
 | 2026-10-16 | 12:18 | suite | 109 GB ParcelShop case without the product matches check |
+| 2026-10-19 | 10:09 | suite | one PickupRequest for 102 within SE |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -184,6 +185,18 @@ The rejection segment built a valid request through the connector and changed th
 | 2026-10-06 | 112 | SE → FI 22100 (Åland) | payer code 023, customs handling Standard, made-up EORI number SE0000000000, one commodity, proforma invoice | 24003 `customsHandlingStandard` "customsHandlingStandard is not available for this country combination" | [rejection-24003-112-fi-aland-standard][r-24003-ax-std] |
 | 2026-10-06 | 205 | SE → NO 0154 | payer code DAP, customs handling full service, one commodity, one 1 kg piece, sent without the product matches check | 22020 `ChargeableWeight` "ChargeableWeight is lower than product min 2500.0" | [rejection-22020-205-no][r-22020-205-no] |
 | 2026-10-15 | 118 | SE → SE 98138 Kiruna | consignee postal code 98138, whose PostalCode route answers `bookable` `true` and `homeDeliveryParcel` `false`, sent unmutated with the route pre-flight off | 22036 "The postal code code 98138 is not supported for this product" | [rejection-22036-118-se-kiruna][r-22036] |
+
+## Pickup requests
+
+On 2026-10-19 the pickup-probes segment sent one request to the PickupRequest API, `POST /pickuprequestapi/v1/pickuprequest/pickuprequest`, with the client key header the other APIs take ([pickup-102-se-se-customer-number-unknown][p-102]).
+The request carried product 102, payer code 1, the Consignor party with id 999999 at Kungsgatan 1, 11143 Stockholm, the Consignee party at Drottninggatan 10, 11151 Stockholm, a Pickup party at the Consignor's address, one piece of 1 kg and 30 × 20 × 10 cm, `pickupDate` `2026-10-20T10:00:00` without an offset, and a `pickupInstruction` text, the parties the manual lists for 102 (§5.2 p15) in the transport instruction party shape.
+The sandbox answered HTTP 200 with `status` `1`, an empty `bookingNumber`, `pickupDateTime` `2026-10-20T10:00:00+02:00`, and the `message` "Ej accepterad! Din bokning '11151 Stockholm' har inte accepterats. Angivet kundnr 999999 är okänt.", that is, the booking was not accepted because customer number 999999 is unknown.
+
+The spec types `ResponseStatus` as an integer and lists the names Accepted, Rejected, Moved, and InternalError, so `1` is Rejected by position, where TransportInstruction answers carry `status` as text.
+The `pickupDateTime` kept the requested date and time and added the Swedish summer-time offset.
+The message names the Consignee's postal code and city rather than the Pickup party's, and the same number 999999 was accepted as the 102 Consignor id by TransportInstruction ([2906761222][b-222]).
+The sandbox answered the client key with a PickupRequest body rather than the HTTP 401 it gives an unknown key on the PostalCode API ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
+No pickup was booked, so nothing is pending cancellation, which the manual says cannot be done electronically (§5.2 p14).
 
 ## Lookup errors
 
@@ -342,6 +355,9 @@ One further question for DHL API Farm, drafted on 2026-10-16: the manual require
 May a 109 AccessPoint party within the EU lie in another country than the consignee, or must CN and DP always share a country?
 No sandbox booking has sent a service point in another country than the consignee's, and the connector refuses such a booking only from or to a country outside the EU ([access points](../../concepts/booking-rules.md#access-points)).
 
+One further question for DHL API Farm, from 2026-10-19: the PickupRequest API answered customer number 999999 as unknown on a 102 pickup within SE ([pickup-102-se-se-customer-number-unknown][p-102]).
+Which customer number does a pickup request take, in which party, and does a sandbox application need the number registered for pickups?
+
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
 ## Coverage
@@ -373,7 +389,8 @@ Availability follows the valid countries of each product section of manual v5.26
 
 These were never exercised:
 
-- the PickupRequest, TimeTable, PriceQuote, and HomeDeliveryLocator APIs, and the Print API for anything but labels
+- the TimeTable, PriceQuote, and HomeDeliveryLocator APIs, and the Print API for anything but labels
+- the PickupRequest API beyond one 102 request within SE, and any accepted pickup request (see [Pickup requests](#pickup-requests))
 - any additional service other than `customsHandlingFullService` and `customsHandlingStandard`
 - the customer's own declaration, the joint declaration (including 109 with payer code 023), and VOEC
 - customs to destinations outside the EU VAT area other than NO, CH, and FI 22100, and customs data without a customs service anywhere but FI 22100
@@ -483,6 +500,7 @@ These were never exercised:
 [lb-324]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788324-103-se-se-service-point-phone.json
 [lb-449]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788449-109-se-dk-unregistered-access-point-id.json
 [r-22036]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json
+[p-102]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-customer-number-unknown.json
 [b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
 [lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
