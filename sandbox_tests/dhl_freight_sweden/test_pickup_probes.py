@@ -19,7 +19,9 @@ import datetime
 import typing
 import unittest
 
+import karrio.core.models as models
 import karrio.lib as lib
+import karrio.sdk as karrio
 import karrio.providers.dhl_freight_sweden.units as provider_units
 from . import booking, harness
 
@@ -150,6 +152,74 @@ class TestSandboxPickupProbes(unittest.TestCase):
             return {**request, "parties": parties}
 
         self._request_pickup("pickup-102-se-no-consignee", build)
+
+    def test_pickup_request_102_se_consignor_and_pickup_party_id(self):
+        """Variant: the accepted no-Consignee request with 999999 on the Consignor too.
+
+        The Consignor id alone was answered as an unknown customer number and
+        the Pickup party id alone was accepted, so this shows whether a
+        Consignor id causes the rejection or the Pickup party id is required.
+        """
+
+        def build(account: str) -> dict:
+            request = pickup_request_102(account)
+            parties = [
+                {**p, "id": account}
+                for p in request["parties"]
+                if p["type"] != provider_units.PartyType.Consignee.value
+            ]
+            return {**request, "parties": parties}
+
+        self._request_pickup("pickup-102-se-consignor-and-pickup-party-id", build)
+
+    def test_pickup_request_212_se_connector(self):
+        """212 within SE through the connector's own pickup path, payer code 1.
+
+        The manual makes a pickup request for 212 carry the complete pickup
+        address, at least the delivery place's address, postal code, and city,
+        and the freight payer party with the paying DHL account number
+        (§5.8 p38); the connector sends the Consignor and the Pickup party at
+        the karrio pickup address only.
+        """
+        booking.require_booking(self, self.session, "212", "SE")
+        label = "pickup-212-se-connector"
+        payload = models.PickupRequest(
+            pickup_date=PICKUP_DATE.strftime("%Y-%m-%d"),
+            ready_time=PICKUP_DATE.strftime("%H:%M"),
+            closing_time="16:00",
+            address=models.Address(**booking.SHIPPER),
+            parcels=[models.Parcel(**booking.PARCEL)],
+            instruction=PICKUP_INSTRUCTION,
+            options=dict(
+                dhl_freight_sweden_service="212",
+                dhl_freight_sweden_payer_code="1",
+            ),
+        )
+        if not self.session.budget.reserve():
+            self.skipTest("booking budget exhausted")
+
+        details: typing.Any = None
+        messages: typing.List[models.Message] = []
+        try:
+            details, messages = (
+                karrio.Pickup.schedule(payload).from_(self.gateway).parse()
+            )
+        finally:
+            self.session.log_booking(
+                "212",
+                details.confirmation_number if details else None,
+                self.id(),
+            )
+            self.session.capture(self.gateway, label)
+            self.session.capture_parsed(
+                label,
+                dict(
+                    details=lib.to_dict(details),
+                    messages=lib.to_dict(messages),
+                ),
+            )
+
+        self.assertTrue(details and details.confirmation_number, messages)
 
     def _request_pickup(
         self, label: str, build: typing.Callable[[str], dict]
