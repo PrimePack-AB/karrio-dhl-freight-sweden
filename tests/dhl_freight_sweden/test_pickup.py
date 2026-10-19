@@ -24,7 +24,7 @@ import karrio.providers.dhl_freight_sweden.pickup as provider_pickup
 import karrio.providers.dhl_freight_sweden.shipment.create as provider_create
 import karrio.sdk as karrio
 
-from .fixture import gateway, serialize_request, settings_of
+from .fixture import as_list, gateway, serialize_request, settings_of
 
 FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures" / "sandbox"
 AcceptedPickup = json.loads(
@@ -290,7 +290,7 @@ class TestPickupResponse(unittest.TestCase):
             parsed = karrio.Pickup.schedule(_pickup_request()).from_(gateway).parse()
 
         self.assertListEqual(
-            lib.to_dict(parsed),
+            as_list(lib.to_dict(parsed)),
             [
                 {
                     "carrier_id": "dhl_freight_sweden",
@@ -313,7 +313,7 @@ class TestPickupResponse(unittest.TestCase):
             parsed = karrio.Pickup.schedule(_pickup_request()).from_(gateway).parse()
 
         self.assertListEqual(
-            lib.to_dict(parsed),
+            as_list(lib.to_dict(parsed)),
             [
                 None,
                 [

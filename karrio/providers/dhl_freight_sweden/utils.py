@@ -51,6 +51,10 @@ class Settings(core.Settings):
         return f"{self.server_url}/postalcodeapi/v1"
 
     @property
+    def pickup_request_url(self):
+        return f"{self.server_url}/pickuprequestapi/v1"
+
+    @property
     def tracking_url(self):
         # The API Farm exposes no native shipment-tracking URL, so this uses the
         # public DHL Freight Sweden tracking widget keyed by shipment id.

@@ -136,9 +136,10 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
         # capabilities from this same detection path). ``validate_address``
         # maps onto the existing "shipping" capability (units.map_capability
         # routes any *address* method there), so the set is stable.
+        # ``schedule_pickup`` adds the "pickup" capability.
         self.assertEqual(
             set(get_carrier_capabilities("dhl_freight_sweden")),
-            {"shipping", "rating"},
+            {"shipping", "rating", "pickup"},
         )
 
     def test_validate_address_registered_on_proxy(self):

@@ -126,6 +126,27 @@ class Proxy(proxy.Proxy):
             ctx,
         )
 
+    def schedule_pickup(self, request: lib.Serializable) -> lib.Deserializable[dict]:
+        """Book a pickup through the PickupRequest API.
+
+        The API has no cancel or update endpoint and a booked pickup cannot
+        be cancelled electronically (product manual v5.26 §5.2 p14), so the
+        proxy defines neither ``modify_pickup`` nor ``cancel_pickup``.
+        """
+        response = lib.request(
+            url=f"{self.settings.pickup_request_url}/pickuprequest/pickuprequest",
+            data=lib.to_json(request.serialize()),
+            trace=self.trace_as("json"),
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                "client-key": self.settings.client_key,
+            },
+            on_error=lib.error_decoder,
+        )
+
+        return lib.Deserializable(response, provider_utils.to_dict, request.ctx)
+
     def _destination_route_messages(
         self, request: lib.Serializable
     ) -> typing.List[models.Message]:

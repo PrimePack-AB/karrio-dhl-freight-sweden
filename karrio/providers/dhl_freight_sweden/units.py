@@ -600,6 +600,41 @@ def booking_system(product_code: str) -> BookingSystem:
     return PRODUCT_BOOKING_SYSTEMS.get(product_code, BookingSystem.domestic)
 
 
+# Products the PickupRequest API books a pickup for, in the order of product
+# manual v5.26 §10.14.12 p236. 209's own "APIs" table lists no PickupRequest
+# API, and the connector follows §10.14.12.
+PICKUP_PRODUCTS: typing.Tuple[str, ...] = tuple(
+    product.value
+    for product in (
+        ShippingService.dhl_freight_sweden_paket,
+        ShippingService.dhl_freight_sweden_parcel_connect_plus,
+        ShippingService.dhl_freight_sweden_special,
+        ShippingService.dhl_freight_sweden_pall,
+        ShippingService.dhl_freight_sweden_stycke,
+        ShippingService.dhl_freight_sweden_parti,
+        ShippingService.dhl_freight_sweden_service_point_b2c,
+        ShippingService.dhl_freight_sweden_parcel_connect_b2c,
+        ShippingService.dhl_freight_sweden_hemleverans_paket_b2c,
+        ShippingService.dhl_freight_sweden_home_delivery_b2c,
+    )
+)
+PICKUP_PRODUCTS_CITATION = "§10.14.12 p236"
+
+
+class PickupOption(lib.Enum):
+    """DHL Freight pickup request options.
+
+    Both are required: one karrio instance serves several DHL accounts, so a
+    pickup takes its product and payer code from the request, never from a
+    connection default.
+    """
+
+    # A PICKUP_PRODUCTS code or its ShippingService name.
+    dhl_freight_sweden_service = lib.OptionEnum("productCode", str)
+    # Terms-of-delivery code, validated against the product's PAYER_CODES entry.
+    dhl_freight_sweden_payer_code = lib.OptionEnum("payerCode", str)
+
+
 class PayerCodes(typing.NamedTuple):
     """Terms-of-delivery codes a product accepts.
 

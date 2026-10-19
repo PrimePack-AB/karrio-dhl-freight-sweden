@@ -57,4 +57,15 @@ class Mapper(mapper.Mapper):
         self, response: lib.Deserializable[typing.List[dict]]
     ) -> typing.Tuple[models.ShipmentDetails, typing.List[models.Message]]:
         return provider.parse_shipment_response(response, self.settings)
-    
+
+    def create_pickup_request(
+        self, payload: models.PickupRequest
+    ) -> lib.Serializable:
+        return provider.pickup_request(payload, self.settings)
+
+    def parse_pickup_response(
+        self, response: lib.Deserializable[dict]
+    ) -> typing.Tuple[models.PickupDetails, typing.List[models.Message]]:
+        # The SDK base annotates non-optional PickupDetails, but a pickup DHL
+        # does not accept returns None details with DHL's message.
+        return provider.parse_pickup_response(response, self.settings)  # pyright: ignore[reportReturnType]
