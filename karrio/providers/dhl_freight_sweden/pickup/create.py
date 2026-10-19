@@ -154,8 +154,16 @@ def _extract_details(
         carrier_id=settings.carrier_id,
         carrier_name=settings.carrier_name,
         confirmation_number=str(pickup.bookingNumber),
-        pickup_date=lib.fdate(pickup.pickupDateTime, try_formats=formats),  # pyright: ignore[reportArgumentType]
-        ready_time=lib.ftime(pickup.pickupDateTime, try_formats=formats),  # pyright: ignore[reportArgumentType]
+        pickup_date=lib.identity(
+            lib.fdate(pickup.pickupDateTime, try_formats=formats)
+            if pickup.pickupDateTime
+            else None
+        ),
+        ready_time=lib.identity(
+            lib.ftime(pickup.pickupDateTime, try_formats=formats)
+            if pickup.pickupDateTime
+            else None
+        ),
         meta=lib.identity(dict(message=pickup.message) if pickup.message else None),
     )
 
