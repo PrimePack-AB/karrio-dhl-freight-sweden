@@ -939,6 +939,46 @@ def _(b: Builder) -> Json:
     )
 
 
+PICKUP_BOTH_IDS_RUN = "20261019-124847"
+
+
+@evidence("pickup-102-se-se-consignor-and-pickup-party-id-customer-number-unknown.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "pickup",
+        "PickupRequest for 102 within SE as in "
+        f"pickup-{PICKUP_NO_CONSIGNEE_BOOKING}-102-se-se-no-consignee.json with id 999999 on the "
+        "Consignor party as well as on the Pickup party answered HTTP 200 with status 1 (Rejected), "
+        "an empty bookingNumber, pickupDateTime 2026-10-20T10:00:00+02:00, and the message \"Ej "
+        "accepterad! Din bokning ' VARIOUS' har inte accepterats. Angivet kundnr 999999 är okänt.\" "
+        "(its line break and double space collapsed here).",
+        "102", "SE 11143", None, None,
+        f"{SUITE_RUN}: TestSandboxPickupProbes.test_pickup_request_102_se_consignor_and_pickup_party_id",
+        [b.suite_exchange(PICKUP_BOTH_IDS_RUN, "001-pickup-102-se-consignor-and-pickup-party-id")],
+    )
+
+
+PICKUP_212_RUN = "20261019-124901"
+PICKUP_212_BOOKING = "421-2026-10-19-12.49.01.654345"
+
+
+@evidence(f"pickup-{PICKUP_212_BOOKING}-212-se-se-connector.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "pickup",
+        "PickupRequest for 212 within SE serialized by the connector's pickup create path "
+        "(karrio.Pickup.schedule with dhl_freight_sweden_service 212 and payer code 1): the "
+        "Consignor without id and the Pickup party with id 999999 at 11143 Stockholm, no Consignee "
+        "and no FreightPayer party, one 1 kg piece, and pickupDate 2026-10-20T10:00:00, answered "
+        f"HTTP 200 with status 0 (Accepted), bookingNumber {PICKUP_212_BOOKING}, no pickupDateTime, "
+        "and the message \"Bekräftad! Din bokning ' VARIOUS' har bokningsnummer "
+        f"{PICKUP_212_BOOKING}\" (its double space collapsed here).",
+        "212", "SE 11143", PICKUP_212_BOOKING, None,
+        f"{SUITE_RUN}: TestSandboxPickupProbes.test_pickup_request_212_se_connector",
+        [b.suite_exchange(PICKUP_212_RUN, "001-pickup-212-se-connector")],
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 
