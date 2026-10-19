@@ -1,5 +1,5 @@
-"""Sandbox segment ``pickup-probes``: PickupRequest API calls, groundwork
-for a pickup-create feature the connector does not yet have.
+"""Sandbox segment ``pickup-probes``: hand-built PickupRequest API calls,
+the evidence behind the request shape of the connector's ``schedule_pickup``.
 
 The PickupRequest API (vendor/se-api-farm/pickup-request-api-2.10.0.json)
 books a pickup for one or several shipments of 102, 112, 209, 210, 211, 212,
