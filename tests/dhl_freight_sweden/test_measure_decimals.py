@@ -15,7 +15,7 @@ import karrio.lib as lib
 import karrio.providers.dhl_freight_sweden.units as provider_units
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 
-from .fixture import gateway, serialize_request
+from .fixture import gateway, members, serialize_request
 from .test_pickup import _options, _pickup_request
 from .test_shipment import (
     _payload,
@@ -60,7 +60,7 @@ def _package(**changes: typing.Any) -> lib.units.Package:
 
 class TestMeasureDecimals(unittest.TestCase):
     def test_every_booked_product_but_107_has_its_table(self):
-        products = {service.value for service in provider_units.ShippingService}
+        products = {member.value for member in members(provider_units.ShippingService)}
 
         self.assertEqual(
             products - set(provider_units.PRODUCT_MEASURE_DECIMALS), {"107"}

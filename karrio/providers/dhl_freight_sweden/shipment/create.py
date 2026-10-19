@@ -536,6 +536,8 @@ def shipment_request(
         *lib.identity([service_point_party] if service_point_party else []),
     ]
 
+    weights = [provider_utils.weight_kg(package, str(service)) for package in packages]
+
     request = dhl_freight_sweden_req.TransportInstructionRequestType(
         # productCode is generated as Optional[int]; the SPI product and codes
         # such as 402/502 must serialize as strings on the wire.
@@ -544,7 +546,7 @@ def shipment_request(
         pickupInstruction=options.dhl_freight_sweden_pickup_instruction.state,
         deliveryInstruction=options.dhl_freight_sweden_delivery_instruction.state,
         totalNumberOfPieces=len(packages),
-        totalWeight=packages.weight.KG,
+        totalWeight=provider_utils.total_weight_kg(weights),
         references=lib.identity(
             [
                 dhl_freight_sweden_req.ReferenceType(
@@ -568,8 +570,8 @@ def shipment_request(
                 # not enumerated in the API Farm spec, so they are omitted.
                 marksAndNumbers=package.reference_number,
                 numberOfPieces=1,
-                weight=package.weight.KG,
-                volume=provider_utils.volume_m3(package),
+                weight=weight,
+                volume=provider_utils.volume_m3(package, str(service)),
                 width=lib.identity(package.width.CM if package.width.value else None),
                 height=lib.identity(
                     package.height.CM if package.height.value else None
@@ -578,7 +580,7 @@ def shipment_request(
                     package.length.CM if package.length.value else None
                 ),
             )
-            for package in packages
+            for package, weight in zip(packages, weights)
         ],
         additionalServices=dhl_freight_sweden_req.AdditionalServicesType(
             notification=options.dhl_freight_sweden_notification.state,

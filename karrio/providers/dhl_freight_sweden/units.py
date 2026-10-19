@@ -600,6 +600,42 @@ def booking_system(product_code: str) -> BookingSystem:
     return PRODUCT_BOOKING_SYSTEMS.get(product_code, BookingSystem.domestic)
 
 
+class MeasureDecimals(typing.NamedTuple):
+    """A product table's "Number of decimals" row for weight and volume.
+
+    ``volume`` is None where the table lists no volume ("-").
+    """
+
+    weight: int
+    volume: typing.Optional[int]
+    citation: str
+
+
+# The "Number of decimals" rows of product manual v5.26 chapter 5. The 107
+# section (§5.15 p65-p67) has no such row, so 107 is absent and its pieces
+# keep the unrounded weight and three volume decimals.
+PRODUCT_MEASURE_DECIMALS: typing.Dict[str, MeasureDecimals] = {
+    "102": MeasureDecimals(1, 3, "§5.2 p14"),
+    "112": MeasureDecimals(1, 3, "§5.3 p17"),
+    "202": MeasureDecimals(1, 3, "§5.4 p22"),
+    "209": MeasureDecimals(1, 3, "§5.5 p26"),
+    "210": MeasureDecimals(1, None, "§5.6 p30"),
+    "211": MeasureDecimals(1, 3, "§5.7 p34"),
+    "212": MeasureDecimals(1, 3, "§5.8 p38"),
+    "205": MeasureDecimals(1, 3, "§5.9 p41"),
+    "233": MeasureDecimals(1, 3, "§5.10 p46"),
+    "SPI": MeasureDecimals(1, 3, "§5.11 p50"),
+    "103": MeasureDecimals(1, 3, "§5.12 p56"),
+    "104": MeasureDecimals(1, 3, "§5.13 p59"),
+    "109": MeasureDecimals(1, None, "§5.14 p62"),
+    "118": MeasureDecimals(1, 3, "§5.16 p68"),
+    "401": MeasureDecimals(1, 3, "§5.17 p72"),
+    "402": MeasureDecimals(1, 3, "§5.18 p76"),
+    "502": MeasureDecimals(1, 3, "§5.18 p76"),
+    "601": MeasureDecimals(1, 3, "§5.19 p81"),
+}
+
+
 # Products the PickupRequest API books a pickup for, in the order of product
 # manual v5.26 §10.14.12 p236. 209's own "APIs" table lists no PickupRequest
 # API, and the connector follows §10.14.12.

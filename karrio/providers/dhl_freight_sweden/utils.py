@@ -1,3 +1,4 @@
+import decimal
 import typing
 import karrio.lib as lib
 import karrio.core as core
@@ -92,20 +93,50 @@ class InternationalAccountNumberError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
-def volume_m3(package: lib.units.Package) -> typing.Optional[float]:
-    """The package volume in m³ to the 3 volume decimals of the product tables
-    (manual §5.2 p14 for 102; the same 3 decimals in every table that lists a
-    volume), or None unless all three dimensions are set.
+def _round_half_up(value: float, decimals: int) -> float:
+    return float(
+        decimal.Decimal(str(value)).quantize(
+            decimal.Decimal(1).scaleb(-decimals), rounding=decimal.ROUND_HALF_UP
+        )
+    )
+
+
+def weight_kg(package: lib.units.Package, product_code: str) -> typing.Optional[float]:
+    """The package weight in kg to the weight decimals of ``product_code``'s
+    table (``units.PRODUCT_MEASURE_DECIMALS``), unrounded for a product
+    without one.
+    """
+    weight = package.weight.KG
+    decimals = units.PRODUCT_MEASURE_DECIMALS.get(product_code)
+    if weight is None or decimals is None:
+        return weight
+
+    return _round_half_up(weight, decimals.weight)
+
+
+def total_weight_kg(weights: typing.Iterable[typing.Optional[float]]) -> typing.Optional[float]:
+    """The sum of the pieces' sent weights, so the total matches its rows."""
+    known = [weight for weight in weights if weight is not None]
+    return round(sum(known), 6) if known else None
+
+
+def volume_m3(package: lib.units.Package, product_code: str) -> typing.Optional[float]:
+    """The package volume in m³ to the volume decimals of ``product_code``'s
+    table (3 throughout, for 102 §5.2 p14), three decimals for a product
+    without one, or None where the table lists no volume or a dimension
+    is missing.
 
     ``Package.volume.m3`` rounds to 2 decimals, which turns a 30 x 20 x 10 cm
     parcel's 0.006 m³ into 0.01.
     """
+    decimals = units.PRODUCT_MEASURE_DECIMALS.get(product_code)
+    places = 3 if decimals is None else decimals.volume
     sides = (package.length.CM, package.width.CM, package.height.CM)
-    if not all(sides):
+    if places is None or not all(sides):
         return None
 
     length, width, height = typing.cast(typing.Tuple[float, float, float], sides)
-    return round(length * width * height / 1e6, 3)
+    return _round_half_up(length * width * height / 1e6, places)
 
 
 def customer_number(product_code: str, settings: Settings) -> typing.Optional[str]:

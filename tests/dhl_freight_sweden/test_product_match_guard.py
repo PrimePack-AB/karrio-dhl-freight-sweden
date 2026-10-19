@@ -178,7 +178,7 @@ class TestProductMatchGuard(unittest.TestCase):
                 self.assertEqual(sent["parties"], GB_MATCHES["request"]["parties"])
                 self.assertEqual(
                     sent["pieces"],
-                    [{"weight": 1.0, "length": 30.0, "width": 20.0, "height": 10.0, "volume": 0.006}],
+                    [{"weight": 1.0, "length": 30.0, "width": 20.0, "height": 10.0}],
                     "the booking's own piece measurements, as its transport instruction sends them",
                 )
                 self.assertEqual(str(context.exception), REFUSAL_109_GB_TEST_MODE)

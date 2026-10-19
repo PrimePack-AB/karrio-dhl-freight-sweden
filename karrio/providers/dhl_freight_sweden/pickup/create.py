@@ -63,7 +63,8 @@ def pickup_request(
     _check_parcels(payload.parcels)
     packages = lib.to_packages(payload.parcels)
     address = lib.to_address(provider_units.with_parent_country(payload.address))
-    volumes = [provider_utils.volume_m3(package) for package in packages]
+    volumes = [provider_utils.volume_m3(package, service) for package in packages]
+    weights = [provider_utils.weight_kg(package, service) for package in packages]
     instruction = "; ".join(
         text for text in (payload.instruction, payload.package_location) if text
     )
@@ -73,7 +74,7 @@ def pickup_request(
         pickupDate=pickup_date,
         pickupInstruction=instruction or None,
         totalNumberOfPieces=len(packages),
-        totalWeight=packages.weight.KG,
+        totalWeight=provider_utils.total_weight_kg(weights),
         totalVolume=lib.identity(
             round(sum(typing.cast(typing.List[float], volumes)), 3)
             if all(volumes)
@@ -92,7 +93,7 @@ def pickup_request(
             dhl_freight_sweden_req.PieceType(
                 marksAndNumbers=package.reference_number,
                 numberOfPieces=1,
-                weight=package.weight.KG,
+                weight=weight,
                 volume=volume,
                 width=lib.identity(package.width.CM if package.width.value else None),
                 height=lib.identity(
@@ -102,7 +103,7 @@ def pickup_request(
                     package.length.CM if package.length.value else None
                 ),
             )
-            for package, volume in zip(packages, volumes)
+            for package, weight, volume in zip(packages, weights, volumes)
         ],
     )
 

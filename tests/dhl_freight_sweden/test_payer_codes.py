@@ -5,8 +5,9 @@ DHL Freight Sweden product manual v5.26. The expected PL bookings mirror the
 transport instructions the sandbox accepted as bookings 2906761073 and
 2906761081 (fixtures/sandbox/booking-2906761073-109-se-pl.json and
 booking-2906761081-112-se-pl.json), with the piece volume in m³ to the
-three decimals of the product tables (manual §5.2 p14) where the sandbox
-requests carried karrio's two-decimal 0.01.
+three decimals of 112's table (manual §5.3 p17) and none for 109, whose
+table lists no volume (§5.14 p62), where the sandbox requests carried
+karrio's two-decimal 0.01.
 """
 
 import typing
@@ -352,6 +353,10 @@ ShipmentRequest109PL = {
         },
     ],
     "payerCode": {"code": "022"},
+    "pieces": [
+        {key: value for key, value in piece.items() if key != "volume"}
+        for piece in ShipmentRequest112PL["pieces"]
+    ],
     "productCode": "109",
 }
 
