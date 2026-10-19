@@ -95,15 +95,16 @@ def pickup_request(
                 numberOfPieces=1,
                 weight=weight,
                 volume=volume,
-                width=lib.identity(package.width.CM if package.width.value else None),
-                height=lib.identity(
-                    package.height.CM if package.height.value else None
-                ),
-                length=lib.identity(
-                    package.length.CM if package.length.value else None
-                ),
+                length=sides[0] or None,
+                width=sides[1] or None,
+                height=sides[2] or None,
             )
-            for package, weight, volume in zip(packages, weights, volumes)
+            for package, weight, volume, sides in zip(
+                packages,
+                weights,
+                volumes,
+                [provider_utils.dimensions_cm(package, service) for package in packages],
+            )
         ],
     )
 

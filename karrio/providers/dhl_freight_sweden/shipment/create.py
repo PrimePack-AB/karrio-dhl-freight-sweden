@@ -572,15 +572,15 @@ def shipment_request(
                 numberOfPieces=1,
                 weight=weight,
                 volume=provider_utils.volume_m3(package, str(service)),
-                width=lib.identity(package.width.CM if package.width.value else None),
-                height=lib.identity(
-                    package.height.CM if package.height.value else None
-                ),
-                length=lib.identity(
-                    package.length.CM if package.length.value else None
-                ),
+                length=sides[0] or None,
+                width=sides[1] or None,
+                height=sides[2] or None,
             )
-            for package, weight in zip(packages, weights)
+            for package, weight, sides in zip(
+                packages,
+                weights,
+                [provider_utils.dimensions_cm(package, str(service)) for package in packages],
+            )
         ],
         additionalServices=dhl_freight_sweden_req.AdditionalServicesType(
             notification=options.dhl_freight_sweden_notification.state,
