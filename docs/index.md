@@ -17,7 +17,7 @@ hero:
 ## What the connector does
 
 The connector registers with karrio as the `dhl_freight_sweden` carrier and books shipments through the DHL Freight (Sweden) API Farm, printing each label in the same call.
-It also rates from a static rate sheet, validates addresses, and looks up the products and service points DHL offers for an address.
+It also rates from a static rate sheet, validates addresses, schedules pickups, and looks up the products and service points DHL offers for an address.
 The README is the consumer guide to installing, connecting, and booking; this site holds the reference pages behind it.
 
 ## Concepts
@@ -31,9 +31,10 @@ The concept pages explain the rules the connector applies before it books, each 
 
 ## Guides
 
-The guides cover the connector-local lookups and running the opt-in suite against the DHL sandbox.
+The guides cover the connector-local lookups, pickup scheduling, and running the opt-in suite against the DHL sandbox.
 
 - [Service-point lookups](guides/lookups.md)
+- [Pickups](guides/pickups.md)
 - [Running the sandbox suite](guides/sandbox-runs.md)
 
 ## Development

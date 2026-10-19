@@ -17,10 +17,12 @@ The reference pages behind this guide are published at <https://primepack-ab.git
 | Address validation | `karrio.Address.validate` over the DHL PostalCodes route lookup. |
 | Product matches | A connector-local lookup of the products DHL offers for an address pair. |
 | Service points | A connector-local lookup of the service points nearest an address. |
+| Pickups | `karrio.Pickup.schedule` books a pickup through the DHL PickupRequest API for the products of §10.14.12 p236; see [Pickups](docs/guides/pickups.md). |
 
 The plugin has these limits.
 The API Farm has no tracking endpoint, so karrio advertises no tracking capability; `meta.carrier_tracking_link` is a link to DHL's public tracking web page.
 You cannot cancel transports via API or EDI. Cancel in your system and contact DHL Customer Service with your shipment number.
+Pickups are created only: the PickupRequest API has no update or cancel endpoint, and a pickup cancelled in the karrio server stays booked at DHL until DHL Customer Service cancels it.
 The connector sends customs data inside the booking and nothing else: it uploads no documents and sends no email, and the Print call returns only the label.
 Labels are PDF only.
 The rate sheet's prices are placeholders at 0.0 that a merchant's own prices replace, and product matches, not the rate sheet, tell which products DHL offers for a lane.
@@ -496,6 +498,6 @@ Its territory tables match this connector's, and a test in that repository check
 ## Further documentation
 
 The rules cite the DHL Freight (Sweden) product manual as `§x.y pN`, and [Product manual citations](docs/development/index.md#product-manual-citations) names the cited version, its sha256, and where DHL lists the current manual.
-[Booking rules](docs/concepts/booking-rules.md), [Destinations](docs/concepts/destinations.md), [Products](docs/concepts/products.md), and [Labels](docs/concepts/labels.md) explain each rule with its citation and evidence, and [Service-point lookups](docs/guides/lookups.md) documents the lookups.
+[Booking rules](docs/concepts/booking-rules.md), [Destinations](docs/concepts/destinations.md), [Products](docs/concepts/products.md), and [Labels](docs/concepts/labels.md) explain each rule with its citation and evidence, [Service-point lookups](docs/guides/lookups.md) documents the lookups, and [Pickups](docs/guides/pickups.md) documents pickup scheduling.
 Every sandbox claim cites a redacted evidence file in [tests/dhl_freight_sweden/fixtures/sandbox/](tests/dhl_freight_sweden/fixtures/sandbox/), and the [sandbox findings](docs/notes/sandbox/sandbox-findings.md) record every booking, rejection, and deviation from the manual.
 [Development](docs/development/index.md) covers setup and tests, [Running the sandbox suite](docs/guides/sandbox-runs.md) runs the opt-in suite that books against the DHL sandbox, and [Sandbox suite and evidence](docs/development/traceability/sandbox-suite.md) describes its segments and the evidence it produces.

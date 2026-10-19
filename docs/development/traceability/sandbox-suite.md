@@ -16,7 +16,7 @@ It is opt-in and sits outside `tests/`, so the default offline run never discove
 | `booking-export` | 109, 112, 202, 205, 233, 601 | export lanes, special territories, customs handling |
 | `booking-declarations` | 601, 202, 233 | SENT, EKAER, and UIT entries |
 | `booking-probes` | one per probe | one-off mutated bookings answering a single question |
-| `pickup-probes` | one pickup request per probe | the PickupRequest API, which no connector operation calls yet |
+| `pickup-probes` | one pickup request per probe | the PickupRequest API, sent as hand-built bodies rather than through the connector's `schedule_pickup` |
 | `rejections` | nothing accepted | expected DHL error codes |
 
 Before each booking a free product-match lookup, and for 109 a service-point lookup, checks that DHL offers the product on the lane, and the case skips otherwise; the few cases that book past this check exist to record DHL's answer.

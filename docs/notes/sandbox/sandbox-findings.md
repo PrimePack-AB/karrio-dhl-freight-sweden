@@ -212,6 +212,7 @@ The third request was accepted: `status` `0` is Accepted by position, the `picku
 No request sent 999999 on both the Consignor and the Pickup party, so these requests do not show whether a Consignor id alone causes the rejection or the Pickup party id is required.
 
 A fourth request, the accepted one without its Consignee party, leaving the Consignor and the Pickup party with id 999999, was accepted too: `status` `0`, `bookingNumber` `421-2026-10-19-12.19.04.489334`, the same `pickupDateTime`, and the message "Bekräftad! Din bokning ' VARIOUS' har bokningsnummer 421-2026-10-19-12.19.04.489334", which names VARIOUS where the earlier messages named the Consignee's postal code and city ([pickup-421-2026-10-19-12.19.04.489334-102-se-se-no-consignee][p-421-nc]).
+The connector's `schedule_pickup` sends this shape, the Consignor and the Pickup party at the karrio pickup address and no Consignee, because a karrio pickup carries one address ([Pickups](../../guides/pickups.md)).
 The accepted pickups stay booked, since the manual says a booking cannot be cancelled electronically (§5.2 p14).
 
 ## Lookup errors
