@@ -43,4 +43,4 @@ jobs:
           --repo "$GITHUB_REPOSITORY"
           --verify-tag
           --generate-notes
-          --notes "Requires Joaqim/karrio $KARRIO_REF."
+          --notes "Tested against Joaqim/karrio $KARRIO_REF; the connector uses no fork-only SDK surface."
