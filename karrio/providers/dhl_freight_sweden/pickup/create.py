@@ -63,7 +63,7 @@ def pickup_request(
     _check_parcels(payload.parcels)
     packages = lib.to_packages(payload.parcels)
     address = lib.to_address(provider_units.with_parent_country(payload.address))
-    volumes = [_volume_m3(package) for package in packages]
+    volumes = [provider_utils.volume_m3(package) for package in packages]
     instruction = "; ".join(
         text for text in (payload.instruction, payload.package_location) if text
     )
@@ -166,20 +166,6 @@ def _extract_details(
         ),
         meta=lib.identity(dict(message=pickup.message) if pickup.message else None),
     )
-
-
-def _volume_m3(package: lib.units.Package) -> typing.Optional[float]:
-    """The package volume in m³ to the 3 volume decimals of the product tables (102: §5.2 p14).
-
-    ``Package.volume.m3`` rounds to 2 decimals, which turns a 30 x 20 x 10 cm
-    parcel's 0.006 m³ into 0.01.
-    """
-    sides = (package.length.CM, package.width.CM, package.height.CM)
-    if not all(sides):
-        return None
-
-    length, width, height = typing.cast(typing.Tuple[float, float, float], sides)
-    return round(length * width * height / 1e6, 3)
 
 
 def _status_name(status: typing.Any) -> typing.Optional[str]:

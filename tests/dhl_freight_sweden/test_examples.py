@@ -142,10 +142,13 @@ class TestExamples(unittest.TestCase):
             [_without(d, "id") for d in body["customsInformation"]["customsDocuments"]],
             [_without(d, "id") for d in booked["customsInformation"]["customsDocuments"]],
         )
+        # The booking carried karrio's two-decimal 0.01 m³; the connector now
+        # sends the product tables' three volume decimals (manual §5.2 p14).
         self.assertEqual(
-            [_without(p, "marksAndNumbers") for p in body["pieces"]],
-            [_without(p, "marksAndNumbers") for p in booked["pieces"]],
+            [_without(p, "marksAndNumbers", "volume") for p in body["pieces"]],
+            [_without(p, "marksAndNumbers", "volume") for p in booked["pieces"]],
         )
+        self.assertEqual([p["volume"] for p in body["pieces"]], [0.009])
 
     def test_scripts_print_their_transport_instruction(self):
         for module in (domestic_parcel, service_point_parcel, export_to_switzerland):

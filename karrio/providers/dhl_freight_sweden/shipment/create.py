@@ -569,7 +569,7 @@ def shipment_request(
                 marksAndNumbers=package.reference_number,
                 numberOfPieces=1,
                 weight=package.weight.KG,
-                volume=lib.failsafe(lambda: package.volume.m3),
+                volume=provider_utils.volume_m3(package),
                 width=lib.identity(package.width.CM if package.width.value else None),
                 height=lib.identity(
                     package.height.CM if package.height.value else None

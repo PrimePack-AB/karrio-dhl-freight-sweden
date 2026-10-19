@@ -92,6 +92,22 @@ class InternationalAccountNumberError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+def volume_m3(package: lib.units.Package) -> typing.Optional[float]:
+    """The package volume in m³ to the 3 volume decimals of the product tables
+    (manual §5.2 p14 for 102; the same 3 decimals in every table that lists a
+    volume), or None unless all three dimensions are set.
+
+    ``Package.volume.m3`` rounds to 2 decimals, which turns a 30 x 20 x 10 cm
+    parcel's 0.006 m³ into 0.01.
+    """
+    sides = (package.length.CM, package.width.CM, package.height.CM)
+    if not all(sides):
+        return None
+
+    length, width, height = typing.cast(typing.Tuple[float, float, float], sides)
+    return round(length * width * height / 1e6, 3)
+
+
 def customer_number(product_code: str, settings: Settings) -> typing.Optional[str]:
     """The customer number ``product_code`` books under: ``account_number`` for
     domestic products, the guarded ``international_account_number`` for products
