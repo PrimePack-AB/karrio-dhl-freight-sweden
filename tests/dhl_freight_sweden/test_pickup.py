@@ -71,6 +71,15 @@ PickupPayload = {
 }
 
 
+DeliveryAddress = {
+    "company_name": "Test Recipient AB",
+    "address_line1": "Drottninggatan 2",
+    "city": "Göteborg",
+    "postal_code": "41103",
+    "country_code": "SE",
+}
+
+
 def _pickup_request(**changes: typing.Any) -> models.PickupRequest:
     return models.PickupRequest(**{**copy.deepcopy(PickupPayload), **changes})
 
@@ -165,6 +174,7 @@ class TestPickupRequest(unittest.TestCase):
                             options=_options(
                                 dhl_freight_sweden_service=code,
                                 dhl_freight_sweden_payer_code=payer,
+                                dhl_freight_sweden_delivery_address=DeliveryAddress,
                             )
                         )
                     )
@@ -258,6 +268,143 @@ class TestPickupRefusals(unittest.TestCase):
                     gateway.mapper.create_pickup_request(_pickup_request(**{field: None}))
 
                 self.assertEqual(set(raised.exception.details or {}), {field})
+
+
+class TestPickup212(unittest.TestCase):
+    """212 pickups carry the delivery place and the freight payer (§5.8 p38).
+
+    The manual makes a 212 pickup request carry at least the address, postal
+    code, and city of the physical delivery place and the freight payer party
+    with the paying DHL account number; the manual's 212 party table sends
+    the delivery address as CN and adds DP only when it differs (§5.8 p39).
+    """
+
+    def setUp(self):
+        self.maxDiff = None
+
+    def _options(self, **changes: typing.Any) -> dict:
+        return _options(
+            dhl_freight_sweden_service="212",
+            dhl_freight_sweden_delivery_address=DeliveryAddress,
+            **changes,
+        )
+
+    def test_212_sends_the_delivery_place_and_the_freight_payer(self):
+        account_number = str(settings_of(gateway).account_number)
+        serialized = serialize_request(
+            gateway.mapper.create_pickup_request(
+                _pickup_request(options=self._options())
+            )
+        )
+        parties = {party["type"]: party for party in serialized["parties"]}
+
+        self.assertEqual(
+            [party["type"] for party in serialized["parties"]],
+            ["Consignor", "Pickup", "Consignee", "FreightPayer"],
+        )
+        self.assertNotIn("id", parties["Consignor"])
+        self.assertEqual(parties["Pickup"]["id"], account_number)
+        self.assertEqual(
+            parties["Consignee"],
+            {
+                "type": "Consignee",
+                "name": "Test Recipient AB",
+                "address": {
+                    "street": "Drottninggatan 2",
+                    "cityName": "Göteborg",
+                    "postalCode": "41103",
+                    "countryCode": "SE",
+                },
+            },
+        )
+        self.assertEqual(
+            parties["FreightPayer"],
+            {**parties["Consignor"], "type": "FreightPayer", "id": account_number},
+        )
+
+    def test_delivery_place_may_be_a_json_object_string(self):
+        serialized = serialize_request(
+            gateway.mapper.create_pickup_request(
+                _pickup_request(
+                    options=self._options(
+                        dhl_freight_sweden_delivery_address=json.dumps(DeliveryAddress)
+                    )
+                )
+            )
+        )
+
+        self.assertIn("Consignee", [party["type"] for party in serialized["parties"]])
+
+    def test_other_products_ignore_the_delivery_place(self):
+        serialized = serialize_request(
+            gateway.mapper.create_pickup_request(
+                _pickup_request(
+                    options=_options(dhl_freight_sweden_delivery_address=DeliveryAddress)
+                )
+            )
+        )
+
+        self.assertEqual(
+            [party["type"] for party in serialized["parties"]], ["Consignor", "Pickup"]
+        )
+
+    def test_212_without_the_delivery_place_is_refused(self):
+        options = self._options()
+        options.pop("dhl_freight_sweden_delivery_address")
+
+        with self.assertRaises(provider_pickup.PickupDeliveryAddressError) as raised:
+            gateway.mapper.create_pickup_request(_pickup_request(options=options))
+
+        self.assertIn("§5.8 p38", str(raised.exception))
+        self.assertEqual(
+            raised.exception.details,
+            {
+                "dhl_freight_sweden_delivery_address": dict(
+                    code="required",
+                    message="the delivery place's address_line1, postal_code, "
+                    "city, and country_code are required",
+                )
+            },
+        )
+
+    def test_212_delivery_place_missing_fields_is_refused(self):
+        partial = {"address_line1": "Drottninggatan 2", "country_code": "SE"}
+
+        with self.assertRaises(provider_pickup.PickupDeliveryAddressError) as raised:
+            gateway.mapper.create_pickup_request(
+                _pickup_request(
+                    options=self._options(dhl_freight_sweden_delivery_address=partial)
+                )
+            )
+
+        self.assertIn("§5.8 p38", str(raised.exception))
+        self.assertEqual(
+            raised.exception.details,
+            {
+                "dhl_freight_sweden_delivery_address": dict(
+                    code="required", message="missing postal_code, city"
+                )
+            },
+        )
+
+    def test_212_delivery_place_that_is_not_an_address_is_refused(self):
+        for value in ("Göteborg", ["Drottninggatan 2"], {**DeliveryAddress, "street": "x"}):
+            with self.subTest(value=value):
+                with self.assertRaises(
+                    provider_pickup.PickupDeliveryAddressError
+                ) as raised:
+                    gateway.mapper.create_pickup_request(
+                        _pickup_request(
+                            options=self._options(
+                                dhl_freight_sweden_delivery_address=value
+                            )
+                        )
+                    )
+
+                self.assertEqual(
+                    raised.exception.details["dhl_freight_sweden_delivery_address"]["code"],  # type: ignore[index]
+                    "invalid",
+                )
 
 
 class TestPickupProxy(unittest.TestCase):
