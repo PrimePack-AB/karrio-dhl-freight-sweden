@@ -9,12 +9,15 @@ the customer number on the Pickup party
 (tests/dhl_freight_sweden/fixtures/sandbox/
 pickup-421-2026-10-19-12.19.04.489334-102-se-se-no-consignee.json) and
 rejected the number on the Consignor as unknown
-(pickup-102-se-se-customer-number-unknown.json).
+(pickup-102-se-se-customer-number-unknown.json). A 212 pickup also sends
+the delivery place, from an option, as the Consignee and a FreightPayer
+party with the customer number, as §5.8 p38 requires.
 """
 
 import karrio.schemas.dhl_freight_sweden.pickup_request as dhl_freight_sweden_req
 import karrio.schemas.dhl_freight_sweden.pickup_response as dhl_freight_sweden_res
 
+import attr
 import typing
 import karrio.lib as lib
 import karrio.core.models as models
@@ -42,6 +45,12 @@ class PickupParcelError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class PickupDeliveryAddressError(errors.ShippingSDKDetailedError):
+    """Raised when a 212 pickup lacks a usable delivery place (§5.8 p38)."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class PickupDateError(errors.ShippingSDKDetailedError):
     """Raised when the pickup date or ready time is missing or unreadable."""
 
@@ -59,12 +68,16 @@ def pickup_request(
     payer_code = _pickup_payer_code(
         service, options.dhl_freight_sweden_payer_code.state
     )
+    delivery_address = _delivery_address(
+        service, options.dhl_freight_sweden_delivery_address.state
+    )
     pickup_date = _pickup_date(payload.pickup_date, payload.ready_time)
     _check_parcels(payload.parcels)
     packages = lib.to_packages(payload.parcels)
     address = lib.to_address(provider_units.with_parent_country(payload.address))
     volumes = [provider_utils.volume_m3(package, service) for package in packages]
     weights = [provider_utils.weight_kg(package, service) for package in packages]
+    customer_number = provider_utils.customer_number(service, settings)
     instruction = "; ".join(
         text for text in (payload.instruction, payload.package_location) if text
     )
@@ -83,10 +96,18 @@ def pickup_request(
         payerCode=dhl_freight_sweden_req.PayerCodeType(code=payer_code),
         parties=[
             _party(provider_units.PartyType.Consignor, address),
-            _party(
-                provider_units.PartyType.Pickup,
-                address,
-                id=provider_utils.customer_number(service, settings),
+            _party(provider_units.PartyType.Pickup, address, id=customer_number),
+            *(
+                [
+                    _party(provider_units.PartyType.Consignee, delivery_address),
+                    _party(
+                        provider_units.PartyType.FreightPayer,
+                        address,
+                        id=customer_number,
+                    ),
+                ]
+                if delivery_address
+                else []
             ),
         ],
         pieces=[
@@ -222,6 +243,68 @@ def _pickup_payer_code(service: str, value: typing.Optional[str]) -> str:
         )
 
     return value
+
+
+DELIVERY_ADDRESS_FIELDS = ("address_line1", "postal_code", "city", "country_code")
+
+
+def _delivery_address(
+    service: str, value: typing.Any
+) -> typing.Optional[lib.units.ComputedAddress]:
+    """The 212 delivery place as an address; None for every other product."""
+    if service not in provider_units.PICKUP_DELIVERY_PLACE_PRODUCTS:
+        return None
+
+    field = "dhl_freight_sweden_delivery_address"
+    citation = provider_units.PICKUP_DELIVERY_PLACE_CITATION
+    required = ", ".join(DELIVERY_ADDRESS_FIELDS[:-1])
+    required = f"{required}, and {DELIVERY_ADDRESS_FIELDS[-1]}"
+
+    if value is None or value == "" or value == {}:
+        raise PickupDeliveryAddressError(
+            f"A pickup for product {service} needs {field}, the delivery place's "
+            f"address, postal code, and city ({citation})",
+            details={
+                field: dict(
+                    code="required",
+                    message=f"the delivery place's {required} are required",
+                )
+            },
+        )
+
+    unknown = (
+        sorted(set(value) - set(attr.fields_dict(models.Address)))
+        if isinstance(value, dict)
+        else []
+    )
+    if not isinstance(value, dict) or any(unknown):
+        raise PickupDeliveryAddressError(
+            f"{field} must be an address object with {required} ({citation})",
+            details={
+                field: dict(
+                    code="invalid",
+                    message=lib.identity(
+                        f"unknown address fields: {', '.join(unknown)}"
+                        if any(unknown)
+                        else f"expected an address object with {required}"
+                    ),
+                )
+            },
+        )
+
+    missing = [key for key in DELIVERY_ADDRESS_FIELDS if not value.get(key)]
+    if any(missing):
+        raise PickupDeliveryAddressError(
+            f"The delivery place of a pickup for product {service} needs "
+            f"{', '.join(missing)} ({citation})",
+            details={field: dict(code="required", message=f"missing {', '.join(missing)}")},
+        )
+
+    return lib.to_address(
+        provider_units.with_parent_country(
+            typing.cast(models.Address, lib.to_object(models.Address, value))
+        )
+    )
 
 
 def _pickup_date(

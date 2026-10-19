@@ -1,4 +1,5 @@
 import fnmatch
+import json
 import re
 import typing
 
@@ -659,18 +660,45 @@ PICKUP_PRODUCTS: typing.Tuple[str, ...] = tuple(
 PICKUP_PRODUCTS_CITATION = "§10.14.12 p236"
 
 
+def parse_object_option(value: typing.Any) -> typing.Any:
+    """A dict option value as is, a JSON object string as its dict, any other value unchanged.
+
+    karrio's ``lib.to_dict`` raises on a string that is not JSON while the
+    options are read, before the connector can refuse the value with a field
+    error, so the raw value is kept for the caller to validate.
+    """
+    if isinstance(value, str):
+        parsed = lib.failsafe(lambda: json.loads(value))
+        return parsed if isinstance(parsed, dict) else value
+
+    return value
+
+
 class PickupOption(lib.Enum):
     """DHL Freight pickup request options.
 
-    Both are required: one karrio instance serves several DHL accounts, so a
-    pickup takes its product and payer code from the request, never from a
-    connection default.
+    The product and payer code are required: one karrio instance serves
+    several DHL accounts, so a pickup takes them from the request, never from
+    a connection default. The delivery place is required for 212 only
+    (§5.8 p38) and has no connection default either.
     """
 
     # A PICKUP_PRODUCTS code or its ShippingService name.
     dhl_freight_sweden_service = lib.OptionEnum("productCode", str)
     # Terms-of-delivery code, validated against the product's PAYER_CODES entry.
     dhl_freight_sweden_payer_code = lib.OptionEnum("payerCode", str)
+    # A karrio Address object (dict or JSON object string) for the 212 Consignee.
+    dhl_freight_sweden_delivery_address = lib.OptionEnum(
+        "deliveryAddress", parse_object_option
+    )
+
+
+# Products whose pickup request carries the delivery place and the freight
+# payer party with the paying customer number (§5.8 p38).
+PICKUP_DELIVERY_PLACE_PRODUCTS: typing.Tuple[str, ...] = (
+    ShippingService.dhl_freight_sweden_parti.value,
+)
+PICKUP_DELIVERY_PLACE_CITATION = "§5.8 p38"
 
 
 class PayerCodes(typing.NamedTuple):
