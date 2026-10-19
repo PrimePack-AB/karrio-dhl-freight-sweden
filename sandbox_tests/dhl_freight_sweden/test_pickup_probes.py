@@ -118,6 +118,20 @@ class TestSandboxPickupProbes(unittest.TestCase):
             ),
         )
 
+    def test_pickup_request_102_se_pickup_party_id(self):
+        """Variant: the customer number moves from the Consignor to the Pickup party."""
+
+        def build(account: str) -> dict:
+            request = pickup_request_102(account)
+            parties = [
+                {**p, "id": account} if p["type"] == provider_units.PartyType.Pickup.value
+                else {k: v for k, v in p.items() if k != "id"}
+                for p in request["parties"]
+            ]
+            return {**request, "parties": parties}
+
+        self._request_pickup("pickup-102-se-pickup-party-id", build)
+
     def _request_pickup(
         self, label: str, build: typing.Callable[[str], dict]
     ) -> None:
