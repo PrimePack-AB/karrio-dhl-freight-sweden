@@ -132,6 +132,25 @@ class TestSandboxPickupProbes(unittest.TestCase):
 
         self._request_pickup("pickup-102-se-pickup-party-id", build)
 
+    def test_pickup_request_102_se_no_consignee(self):
+        """Variant: the accepted Pickup party id request without a Consignee party.
+
+        A karrio pickup request carries one address, the pickup address, so
+        this shows whether DHL books a pickup with no Consignee.
+        """
+
+        def build(account: str) -> dict:
+            request = pickup_request_102(account)
+            parties = [
+                {**p, "id": account} if p["type"] == provider_units.PartyType.Pickup.value
+                else {k: v for k, v in p.items() if k != "id"}
+                for p in request["parties"]
+                if p["type"] != provider_units.PartyType.Consignee.value
+            ]
+            return {**request, "parties": parties}
+
+        self._request_pickup("pickup-102-se-no-consignee", build)
+
     def _request_pickup(
         self, label: str, build: typing.Callable[[str], dict]
     ) -> None:
