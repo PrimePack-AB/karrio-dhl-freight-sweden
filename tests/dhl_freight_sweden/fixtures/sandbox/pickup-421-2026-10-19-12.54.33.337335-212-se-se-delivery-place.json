@@ -1,0 +1,114 @@
+{
+ "kind": "pickup",
+ "summary": "PickupRequest for 212 within SE serialized by the connector's pickup create path (karrio.Pickup.schedule with dhl_freight_sweden_service 212, payer code 1, and dhl_freight_sweden_delivery_address 11151 Stockholm): the Consignor without id and the Pickup party with id 999999 at 11143 Stockholm, the delivery place as the Consignee at 11151 Stockholm, and a FreightPayer party with id 999999 at 11143 Stockholm, one 1 kg piece, and pickupDate 2026-10-20T10:00:00, answered HTTP 200 with status 0 (Accepted), bookingNumber 421-2026-10-19-12.54.33.337335, no pickupDateTime, and the message \"Bekräftad! Din bokning '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.54.33.337335\" (its double space collapsed here).",
+ "captured_at": "2026-10-19T10:54:33Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /pickuprequestapi/v1/pickuprequest/pickuprequest",
+ "product": "212",
+ "route": "SE 11151",
+ "booking_id": "421-2026-10-19-12.54.33.337335",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: TestSandboxPickupProbes.test_pickup_request_212_se_delivery_place",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /pickuprequestapi/v1/pickuprequest/pickuprequest",
+   "http_status": 200,
+   "date": "2026-10-19T10:54:33Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261019-125432/001-pickup-212-se-delivery-place.request.json",
+    "sha256": "91997336032973c087a18ae688f03a54a7b19ab6e92a5a7ad08ad815bb21899c"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261019-125432/001-pickup-212-se-delivery-place.response.json",
+    "sha256": "25505f01d25e8e5af446c6e49fc2f85b7cf3ed30cf2f810351d8f102d93d282d"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "999999",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Pickup"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "999999",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "FreightPayer"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pickupDate": "2026-10-20T10:00:00",
+    "pickupInstruction": "Sandbox test, no pickup needed",
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "212",
+    "totalNumberOfPieces": 1,
+    "totalVolume": 0.006,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": 0,
+    "bookingNumber": "421-2026-10-19-12.54.33.337335",
+    "message": "Bekräftad! Din bokning  '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.54.33.337335"
+   }
+  }
+ ]
+}

@@ -979,6 +979,29 @@ def _(b: Builder) -> Json:
     )
 
 
+PICKUP_212_DELIVERY_PLACE_RUN = "20261019-125432"
+PICKUP_212_DELIVERY_PLACE_BOOKING = "421-2026-10-19-12.54.33.337335"
+
+
+@evidence(f"pickup-{PICKUP_212_DELIVERY_PLACE_BOOKING}-212-se-se-delivery-place.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "pickup",
+        "PickupRequest for 212 within SE serialized by the connector's pickup create path "
+        "(karrio.Pickup.schedule with dhl_freight_sweden_service 212, payer code 1, and "
+        "dhl_freight_sweden_delivery_address 11151 Stockholm): the Consignor without id and the "
+        "Pickup party with id 999999 at 11143 Stockholm, the delivery place as the Consignee at "
+        "11151 Stockholm, and a FreightPayer party with id 999999 at 11143 Stockholm, one 1 kg "
+        "piece, and pickupDate 2026-10-20T10:00:00, answered HTTP 200 with status 0 (Accepted), "
+        f"bookingNumber {PICKUP_212_DELIVERY_PLACE_BOOKING}, no pickupDateTime, and the message "
+        "\"Bekräftad! Din bokning '11151 Stockholm' har bokningsnummer "
+        f"{PICKUP_212_DELIVERY_PLACE_BOOKING}\" (its double space collapsed here).",
+        "212", "SE 11151", PICKUP_212_DELIVERY_PLACE_BOOKING, None,
+        f"{SUITE_RUN}: TestSandboxPickupProbes.test_pickup_request_212_se_delivery_place",
+        [b.suite_exchange(PICKUP_212_DELIVERY_PLACE_RUN, "001-pickup-212-se-delivery-place")],
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 
