@@ -156,7 +156,7 @@ class TestProductMatchGuard(unittest.TestCase):
                             {"type": "Consignee", "address": {"countryCode": "SE", "postalCode": "41103"}},
                         ],
                         "pieces": [
-                            {"weight": 5.0, "length": 30.0, "width": 20.0, "height": 15.0, "volume": 0.01}
+                            {"weight": 5.0, "length": 30.0, "width": 20.0, "height": 15.0, "volume": 0.009}
                         ],
                     },
                 )
@@ -178,7 +178,7 @@ class TestProductMatchGuard(unittest.TestCase):
                 self.assertEqual(sent["parties"], GB_MATCHES["request"]["parties"])
                 self.assertEqual(
                     sent["pieces"],
-                    [{"weight": 1.0, "length": 30.0, "width": 20.0, "height": 10.0, "volume": 0.01}],
+                    [{"weight": 1.0, "length": 30.0, "width": 20.0, "height": 10.0, "volume": 0.006}],
                     "the booking's own piece measurements, as its transport instruction sends them",
                 )
                 self.assertEqual(str(context.exception), REFUSAL_109_GB_TEST_MODE)

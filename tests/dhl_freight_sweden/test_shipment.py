@@ -1994,7 +1994,7 @@ ShipmentRequest102 = {
             "length": 30.0,
             "marksAndNumbers": "REF-001",
             "numberOfPieces": 1,
-            "volume": 0.01,
+            "volume": 0.009,
             "weight": 5.0,
             "width": 20.0,
         }
