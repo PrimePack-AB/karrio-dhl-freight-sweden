@@ -52,6 +52,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-19 | 10:19 | suite | PickupRequest for 102 within SE with the customer number on the Pickup party and no Consignee party |
 | 2026-10-19 | 10:48 | suite | PickupRequest for 102 within SE with the customer number on the Consignor and the Pickup party and no Consignee party |
 | 2026-10-19 | 10:49 | suite | PickupRequest for 212 within SE through the connector's pickup create path |
+| 2026-10-19 | 10:54 | suite | PickupRequest for 212 within SE through the connector's pickup create path with the delivery place and a FreightPayer party |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -220,7 +221,12 @@ Across the five requests the sandbox rejected every request whose Consignor part
 A sixth request sent product 212 within SE through the connector's own pickup create path, `karrio.Pickup.schedule` with `dhl_freight_sweden_service` 212 and payer code 1, so the request carried the Consignor without id and the Pickup party with id 999999 at 11143 Stockholm, no Consignee, no FreightPayer party, and one piece of 1 kg ([pickup-421-2026-10-19-12.49.01.654345-212-se-se-connector][p-421-212]).
 The manual makes a 212 pickup request carry the complete pickup address, at least the address, postal code, and city of the delivery place, and the freight payer party with the paying DHL account number (§5.8 p38), lists FP, CZ, CN, PW, and DP as the 212 parties, and payer codes 1, 3, and 4 (§5.8 p39).
 The sandbox accepted the request: `status` `0`, `bookingNumber` `421-2026-10-19-12.49.01.654345`, and the message "Bekräftad! Din bokning ' VARIOUS' har bokningsnummer 421-2026-10-19-12.49.01.654345"; the response carried no `pickupDateTime`, where every 102 response had carried one, so the connector's parsed pickup has no pickup date or ready time.
-The sandbox thus accepted a 212 pickup without the delivery place and the freight payer party the manual requires (§5.8 p38); where the sandbox accepts more than the manual allows the connector follows the manual, so the connector's 212 pickup request, which sends neither party, does not yet meet the manual.
+The sandbox thus accepted a 212 pickup without the delivery place and the freight payer party the manual requires (§5.8 p38); where the sandbox accepts more than the manual allows the connector follows the manual, so the connector's 212 pickup request, which sent neither party, did not yet meet the manual.
+
+The connector now sends a 212 pickup with the delivery place from the `dhl_freight_sweden_delivery_address` option as the Consignee and a FreightPayer party with the customer number at the pickup address, and refuses a 212 pickup without the option ([Pickups](../../guides/pickups.md)).
+A seventh request sent that shape through `karrio.Pickup.schedule`: the Consignor without id and the Pickup party with id 999999 at 11143 Stockholm, the Consignee at 11151 Stockholm, a FreightPayer party with id 999999 at 11143 Stockholm, payer code 1, and one piece of 1 kg ([pickup-421-2026-10-19-12.54.33.337335-212-se-se-delivery-place][p-421-212-dp]).
+The sandbox accepted it: `status` `0`, `bookingNumber` `421-2026-10-19-12.54.33.337335`, and the message "Bekräftad! Din bokning '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.54.33.337335", which names the Consignee's postal code and city as the 102 requests with a Consignee did; the response again carried no `pickupDateTime`.
+This is the only request so far that sent 999999 on a FreightPayer party with no id on the Consignor, and the sandbox accepted it, where the 102 request with 999999 on both the Consignor and a FreightPayer party was rejected ([pickup-102-se-se-freight-payer-customer-number-unknown][p-102-fp]).
 
 The accepted pickups stay booked, since the manual says a booking cannot be cancelled electronically (§5.2 p14).
 
@@ -418,7 +424,7 @@ Availability follows the valid countries of each product section of manual v5.26
 These were never exercised:
 
 - the TimeTable, PriceQuote, and HomeDeliveryLocator APIs, and the Print API for anything but labels
-- the PickupRequest API for any product but 102 and 212 or any lane but within SE, and 212 with a Consignee or a FreightPayer party (see [Pickup requests](#pickup-requests))
+- the PickupRequest API for any product but 102 and 212 or any lane but within SE, and a FreightPayer party on any product but 212 without a Consignor id (see [Pickup requests](#pickup-requests))
 - any additional service other than `customsHandlingFullService` and `customsHandlingStandard`
 - the customer's own declaration, the joint declaration (including 109 with payer code 023), and VOEC
 - customs to destinations outside the EU VAT area other than NO, CH, and FI 22100, and customs data without a customs service anywhere but FI 22100
@@ -534,6 +540,7 @@ These were never exercised:
 [p-421-nc]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.19.04.489334-102-se-se-no-consignee.json
 [p-102-both]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-consignor-and-pickup-party-id-customer-number-unknown.json
 [p-421-212]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.49.01.654345-212-se-se-connector.json
+[p-421-212-dp]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.54.33.337335-212-se-se-delivery-place.json
 [b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
 [lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
