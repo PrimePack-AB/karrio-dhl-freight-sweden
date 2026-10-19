@@ -40,3 +40,6 @@ exclude = ["tests.*", "tests"]
 namespaces = true
 [tool.setuptools.exclude-package-data]
 "*" = ["__init__.pyi"]
+
+[tool.primepack]
+karrio-ref = "snapshot-2026.10.19.1"
