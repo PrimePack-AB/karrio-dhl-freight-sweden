@@ -48,6 +48,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-16 | 12:18 | suite | 109 GB ParcelShop case without the product matches check |
 | 2026-10-19 | 10:09 | suite | one PickupRequest for 102 within SE |
 | 2026-10-19 | 10:15 | suite | PickupRequest for 102 within SE with a FreightPayer party |
+| 2026-10-19 | 10:16 | suite | PickupRequest for 102 within SE with the customer number on the Pickup party |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -204,6 +205,11 @@ The same day the segment sent variants of that request, each once, changing only
 | Date | Change from the first request | Status | Message | Evidence |
 |---|---|---|---|---|
 | 2026-10-19 | a FreightPayer party with id 999999 at the Consignor's address added, the party the manual lists as FP for 102 (§5.2 p15) and requires with the paying account number in a 212 pickup request (§5.6 p38) | `1`, empty `bookingNumber` | the same "Angivet kundnr 999999 är okänt." message | [pickup-102-se-se-freight-payer-customer-number-unknown][p-102-fp] |
+| 2026-10-19 | the id 999999 removed from the Consignor party and set on the Pickup party, no FreightPayer party | `0`, `bookingNumber` `421-2026-10-19-12.16.37.636333` | "Bekräftad! Din bokning '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.16.37.636333" | [pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id][p-421] |
+
+The third request was accepted: `status` `0` is Accepted by position, the `pickupDateTime` `2026-10-20T10:00:00+02:00` again kept the requested date and time, and the booking number has the form `421-` followed by the date and time of the request to the microsecond, unlike the numeric TransportInstruction booking ids ([pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id][p-421]).
+No request sent 999999 on both the Consignor and the Pickup party, so these requests do not show whether a Consignor id alone causes the rejection or the Pickup party id is required.
+The accepted pickup stays booked, since the manual says a booking cannot be cancelled electronically (§5.2 p14).
 
 ## Lookup errors
 
@@ -363,7 +369,8 @@ May a 109 AccessPoint party within the EU lie in another country than the consig
 No sandbox booking has sent a service point in another country than the consignee's, and the connector refuses such a booking only from or to a country outside the EU ([access points](../../concepts/booking-rules.md#access-points)).
 
 One further question for DHL API Farm, from 2026-10-19: the PickupRequest API answered customer number 999999 as unknown on a 102 pickup within SE ([pickup-102-se-se-customer-number-unknown][p-102]).
-Which customer number does a pickup request take, in which party, and does a sandbox application need the number registered for pickups?
+The same request with 999999 moved from the Consignor to the Pickup party was accepted ([pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id][p-421]).
+In which party does a pickup request carry the customer number, and may the Consignor party carry it too?
 
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
@@ -397,7 +404,7 @@ Availability follows the valid countries of each product section of manual v5.26
 These were never exercised:
 
 - the TimeTable, PriceQuote, and HomeDeliveryLocator APIs, and the Print API for anything but labels
-- the PickupRequest API beyond one 102 request within SE, and any accepted pickup request (see [Pickup requests](#pickup-requests))
+- the PickupRequest API for any product but 102 or any lane but within SE, and with the customer number on both the Consignor and the Pickup party (see [Pickup requests](#pickup-requests))
 - any additional service other than `customsHandlingFullService` and `customsHandlingStandard`
 - the customer's own declaration, the joint declaration (including 109 with payer code 023), and VOEC
 - customs to destinations outside the EU VAT area other than NO, CH, and FI 22100, and customs data without a customs service anywhere but FI 22100
@@ -509,6 +516,7 @@ These were never exercised:
 [r-22036]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json
 [p-102]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-customer-number-unknown.json
 [p-102-fp]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-freight-payer-customer-number-unknown.json
+[p-421]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id.json
 [b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
 [lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json

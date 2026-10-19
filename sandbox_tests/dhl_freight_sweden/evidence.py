@@ -900,6 +900,25 @@ def _(b: Builder) -> Json:
     )
 
 
+PICKUP_PARTY_ID_RUN = "20261019-121637"
+PICKUP_BOOKING = "421-2026-10-19-12.16.37.636333"
+
+
+@evidence(f"pickup-{PICKUP_BOOKING}-102-se-se-pickup-party-id.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "pickup",
+        "PickupRequest for 102 within SE as in pickup-102-se-se-customer-number-unknown.json with the "
+        "Consignor id removed and id 999999 on the Pickup party at the Consignor's address answered "
+        f"HTTP 200 with status 0 (Accepted), bookingNumber {PICKUP_BOOKING}, pickupDateTime "
+        "2026-10-20T10:00:00+02:00, and the message \"Bekräftad! Din bokning '11151 Stockholm' har "
+        f"bokningsnummer {PICKUP_BOOKING}\" (its double space collapsed here).",
+        "102", "SE 11143 -> SE 11151", PICKUP_BOOKING, None,
+        f"{SUITE_RUN}: TestSandboxPickupProbes.test_pickup_request_102_se_pickup_party_id",
+        [b.suite_exchange(PICKUP_PARTY_ID_RUN, "001-pickup-102-se-pickup-party-id")],
+    )
+
+
 LOOKUPS_RUN = "20261005-182045"
 CAPACITY_RUN = "20261005-182045-capacity-probe"
 

@@ -1,0 +1,101 @@
+{
+ "kind": "pickup",
+ "summary": "PickupRequest for 102 within SE as in pickup-102-se-se-customer-number-unknown.json with the Consignor id removed and id 999999 on the Pickup party at the Consignor's address answered HTTP 200 with status 0 (Accepted), bookingNumber 421-2026-10-19-12.16.37.636333, pickupDateTime 2026-10-20T10:00:00+02:00, and the message \"Bekräftad! Din bokning '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.16.37.636333\" (its double space collapsed here).",
+ "captured_at": "2026-10-19T10:16:37Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /pickuprequestapi/v1/pickuprequest/pickuprequest",
+ "product": "102",
+ "route": "SE 11143 -> SE 11151",
+ "booking_id": "421-2026-10-19-12.16.37.636333",
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: TestSandboxPickupProbes.test_pickup_request_102_se_pickup_party_id",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /pickuprequestapi/v1/pickuprequest/pickuprequest",
+   "http_status": 200,
+   "date": "2026-10-19T10:16:37Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261019-121637/001-pickup-102-se-pickup-party-id.request.json",
+    "sha256": "61c629899c294488a5fd738cb42a683f8978f03eadc8c9fc44152569dc68b52b"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261019-121637/001-pickup-102-se-pickup-party-id.response.json",
+    "sha256": "e32d180f798599f4e4f1ef933a3f458167b89da3dfb564386da8153109bacc35"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11151",
+       "street": "Drottninggatan 10"
+      },
+      "contactName": "Anna Andersson",
+      "email": "anna.andersson@example.se",
+      "name": "Anna Andersson",
+      "phone": "+46 70 123 45 67",
+      "type": "Consignee"
+     },
+     {
+      "address": {
+       "cityName": "Stockholm",
+       "countryCode": "SE",
+       "postalCode": "11143",
+       "street": "Kungsgatan 1"
+      },
+      "contactName": "Sven Svensson",
+      "email": "shipper@example.se",
+      "id": "999999",
+      "name": "Test Shipper AB",
+      "phone": "+46 8 123 456",
+      "type": "Pickup"
+     }
+    ],
+    "payerCode": {
+     "code": "1"
+    },
+    "pickupDate": "2026-10-20T10:00:00",
+    "pickupInstruction": "Sandbox test, no pickup needed",
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "marksAndNumbers": "SANDBOX-TEST",
+      "numberOfPieces": 1,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ],
+    "productCode": "102",
+    "totalNumberOfPieces": 1,
+    "totalVolume": 0.006,
+    "totalWeight": 1.0
+   },
+   "response": {
+    "status": 0,
+    "bookingNumber": "421-2026-10-19-12.16.37.636333",
+    "pickupDateTime": "2026-10-20T10:00:00+02:00",
+    "message": "Bekräftad! Din bokning  '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.16.37.636333"
+   }
+  }
+ ]
+}
