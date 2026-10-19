@@ -27,6 +27,14 @@ pyright
 
 The offline suite includes `tests/dhl_freight_sweden/test_examples.py`, which runs the scripts in `examples/` with network calls patched to fail, and `tests/dhl_freight_sweden/test_doc_links.py`, which checks that every relative link in the README and `docs/` resolves and that every sandbox evidence file is linked from at least one document.
 
+## Releasing
+
+Releases are in-development versions published as GitHub releases of this repository only, listed in its [releases feed](https://github.com/PrimePack-AB/karrio-dhl-freight-sweden/releases.atom); nothing is published to PyPI.
+Versions are CalVer `YYYY.M.N`, without leading zeros, where `N` counts releases within the month, and each is tagged `vYYYY.M.N`.
+The `karrio-ref` key under `[tool.primepack]` in `pyproject.toml` must name a `snapshot-YYYY.MM.DD.N` tag of the Joaqim/karrio fork, because the fork's `develop` branch is regenerated and force-pushed and its commits are not durable.
+To cut a release, run `scripts/release.sh YYYY.M.N` on a clean `main`; it sets the `[project]` version, commits `chore(release): YYYY.M.N`, creates the annotated tag, and prints the push command without running it.
+Pushing the tag runs `.github/workflows/release.yml`, which checks the tag against the version with `scripts/check-release-tag.sh`, runs the offline suite against the fork SDK at `karrio-ref`, and creates the release with generated notes that name the required fork snapshot.
+
 ## Product manual citations
 
 The connector and its documentation cite the DHL Freight (Sweden) product manual, version 5.26, updated 2026-10-01 and valid from 2026-11-01, as `§x.y pN`.
