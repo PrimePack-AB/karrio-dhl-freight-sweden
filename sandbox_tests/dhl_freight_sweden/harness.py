@@ -34,6 +34,7 @@ BOOKING_SEGMENTS = frozenset(
         "booking-export",
         "booking-declarations",
         "booking-probes",
+        "pickup-probes",
         "rejections",
     }
 )
@@ -41,6 +42,11 @@ SEGMENTS = frozenset({"lookups"}) | BOOKING_SEGMENTS
 DEFAULT_SEGMENTS = frozenset({"lookups"})
 DEFAULT_MAX_BOOKINGS = 30
 BOOKING_PATH = "/transportinstruction/sendtransportinstruction"
+# The PickupRequest API books a pickup that cannot be cancelled
+# electronically (product manual v5.26 §5.2 p14), so its calls draw on the
+# booking budget like transport instructions.
+PICKUP_PATH = "/pickuprequest/pickuprequest"
+BUDGETED_PATHS = (BOOKING_PATH, PICKUP_PATH)
 REDACTED = "<redacted>"
 SECRET_HEADERS = frozenset({"client-key"})
 
@@ -294,6 +300,9 @@ class Session:
     def _install_transport_guard(self) -> None:
         """Refuse any carrier call off the sandbox host or beyond the budget.
 
+        Transport instruction and pickup request calls each need a reserved
+        budget attempt.
+
         The SDK's ``request`` opens connections through the module-level
         ``helpers.urlopen``, so wrapping it covers every proxy call.
         """
@@ -302,7 +311,7 @@ class Session:
         def guarded_urlopen(request, *args, **kwargs):
             url = request.full_url if hasattr(request, "full_url") else str(request)
             check_host(url)
-            if urllib.parse.urlparse(url).path.endswith(BOOKING_PATH):
+            if urllib.parse.urlparse(url).path.endswith(BUDGETED_PATHS):
                 self.booking_calls += 1
                 if self.booking_calls > self.budget.attempts:
                     raise SandboxConfigError(

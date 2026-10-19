@@ -108,6 +108,7 @@ class TestSandboxHarnessConfig(unittest.TestCase):
             **LIVE,
             "DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS": "booking-probes",
         }
+        pickup_segment = {**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS": "pickup-probes"}
         cases = (
             ({**LIVE, "DHL_FREIGHT_SWEDEN_SANDBOX": "true"}, "lookups", "DHL_FREIGHT_SWEDEN_SANDBOX is not 1"),
             ({**LIVE, "KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY": ""}, "lookups", "KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY is not set"),
@@ -118,6 +119,9 @@ class TestSandboxHarnessConfig(unittest.TestCase):
             (LIVE, "booking-probes", "segment booking-probes is not in DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"),
             (booking, "booking-probes", "segment booking-probes is not in DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"),
             (probes_segment, "booking-probes", None),
+            (probes_segment, "pickup-probes", "segment pickup-probes is not in DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS"),
+            (pickup_segment, "pickup-probes", None),
+            ({**pickup_segment, "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER": ""}, "pickup-probes", "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER is not set"),
         )
         for environ, segment, reason in cases:
             with self.subTest(segment=segment, reason=reason):
