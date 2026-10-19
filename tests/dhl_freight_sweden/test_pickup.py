@@ -284,9 +284,11 @@ class TestPickup212(unittest.TestCase):
 
     def _options(self, **changes: typing.Any) -> dict:
         return _options(
-            dhl_freight_sweden_service="212",
-            dhl_freight_sweden_delivery_address=DeliveryAddress,
-            **changes,
+            **{
+                "dhl_freight_sweden_service": "212",
+                "dhl_freight_sweden_delivery_address": DeliveryAddress,
+                **changes,
+            }
         )
 
     def test_212_sends_the_delivery_place_and_the_freight_payer(self):
@@ -309,6 +311,7 @@ class TestPickup212(unittest.TestCase):
             {
                 "type": "Consignee",
                 "name": "Test Recipient AB",
+                "contactName": "Test Recipient AB",
                 "address": {
                     "street": "Drottninggatan 2",
                     "cityName": "Göteborg",
