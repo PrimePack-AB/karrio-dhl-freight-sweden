@@ -1,4 +1,4 @@
-"""Sandbox segment ``pickup-probes``: one PickupRequest API call, groundwork
+"""Sandbox segment ``pickup-probes``: PickupRequest API calls, groundwork
 for a pickup-create feature the connector does not yet have.
 
 The PickupRequest API (vendor/se-api-farm/pickup-request-api-2.10.0.json)
@@ -9,8 +9,10 @@ transport instruction shape of the committed 102 SE booking
 (tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761222-102-se-se.json)
 with the parties the manual lists for 102 (§5.2 p15: CZ, CN, and PW, the
 pickup address), payer code 1, a pickup date, and a pickup instruction.
-The call counts against the booking budget and is captured and recorded once,
-whatever DHL answers, and never retried.
+Each test sends one distinct request: the base 102 probe and variants that
+place the customer number in other parties. Every call counts against the
+booking budget and is captured and recorded once, whatever DHL answers, and
+never retried.
 """
 
 import datetime
@@ -85,6 +87,11 @@ def pickup_request_102(account_number: str) -> dict:
     )
 
 
+def with_party(request: dict, extra: dict) -> dict:
+    """The request with one more party appended."""
+    return {**request, "parties": [*request["parties"], extra]}
+
+
 class TestSandboxPickupProbes(unittest.TestCase):
     session: harness.Session
 
@@ -94,13 +101,32 @@ class TestSandboxPickupProbes(unittest.TestCase):
         cls.gateway = cls.session.gateway()
 
     def test_pickup_request_102_se(self):
+        self._request_pickup("pickup-102-se", pickup_request_102)
+
+    def test_pickup_request_102_se_freight_payer(self):
+        """Variant: a FreightPayer party carries the customer number too.
+
+        The manual's 102 party table lists FP, freight payer (§5.2 p15), and
+        for 212 a pickup request needs the freight payer party with the paying
+        DHL account number (§5.6 p38).
+        """
+        self._request_pickup(
+            "pickup-102-se-freight-payer",
+            lambda account: with_party(
+                pickup_request_102(account),
+                party(provider_units.PartyType.FreightPayer, booking.SHIPPER, account),
+            ),
+        )
+
+    def _request_pickup(
+        self, label: str, build: typing.Callable[[str], dict]
+    ) -> None:
         booking.require_booking(self, self.session, "102", "SE")
         settings = harness.settings_of(self.gateway)
-        payload = pickup_request_102(str(settings.account_number))
+        payload = build(str(settings.account_number))
         if not self.session.budget.reserve():
             self.skipTest("booking budget exhausted")
 
-        label = "pickup-102-se"
         response: typing.Any = None
         try:
             response = lib.request(
@@ -126,5 +152,6 @@ class TestSandboxPickupProbes(unittest.TestCase):
 
         body = harness.decoded_body(response)
         self.assertIsInstance(body, dict)
-        self.assertEqual(body.get("status"), "Accepted", body)
+        # ResponseStatus is an integer enum whose first name is Accepted.
+        self.assertIn(body.get("status"), (0, "Accepted"), body)
         self.assertTrue(body.get("bookingNumber"), body)
