@@ -172,17 +172,23 @@ class TestSandboxPickupProbes(unittest.TestCase):
 
         self._request_pickup("pickup-102-se-consignor-and-pickup-party-id", build)
 
-    def test_pickup_request_212_se_connector(self):
-        """212 within SE through the connector's own pickup path, payer code 1.
+    def test_pickup_request_212_se_delivery_place(self):
+        """212 within SE through the connector with the delivery place and the freight payer.
 
         The manual makes a pickup request for 212 carry the complete pickup
         address, at least the delivery place's address, postal code, and city,
         and the freight payer party with the paying DHL account number
-        (§5.8 p38); the connector sends the Consignor and the Pickup party at
-        the karrio pickup address only.
+        (§5.8 p38). The connector sends the delivery place from the
+        dhl_freight_sweden_delivery_address option as the Consignee and a
+        FreightPayer party at the pickup address with the customer number,
+        beside the Consignor without id and the Pickup party with the
+        customer number. An earlier version of this probe,
+        test_pickup_request_212_se_connector (commit 63ef74b), sent 212
+        without either party.
         """
         booking.require_booking(self, self.session, "212", "SE")
-        label = "pickup-212-se-connector"
+        label = "pickup-212-se-delivery-place"
+        recipient = typing.cast(typing.Dict[str, typing.Any], booking.RECIPIENTS["SE"])
         payload = models.PickupRequest(
             pickup_date=PICKUP_DATE.strftime("%Y-%m-%d"),
             ready_time=PICKUP_DATE.strftime("%H:%M"),
@@ -193,6 +199,7 @@ class TestSandboxPickupProbes(unittest.TestCase):
             options=dict(
                 dhl_freight_sweden_service="212",
                 dhl_freight_sweden_payer_code="1",
+                dhl_freight_sweden_delivery_address=recipient,
             ),
         )
         if not self.session.budget.reserve():
