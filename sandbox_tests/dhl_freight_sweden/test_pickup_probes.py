@@ -110,7 +110,7 @@ class TestSandboxPickupProbes(unittest.TestCase):
 
         The manual's 102 party table lists FP, freight payer (§5.2 p15), and
         for 212 a pickup request needs the freight payer party with the paying
-        DHL account number (§5.6 p38).
+        DHL account number (§5.8 p38).
         """
         self._request_pickup(
             "pickup-102-se-freight-payer",

@@ -205,7 +205,7 @@ The same day the segment sent variants of that request, each once, changing only
 
 | Date | Change from the first request | Status | Message | Evidence |
 |---|---|---|---|---|
-| 2026-10-19 | a FreightPayer party with id 999999 at the Consignor's address added, the party the manual lists as FP for 102 (§5.2 p15) and requires with the paying account number in a 212 pickup request (§5.6 p38) | `1`, empty `bookingNumber` | the same "Angivet kundnr 999999 är okänt." message | [pickup-102-se-se-freight-payer-customer-number-unknown][p-102-fp] |
+| 2026-10-19 | a FreightPayer party with id 999999 at the Consignor's address added, the party the manual lists as FP for 102 (§5.2 p15) and requires with the paying account number in a 212 pickup request (§5.8 p38) | `1`, empty `bookingNumber` | the same "Angivet kundnr 999999 är okänt." message | [pickup-102-se-se-freight-payer-customer-number-unknown][p-102-fp] |
 | 2026-10-19 | the id 999999 removed from the Consignor party and set on the Pickup party, no FreightPayer party | `0`, `bookingNumber` `421-2026-10-19-12.16.37.636333` | "Bekräftad! Din bokning '11151 Stockholm' har bokningsnummer 421-2026-10-19-12.16.37.636333" | [pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id][p-421] |
 
 The third request was accepted: `status` `0` is Accepted by position, the `pickupDateTime` `2026-10-20T10:00:00+02:00` again kept the requested date and time, and the booking number has the form `421-` followed by the date and time of the request to the microsecond, unlike the numeric TransportInstruction booking ids ([pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id][p-421]).
