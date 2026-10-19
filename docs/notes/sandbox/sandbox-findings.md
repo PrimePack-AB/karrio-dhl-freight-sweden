@@ -49,6 +49,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-19 | 10:09 | suite | one PickupRequest for 102 within SE |
 | 2026-10-19 | 10:15 | suite | PickupRequest for 102 within SE with a FreightPayer party |
 | 2026-10-19 | 10:16 | suite | PickupRequest for 102 within SE with the customer number on the Pickup party |
+| 2026-10-19 | 10:19 | suite | PickupRequest for 102 within SE with the customer number on the Pickup party and no Consignee party |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -209,7 +210,9 @@ The same day the segment sent variants of that request, each once, changing only
 
 The third request was accepted: `status` `0` is Accepted by position, the `pickupDateTime` `2026-10-20T10:00:00+02:00` again kept the requested date and time, and the booking number has the form `421-` followed by the date and time of the request to the microsecond, unlike the numeric TransportInstruction booking ids ([pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id][p-421]).
 No request sent 999999 on both the Consignor and the Pickup party, so these requests do not show whether a Consignor id alone causes the rejection or the Pickup party id is required.
-The accepted pickup stays booked, since the manual says a booking cannot be cancelled electronically (§5.2 p14).
+
+A fourth request, the accepted one without its Consignee party, leaving the Consignor and the Pickup party with id 999999, was accepted too: `status` `0`, `bookingNumber` `421-2026-10-19-12.19.04.489334`, the same `pickupDateTime`, and the message "Bekräftad! Din bokning ' VARIOUS' har bokningsnummer 421-2026-10-19-12.19.04.489334", which names VARIOUS where the earlier messages named the Consignee's postal code and city ([pickup-421-2026-10-19-12.19.04.489334-102-se-se-no-consignee][p-421-nc]).
+The accepted pickups stay booked, since the manual says a booking cannot be cancelled electronically (§5.2 p14).
 
 ## Lookup errors
 
@@ -517,6 +520,7 @@ These were never exercised:
 [p-102]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-customer-number-unknown.json
 [p-102-fp]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-freight-payer-customer-number-unknown.json
 [p-421]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.16.37.636333-102-se-se-pickup-party-id.json
+[p-421-nc]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.19.04.489334-102-se-se-no-consignee.json
 [b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
 [lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
