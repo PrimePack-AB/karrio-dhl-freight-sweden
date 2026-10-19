@@ -19,9 +19,7 @@ import unittest
 import karrio.core.models as models
 import karrio.sdk as karrio
 from karrio.providers.dhl_freight_sweden import units
-from karrio.providers.dhl_freight_sweden.shipment.create import (
-    InternationalAccountNumberError,
-)
+from karrio.providers.dhl_freight_sweden.utils import InternationalAccountNumberError
 
 from .fixture import as_dict, detail_keys, gateway, members, serialize_request
 from .test_shipment import _payload, _recipient_dk, _recipient_se

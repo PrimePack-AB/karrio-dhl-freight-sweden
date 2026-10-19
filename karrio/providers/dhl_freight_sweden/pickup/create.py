@@ -85,7 +85,7 @@ def pickup_request(
             _party(
                 provider_units.PartyType.Pickup,
                 address,
-                id=provider_create._consignor_id(service, settings),
+                id=provider_utils.customer_number(service, settings),
             ),
         ],
         pieces=[
