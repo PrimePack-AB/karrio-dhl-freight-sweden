@@ -187,7 +187,7 @@ class TestSandboxPickupProbes(unittest.TestCase):
             pickup_date=PICKUP_DATE.strftime("%Y-%m-%d"),
             ready_time=PICKUP_DATE.strftime("%H:%M"),
             closing_time="16:00",
-            address=models.Address(**booking.SHIPPER),
+            address=models.Address(**typing.cast(typing.Dict[str, typing.Any], booking.SHIPPER)),
             parcels=[models.Parcel(**booking.PARCEL)],
             instruction=PICKUP_INSTRUCTION,
             options=dict(
