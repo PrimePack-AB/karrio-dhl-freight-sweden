@@ -1,7 +1,9 @@
 """Offline tests for the live sandbox harness and the payloads its segments send."""
 
 import datetime
+import json
 import pathlib
+import typing
 import unittest
 
 import karrio.lib as lib
@@ -12,11 +14,16 @@ from sandbox_tests.dhl_freight_sweden import (
     test_booking_declarations as declarations,
     test_booking_export as export,
     test_booking_probes as probes,
+    test_pickup_probes as pickup,
 )
 
 from .fixture import gateway, serialize_request, shipment_request
 
 NOW = datetime.datetime(2026, 10, 5, 12, 0, 0)
+PICKUP_SPEC = (
+    pathlib.Path(__file__).parents[2] / "vendor" / "se-api-farm" / "pickup-request-api-2.10.0.json"
+)
+JSON_TYPES: typing.Dict[str, type] = {"object": dict, "array": list, "string": str, "boolean": bool}
 LIVE = {
     "DHL_FREIGHT_SWEDEN_SANDBOX": "1",
     "KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY": "secret-key",
@@ -630,4 +637,87 @@ class TestSandboxExportPayloads(unittest.TestCase):
         self.assertFalse(
             {"customsHandlingStandard", "customsHandlingFullService"}
             & set(serialized.get("additionalServices") or {})
+        )
+
+
+def schema_errors(value: typing.Any, schema: dict, schemas: dict, path: str = "$") -> typing.List[str]:
+    """Where ``value`` breaks the OpenAPI ``schema``, for the keywords the
+    PickupRequest spec uses: ``$ref``, ``type``, ``enum``, ``properties``,
+    ``additionalProperties: false``, and ``items``.
+
+    The spec's enums are typed ``integer`` with member names as values, which
+    DHL's APIs read as strings, so an enum is checked by membership only.
+    """
+    if "$ref" in schema:
+        return schema_errors(value, schemas[schema["$ref"].rsplit("/", 1)[1]], schemas, path)
+    if "enum" in schema:
+        return [] if value in schema["enum"] else [f"{path}: {value!r} not in {schema['enum']}"]
+    kind = schema.get("type")
+    if isinstance(value, dict) and kind == "object":
+        properties = schema.get("properties") or {}
+        unknown = [
+            f"{path}.{key}: not in the schema"
+            for key in value
+            if key not in properties and schema.get("additionalProperties") is False
+        ]
+        return unknown + [
+            error
+            for key, entry in value.items()
+            if key in properties
+            for error in schema_errors(entry, properties[key], schemas, f"{path}.{key}")
+        ]
+    if isinstance(value, list) and kind == "array":
+        return [
+            error
+            for index, entry in enumerate(value)
+            for error in schema_errors(entry, schema.get("items") or {}, schemas, f"{path}[{index}]")
+        ]
+    if kind == "integer":
+        valid = isinstance(value, int) and not isinstance(value, bool)
+    elif kind == "number":
+        valid = isinstance(value, (int, float)) and not isinstance(value, bool)
+    else:
+        valid = kind is None or isinstance(value, JSON_TYPES[kind])
+    return [] if valid else [f"{path}: {value!r} is not {kind}"]
+
+
+class TestSandboxPickupPayloads(unittest.TestCase):
+    def setUp(self):
+        spec = json.loads(PICKUP_SPEC.read_text())
+        self.schemas = spec["components"]["schemas"]
+        self.model = spec["paths"]["/pickuprequest/pickuprequest"]["post"]["requestBody"][
+            "content"
+        ]["application/json"]["schema"]
+
+    def test_validator_reports_unknown_keys_types_and_enums(self):
+        bad = {
+            "productCode": 102,
+            "carrier": "DHL",
+            "parties": [{"type": "Shipper"}],
+            "totalNumberOfPieces": True,
+        }
+
+        self.assertEqual(
+            sorted(schema_errors(bad, self.model, self.schemas)),
+            [
+                "$.carrier: not in the schema",
+                "$.parties[0].type: 'Shipper' not in ['AccessPoint', 'Consignor', 'Consignee', 'Delivery', 'FreightPayer', 'Pickup']",
+                "$.productCode: 102 is not string",
+                "$.totalNumberOfPieces: True is not integer",
+            ],
+        )
+
+    def test_102_pickup_request_matches_the_spec(self):
+        payload = pickup.pickup_request_102("999999")
+
+        self.assertEqual(schema_errors(payload, self.model, self.schemas), [])
+        self.assertEqual(datetime.datetime.fromisoformat(payload["pickupDate"]).weekday(), 1)
+        self.assertEqual(
+            [(party["type"], party.get("id")) for party in payload["parties"]],
+            [("Consignor", "999999"), ("Consignee", None), ("Pickup", None)],
+        )
+        self.assertEqual(payload["payerCode"], {"code": "1"})
+        self.assertEqual(
+            payload["totalNumberOfPieces"],
+            sum(piece["numberOfPieces"] for piece in payload["pieces"]),
         )
