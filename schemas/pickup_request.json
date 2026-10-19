@@ -1,0 +1,108 @@
+{
+  "id": "string",
+  "productCode": "string",
+  "pickupDate": "2026-10-20T10:00:00",
+  "pickupInstruction": "string",
+  "deliveryInstruction": "string",
+  "totalNumberOfPieces": 1,
+  "totalWeight": 1.5,
+  "totalVolume": 0.006,
+  "totalLoadingMeters": 0.5,
+  "totalLoadingMetres": 0.5,
+  "totalPalletPlaces": 0.5,
+  "payerCode": {
+    "code": "string"
+  },
+  "parties": [
+    {
+      "id": "string",
+      "type": "Pickup",
+      "name": "string",
+      "contactName": "string",
+      "references": ["string"],
+      "address": {
+        "street": "string",
+        "streetNumber": "string",
+        "additionalAddressInfo": "string",
+        "cityName": "string",
+        "postalCode": "string",
+        "countryCode": "SE",
+        "accessCode": "string"
+      },
+      "phone": "string",
+      "email": "string",
+      "fax": "string"
+    }
+  ],
+  "pieces": [
+    {
+      "id": ["string"],
+      "goodsType": "string",
+      "packageType": "string",
+      "marksAndNumbers": "string",
+      "numberOfPieces": 1,
+      "weight": 1.5,
+      "volume": 0.006,
+      "loadingMeters": 0.5,
+      "loadingMetres": 0.5,
+      "palletPlaces": 0.5,
+      "width": 20.5,
+      "height": 10.5,
+      "length": 30.5,
+      "stackable": true
+    }
+  ],
+  "additionalServices": {
+    "cashOnDelivery": {
+      "amount": 100.5,
+      "bankGiroNumber": "string",
+      "plusGiroNumber": "string",
+      "reference": "string",
+      "currency": "SEK"
+    },
+    "dangerousGoods": true,
+    "dangerousGoodsDomestic": true,
+    "deliveryAtConstructionSite": true,
+    "deliveryWithoutProofOfDelivery": true,
+    "dangerousGoodsLimitedQuantity": true,
+    "emptyPalletPickup": true,
+    "indoorDelivery": true,
+    "notification": true,
+    "insurance": {
+      "value": 100.5,
+      "currency": "SEK"
+    },
+    "preAdviceByDriver": {
+      "phone": "string"
+    },
+    "tailLiftLoading": true,
+    "tailLiftUnloading": true,
+    "thermoCold": {
+      "min": 2.5,
+      "max": 8.5
+    },
+    "thermoFreeze": {
+      "min": 2.5,
+      "max": 8.5
+    },
+    "thermoWarm": {
+      "min": 2.5,
+      "max": 8.5
+    },
+    "timeDefiniteLoading": {
+      "dateTime": "2026-10-20T10:00:00"
+    },
+    "timeDefiniteUnloading": {
+      "dateTime": "2026-10-20T10:00:00"
+    },
+    "twoManHandling": true,
+    "priorityServiceG7": true,
+    "priorityServiceG10": true,
+    "priorityServiceG12": true,
+    "truck": true,
+    "preAdvicePickup": true,
+    "preAdviceByDriverPickup": {
+      "phone": "string"
+    }
+  }
+}

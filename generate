@@ -19,3 +19,7 @@ generate_schema "${SCHEMAS}/transport_instruction_response.json" "${LIB_MODULES}
 generate_schema "${SCHEMAS}/print_request.json" "${LIB_MODULES}/print_request.py"
 generate_schema "${SCHEMAS}/print_request_by_id.json" "${LIB_MODULES}/print_request_by_id.py"
 generate_schema "${SCHEMAS}/print_response.json" "${LIB_MODULES}/print_response.py"
+
+# Pickup request schemas
+generate_schema "${SCHEMAS}/pickup_request.json" "${LIB_MODULES}/pickup_request.py"
+generate_schema "${SCHEMAS}/pickup_response.json" "${LIB_MODULES}/pickup_response.py"
