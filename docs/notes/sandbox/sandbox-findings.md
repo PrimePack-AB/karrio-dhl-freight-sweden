@@ -47,6 +47,7 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-13 | 13:04 | suite | 202 Consignor id account-number probes |
 | 2026-10-16 | 12:18 | suite | 109 GB ParcelShop case without the product matches check |
 | 2026-10-19 | 10:09 | suite | one PickupRequest for 102 within SE |
+| 2026-10-19 | 10:15 | suite | PickupRequest for 102 within SE with a FreightPayer party |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
@@ -197,6 +198,12 @@ The `pickupDateTime` kept the requested date and time and added the Swedish summ
 The message names the Consignee's postal code and city rather than the Pickup party's, and the same number 999999 was accepted as the 102 Consignor id by TransportInstruction ([2906761222][b-222]).
 The sandbox answered the client key with a PickupRequest body rather than the HTTP 401 it gives an unknown key on the PostalCode API ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 No pickup was booked, so nothing is pending cancellation, which the manual says cannot be done electronically (§5.2 p14).
+
+The same day the segment sent variants of that request, each once, changing only where the customer number 999999 appears.
+
+| Date | Change from the first request | Status | Message | Evidence |
+|---|---|---|---|---|
+| 2026-10-19 | a FreightPayer party with id 999999 at the Consignor's address added, the party the manual lists as FP for 102 (§5.2 p15) and requires with the paying account number in a 212 pickup request (§5.6 p38) | `1`, empty `bookingNumber` | the same "Angivet kundnr 999999 är okänt." message | [pickup-102-se-se-freight-payer-customer-number-unknown][p-102-fp] |
 
 ## Lookup errors
 
@@ -501,6 +508,7 @@ These were never exercised:
 [lb-449]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788449-109-se-dk-unregistered-access-point-id.json
 [r-22036]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22036-118-se-kiruna.json
 [p-102]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-customer-number-unknown.json
+[p-102-fp]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-102-se-se-freight-payer-customer-number-unknown.json
 [b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
 [lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
