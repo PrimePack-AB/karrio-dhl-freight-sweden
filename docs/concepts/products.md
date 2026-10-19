@@ -31,19 +31,22 @@ The instructions of 202 (§5.4 p22), 205 (§5.9 p41), and 601 (§5.19 p81) add t
 
 For DHL Road Freight Direct (205) the server-side minimum is on chargeable weight: the sandbox rejected a booking of one 1 kg piece from SE to NO with 22020 "ChargeableWeight is lower than product min 2500.0" ([rejection-22020-205-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)).
 
-## Piece weight and volume decimals
+## Piece measurement decimals
 
-Each product section's "Number of decimals" row states how many decimals the weight and volume take, and bookings and pickups send pieces at those decimals (`PRODUCT_MEASURE_DECIMALS` in units.py).
-Weight goes out in kg to one decimal, rounded half up, and the total weight is the sum of the pieces' rounded weights.
-Volume goes out in m³ to three decimals, so a 30 × 20 × 10 cm parcel is 0.006 m³, and is omitted unless all three dimensions are set.
+Each product section's "Number of decimals" row states how many decimals the weight, volume, and dimensions take, and bookings and pickups send pieces at those decimals (`PRODUCT_MEASURE_DECIMALS` in units.py).
+Values are rounded half up, and a positive value that would round to zero goes out as the smallest step instead (0.1 kg, 1 or 0.1 cm, 0.001 m³).
+Weight goes out in kg to one decimal, and the total weight is the sum of the pieces' sent weights.
+Dimensions go out in cm to the product's decimals, and the volume is computed from the sent dimensions in m³ to three decimals, so a 30 × 20 × 10 cm parcel is 0.006 m³; it is omitted unless all three dimensions are set.
 
-| Products | Weight | Volume | Manual |
-|----------|--------|--------|--------|
-| 102, 112, 202, 209, 211, 212, 205, 233, SPI | 1 | 3 | §5.2 p14, §5.3 p17, §5.4 p22, §5.5 p26, §5.7 p34, §5.8 p38, §5.9 p41, §5.10 p46, §5.11 p50 |
-| 103, 104, 118, 401, 402, 502, 601 | 1 | 3 | §5.12 p56, §5.13 p59, §5.16 p68, §5.17 p72, §5.18 p76, §5.19 p81 |
-| 210 Pall, 109 Parcel Connect B2C | 1 | none, no volume is sent | §5.6 p30, §5.14 p62 |
+| Products | Weight | Volume | Dimensions | Manual |
+|----------|--------|--------|------------|--------|
+| 102, 112, 103, 104, 118 | 1 | 3 | 1 | §5.2 p14, §5.3 p17, §5.12 p56, §5.13 p59, §5.16 p68 |
+| 109 Parcel Connect B2C | 1 | none, no volume is sent | 1 | §5.14 p62 |
+| 202, 209, 211, 212, 205, 233, SPI | 1 | 3 | 0 | §5.4 p22, §5.5 p26, §5.7 p34, §5.8 p38, §5.9 p41, §5.10 p46, §5.11 p50 |
+| 401, 402, 502, 601 | 1 | 3 | 0 | §5.17 p72, §5.18 p76, §5.19 p81 |
+| 210 Pall | 1 | none, no volume is sent | 0 | §5.6 p30 |
 
-The 107 section (§5.15 p65-p67) has no decimals row, so 107 pieces keep the unrounded weight and a three-decimal volume.
+The 107 section (§5.15 p65-p67) has no decimals row, so 107 pieces keep the unrounded weight and dimensions and a three-decimal volume.
 The product matches pre-flight sends the booking's own pieces, at the same decimals.
 
 ## HDI in product matches

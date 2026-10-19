@@ -30,7 +30,7 @@ The request maps onto the PickupRequest body as follows.
 | `pickup_date` and `ready_time` | `pickupDate`, as Swedish local time without an offset, such as `2026-10-20T10:00:00` |
 | `instruction` and `package_location` | `pickupInstruction`, joined by `; ` |
 | `address` | a `Consignor` party and a `Pickup` party, the latter with the customer number as `id` |
-| each parcel | a `pieces` row with `numberOfPieces` 1, the weight in kg to one decimal, the volume in m³ to three decimals (none for 109 and 210, see [Products](../concepts/products.md#piece-weight-and-volume-decimals)), the dimensions in cm, and the parcel reference as `marksAndNumbers` |
+| each parcel | a `pieces` row with `numberOfPieces` 1, the weight in kg, the volume in m³, and the dimensions in cm at the product's decimals (no volume for 109 and 210, see [Products](../concepts/products.md#piece-measurement-decimals)), and the parcel reference as `marksAndNumbers` |
 | all parcels | `totalNumberOfPieces`, `totalWeight` as the sum of the piece weights, and `totalVolume`, the last only when every parcel has a volume |
 | `closing_time` | not sent |
 
