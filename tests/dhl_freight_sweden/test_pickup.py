@@ -340,6 +340,24 @@ class TestPickupResponse(unittest.TestCase):
         self.assertIsNone(details)
         self.assertEqual(len(messages), 1)
 
+    def test_accepted_pickup_without_pickup_date_time_has_no_date_or_time(self):
+        body = {
+            key: value
+            for key, value in AcceptedPickup["exchanges"][0]["response"].items()
+            if key != "pickupDateTime"
+        }
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            mock.return_value = lib.to_json(body)
+            details, messages = (
+                karrio.Pickup.schedule(_pickup_request()).from_(gateway).parse()
+            )
+
+        self.assertEqual(messages, [])
+        assert details is not None
+        self.assertEqual(details.confirmation_number, "421-2026-10-19-12.19.04.489334")
+        self.assertIsNone(details.pickup_date)
+        self.assertIsNone(details.ready_time)
+
     def test_error_response_body(self):
         body = {
             "status": "ERROR",
