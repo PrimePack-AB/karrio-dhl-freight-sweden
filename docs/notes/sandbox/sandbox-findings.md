@@ -105,7 +105,7 @@ The two-parcel booking 2906788993 was accepted on the first call, and the respon
 | 2026-10-08 | 202 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769969 | [booking][b-969] |
 | 2026-10-08 | 202 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769977 | [booking][b-977] |
 | 2026-10-08 | 233 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769985 | [booking][b-985] |
-| 2026-10-08 | 233 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769993 | [booking][b-993] |
+| 2026-10-08 | 233 | SE → RO 030031 | DAP, `UIT_FREE` `"true"` alone, the connector's default | 2906769993 | [booking][b-993-ro] |
 | 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the five-digit 12345, an expected rejection DHL accepted | 2906784463 | [booking][b-463] |
 | 2026-10-13 | 202 | SE → DK 1620 | DAP, Consignor party id replaced by the seven-digit 1234567, an expected rejection DHL accepted | 2906784471 | [booking][b-471] |
 | 2026-10-13 | 109 | SE → DK 1620 | 022, ParcelShop sent as the lookup's `id` 115191 rather than its `servicePointId` 8009-115191 | 2906785361 | [booking][b-361] |
@@ -449,7 +449,7 @@ These were never exercised:
 [b-969]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769969-202-se-hu-default-ekaer-free.json
 [b-977]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769977-202-se-ro-default-uit-free.json
 [b-985]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769985-233-se-hu-default-ekaer-free.json
-[b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769993-233-se-ro-default-uit-free.json
+[b-993-ro]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769993-233-se-ro-default-uit-free.json
 [b-303]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762303-401-se-se.json
 [r-22001]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json
 [r-22001-103]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-103-se-access-point-id-only.json
