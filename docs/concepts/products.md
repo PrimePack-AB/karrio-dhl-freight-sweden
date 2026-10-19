@@ -31,6 +31,11 @@ The instructions of 202 (§5.4 p22), 205 (§5.9 p41), and 601 (§5.19 p81) add t
 
 For DHL Road Freight Direct (205) the server-side minimum is on chargeable weight: the sandbox rejected a booking of one 1 kg piece from SE to NO with 22020 "ChargeableWeight is lower than product min 2500.0" ([rejection-22020-205-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)).
 
+## Piece volume
+
+Bookings and pickups send each piece's volume in m³ rounded to three decimals, the volume decimals of the product tables' "Number of decimals" row (for 102 §5.2 p14), so a 30 × 20 × 10 cm parcel goes out as 0.006 m³.
+The volume is omitted unless all three dimensions are set, and the product matches pre-flight sends the booking's own piece volumes.
+
 ## HDI in product matches
 
 Product matches return HDI on every lane where they return 601, for example SE to PL ([lookup-product-matches-se-pl.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-pl.json)), and on some lanes without 601, such as ES 35001 ([lookup-product-matches-se-es-35001.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-es-35001.json)).
