@@ -111,3 +111,53 @@ class TestMeasureDecimals(unittest.TestCase):
 
         self.assertEqual(provider_utils.weight_kg(package, "107"), 1.26)
         self.assertEqual(provider_utils.volume_m3(package, "107"), 0.006)
+
+    def test_positive_weight_below_the_step_goes_out_as_the_step(self):
+        light = {**_PARCEL, "weight": 0.04}
+        body = _booking("dhl_freight_sweden_paket", _recipient_se, [light, light])
+
+        self.assertEqual([piece["weight"] for piece in body["pieces"]], [0.1, 0.1])
+        self.assertEqual(body["totalWeight"], 0.2)
+        self.assertEqual(
+            _pickup("dhl_freight_sweden_paket", [light])["totalWeight"], 0.1
+        )
+
+    def test_tables_state_dimension_decimals(self):
+        decimals = provider_units.PRODUCT_MEASURE_DECIMALS
+
+        self.assertEqual(
+            sorted(code for code, row in decimals.items() if row.dimensions == 1),
+            ["102", "103", "104", "109", "112", "118"],
+        )
+        self.assertTrue(
+            all(row.dimensions in (0, 1) for row in decimals.values())
+        )
+
+    def test_dimensions_round_to_the_table_decimals(self):
+        parcel = {**_PARCEL, "length": 30.46, "width": 20.04, "height": 10.55}
+        for service, sides, volume in (
+            ("dhl_freight_sweden_paket", (30.5, 20.0, 10.6), 0.006),
+            ("dhl_freight_sweden_stycke", (30.0, 20.0, 11.0), 0.007),
+        ):
+            with self.subTest(service=service):
+                for body in (
+                    _booking(service, _recipient_se, [parcel]),
+                    _pickup(service, [parcel]),
+                ):
+                    piece = body["pieces"][0]
+
+                    self.assertEqual(
+                        (piece["length"], piece["width"], piece["height"]), sides
+                    )
+                    self.assertEqual(piece["volume"], volume)
+
+    def test_positive_dimension_below_the_step_goes_out_as_the_step(self):
+        package = _package(height=0.4)
+
+        self.assertEqual(provider_utils.dimensions_cm(package, "211"), (30.0, 20.0, 1.0))
+        self.assertEqual(provider_utils.dimensions_cm(package, "102"), (30.0, 20.0, 0.4))
+
+    def test_107_keeps_unrounded_dimensions(self):
+        package = _package(length=30.46)
+
+        self.assertEqual(provider_utils.dimensions_cm(package, "107"), (30.46, 20.0, 10.0))
