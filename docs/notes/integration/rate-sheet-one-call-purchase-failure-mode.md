@@ -5,7 +5,8 @@ created: 2026-10-12
 
 ## Status
 
-Verified on 2026-10-12 by reading the karrio monorepo at commit 0a3370e44 (2026-10-09), the checkout this connector develops against as an editable install (requirements-dev.txt).
+Verified on 2026-10-12 by reading the karrio monorepo checkout this connector develops against as an editable install (requirements-dev.txt), then at a fork commit dated 2026-10-09.
+The five files cited below are identical at fork commit a7355a5c8 (tag `snapshot-2026.10.19.1`).
 No karrio server was run; the findings come from code.
 
 ## Findings
