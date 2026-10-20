@@ -69,7 +69,9 @@ PICKUP_PATH = "/pickuprequestapi/v1/pickuprequest/pickuprequest"
 # PickupRequest API 2.10.0 ResponseStatus, sha256 2140fd50...48549894 (docs/development/index.md).
 PICKUP_RESPONSE_STATUSES = ("Accepted", "Rejected", "Moved", "InternalError")
 CAPTURED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
-SHA256 = re.compile(r"^[0-9a-f]{64}$")
+# Captures that are or hold a PDF record this marker instead of a sha256
+# (sandbox_tests/dhl_freight_sweden/evidence.py, capture_digest).
+SHA256 = re.compile(r"^(?:[0-9a-f]{64}|redacted-2026-10-20)$")
 TOKEN = re.compile(r"^[A-Za-z0-9_\-+/=]{30,}$")
 OMITTED = re.compile(r"^<base64 omitted: \d+ characters>$")
 # DHL additional-service codes that match TOKEN, exempt only as exact values
@@ -145,6 +147,7 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
 
     def test_no_client_key_or_label_payload(self):
         client_key = os.environ.get("KARRIO_DHL_FREIGHT_SWEDEN_CLIENT_KEY")
+        account_number = (os.environ.get("KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER") or "").strip()
         for path in EVIDENCE_FILES:
             with self.subTest(path.name):
                 text = path.read_text()
@@ -152,6 +155,11 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
                 self.assertFalse("JVBERi0" in text, "base64 PDF present")
                 if client_key:
                     self.assertFalse(client_key in text, "client key present")
+                if account_number and account_number != ACCOUNT_NUMBER:
+                    self.assertIsNone(
+                        re.search(rf"(?<![0-9]){re.escape(account_number)}(?![0-9])", text),
+                        "customer number present",
+                    )
                 for key, value in walk(load(path)):
                     self.assertNotIn(key.lower(), ("client-key", "request_headers"))
                     if not isinstance(value, str) or key == "sha256":

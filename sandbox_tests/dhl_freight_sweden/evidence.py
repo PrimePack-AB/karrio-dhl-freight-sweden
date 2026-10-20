@@ -7,8 +7,9 @@ number, read from ``KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER``, with the
 placeholder ``ACCOUNT_NUMBER``, and writes one evidence file per finding into
 ``tests/dhl_freight_sweden/fixtures/sandbox/``.
 Every exchange records its capture path relative to the state directory
-and the capture's sha256, so the same captures always rebuild the same
-bytes, and the committed files can be checked against the originals.
+and the sha256 of the capture with the customer number replaced (see
+``capture_digest``), so the same captures always rebuild the same bytes,
+and the committed files can be checked against the originals.
 
 Run it from the repository root::
 
@@ -44,6 +45,9 @@ HOST = "test-api.freight-logistics.dhl.com"
 # international ones included, with the domestic number.
 ACCOUNT_NUMBER = "999999"
 ACCOUNT_NUMBER_VARIABLE = "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER"
+WITHDRAWN_DIGEST = "redacted-2026-10-20"
+# "%PDF-" in base64, the start of every base64-encoded label or document.
+PDF_BASE64 = b"JVBERi0"
 ACCOUNT_PLACEHOLDERS = frozenset({"<redacted>", "<ACCOUNT>", "__ACCOUNT__"})
 BASE64 = re.compile(r"^[A-Za-z0-9+/=\s]{200,}$")
 TI = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
@@ -79,6 +83,19 @@ def scrub(text: str, account_number: str) -> str:
     return re.sub(rf"(?<![0-9]){re.escape(account_number)}(?![0-9])", ACCOUNT_NUMBER, text)
 
 
+def capture_digest(content: bytes, account_number: str) -> str:
+    """The sha256 of a capture with ``account_number`` replaced by ``ACCOUNT_NUMBER``.
+
+    A PDF, or a capture holding a base64 PDF, gets ``WITHDRAWN_DIGEST`` instead:
+    the replacement cannot reach the compressed text a label prints, and a
+    digest over the original bytes would identify the customer number.
+    """
+    if content.startswith(b"%PDF") or PDF_BASE64 in content:
+        return WITHDRAWN_DIGEST
+    pattern = rb"(?<![0-9])" + re.escape(account_number.encode()) + rb"(?![0-9])"
+    return hashlib.sha256(re.sub(pattern, ACCOUNT_NUMBER.encode(), content)).hexdigest()
+
+
 def json_or_text(text: str) -> Json:
     try:
         return json.loads(text)
@@ -98,8 +115,9 @@ class Builder:
     ``agent-logs/<project>/<run>``, both relative to ``state_root``.
     """
 
-    def __init__(self, state_root: pathlib.Path) -> None:
+    def __init__(self, state_root: pathlib.Path, account_number: str) -> None:
         self.state_root = state_root
+        self.account_number = account_number
         self.suite = state_root / "karrio-dhl-freight-sweden" / "sandbox"
         self.logs = state_root / "agent-logs" / "karrio-dhl-freight-sweden"
         self.restored: typing.List[str] = []
@@ -107,7 +125,7 @@ class Builder:
     def source(self, path: pathlib.Path) -> Json:
         return dict(
             path=str(path.relative_to(self.state_root)),
-            sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
+            sha256=capture_digest(path.read_bytes(), self.account_number),
         )
 
     def clean(self, value: Json) -> Json:
@@ -1537,7 +1555,7 @@ def build(
     if unknown:
         raise SystemExit(f"unknown evidence files: {', '.join(unknown)}")
     out.mkdir(parents=True, exist_ok=True)
-    builder = Builder(state_root)
+    builder = Builder(state_root, account_number)
     written: typing.List[pathlib.Path] = []
     for name in selected:
         path = out / name

@@ -48,7 +48,9 @@ flowchart TD
 
 Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixtures/sandbox/`](../../../tests/dhl_freight_sweden/fixtures/sandbox/) holding the redacted request and response bodies, the source capture path, and the capture's sha256.
 Evidence files are named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, `label-<id>-...`, or `pickup-...`, the last holding one PickupRequest API call with the booking number in its name when DHL accepts it.
-A file's metadata names the endpoint, product, route, booking id or error code, and the capturing script or suite test, and each call records the path of its original capture relative to `$XDG_STATE_HOME` and the sha256 of that capture, so the original can be checked against the committed copy.
+A file's metadata names the endpoint, product, route, booking id or error code, and the capturing script or suite test, and each call records the path of its original capture relative to `$XDG_STATE_HOME` and a sha256 of that capture, so the original can be checked against the committed copy.
+The sha256 is taken over the capture with the domestic customer number replaced by 999999, so it does not depend on the real number.
+A PDF, or a capture holding a base64 PDF, records `redacted-2026-10-20` instead, because the replacement cannot reach the compressed label text and a digest of the original bytes would identify the number.
 The committed copies drop the `client-key` header and the response headers, and replace label and document base64 with a length marker.
 The build reads the real domestic customer number from `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`, replaces it with 999999 wherever it stands as a separate digit run, and refuses to run when that variable is unset.
 The earliest captures masked the account number in the Consignor party id; they predate the international customer number and booked every product with the domestic customer number, so their evidence files restore it as 999999 and record the masked placeholders under `account_number_restored`.
