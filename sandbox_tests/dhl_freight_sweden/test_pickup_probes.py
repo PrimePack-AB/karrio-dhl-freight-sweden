@@ -183,7 +183,7 @@ class TestSandboxPickupProbes(unittest.TestCase):
         FreightPayer party at the pickup address with the customer number,
         beside the Consignor without id and the Pickup party with the
         customer number. An earlier version of this probe,
-        test_pickup_request_212_se_connector (commit 63ef74b), sent 212
+        test_pickup_request_212_se_connector (commit 96611ea), sent 212
         without either party.
         """
         booking.require_booking(self, self.session, "212", "SE")
