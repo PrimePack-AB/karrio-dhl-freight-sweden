@@ -27,8 +27,8 @@ import karrio.providers.dhl_freight_sweden.shipment.create as provider_create
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 import karrio.providers.dhl_freight_sweden.units as provider_units
 
-# ResponseStatus is an integer enum (vendor/se-api-farm/
-# pickup-request-api-2.10.0.json); the sandbox answers its position.
+# ResponseStatus is an integer enum in the PickupRequest API 2.10.0 spec
+# (docs/development/index.md); the sandbox answers its position.
 RESPONSE_STATUSES = ("Accepted", "Rejected", "Moved", "InternalError")
 ACCEPTED = RESPONSE_STATUSES[0]
 

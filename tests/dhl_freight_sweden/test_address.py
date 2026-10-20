@@ -5,7 +5,7 @@ Route fixtures are PostalCodes API route responses
 41103 Göteborg are generally bookable with home delivery, 98138 Kiruna is
 bookable without home delivery (product 118 unavailable), and 99999
 returns the PascalCase ``ErrorResult`` the live API emits where the
-vendored spec declares camelCase
+Postalcode API 2.10.0 spec declares camelCase
 (fixtures/sandbox/lookup-postal-code-se-99999-16010.json).
 """
 

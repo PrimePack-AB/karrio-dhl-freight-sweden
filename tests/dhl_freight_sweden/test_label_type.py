@@ -1,6 +1,6 @@
 """DHL Freight (SE API Farm) label type validation.
 
-The Print API (vendor/se-api-farm/print-api-2.10.0.json) has no document
+The Print API 2.10.0 spec (docs/development/index.md) has no document
 format parameter, and every sandbox label in fixtures/sandbox/label-*.json
 is a PDF, so the connector refuses any other requested label type before
 booking. The request's label_type and the connection config's are each

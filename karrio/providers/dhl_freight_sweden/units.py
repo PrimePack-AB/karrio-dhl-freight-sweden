@@ -90,8 +90,8 @@ SENT_COUNTRY = "PL"
 SENT_VALUE_MAX_LENGTH = 20
 
 
-# Label formats the connector accepts. The Print API has no document format
-# parameter (vendor/se-api-farm/print-api-2.10.0.json), and every sandbox
+# Label formats the connector accepts. The Print API 2.10.0 spec has no
+# document format parameter (docs/development/index.md), and every sandbox
 # label is a PDF (tests/dhl_freight_sweden/fixtures/sandbox/label-*.json).
 SUPPORTED_LABEL_TYPES: typing.Tuple[str, ...] = ("PDF",)
 
@@ -590,9 +590,8 @@ PRODUCT_BOOKING_SYSTEMS: typing.Dict[str, BookingSystem] = {
     },
 }
 
-# The Transport Instruction API caps Party.id at 15 characters
-# (vendor/se-api-farm/transport-instruction-2.10.0.json), below the 35 that
-# the manual allows an international customer number.
+# The TransportInstruction 2.10.0 spec caps Party.id at 15 characters
+# (docs/development/index.md), below the 35 that the manual allows an international customer number.
 PARTY_ID_MAX_LENGTH = 15
 
 

@@ -8,7 +8,7 @@ Manual references are to [product manual v5.26](../development/index.md#product-
 ## Format
 
 Only PDF labels are supported.
-The vendored print spec 2.10.0 (`vendor/se-api-farm/print-api-2.10.0.json`) exposes no format parameter, and the sandbox returned a one-page PDF of 105 × 210 mm, 297.638 × 595.276 pt, for page type `Label` ([label-2906761354-109-se-dk-parcelshop.json](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json)).
+The Print API 2.10.0 spec, cited in [API Farm specification citations](../development/index.md#api-farm-specification-citations), exposes no format parameter, and the sandbox returned a one-page PDF of 105 × 210 mm, 297.638 × 595.276 pt, for page type `Label` ([label-2906761354-109-se-dk-parcelshop.json](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json)).
 The connector validates the `label_type` connection setting and the shipment request's `label_type` separately on every booking.
 Either may be unset or `PDF` in any letter case, and any other value, such as `ZPL`, fails before the booking request with `LabelTypeError`, a `SHIPPING_SDK_FIELD_ERROR` keyed `config.label_type` for the setting or `label_type` for the request, even when the other one says `PDF`.
 The returned shipment declares the format read from the decoded document's magic prefix (`%PDF-`, `^XA`), then the report `contentType`, and otherwise `PDF`.
@@ -16,7 +16,7 @@ The returned shipment declares the format read from the decoded document's magic
 ## Page layout
 
 The `label_page_type` connection setting selects the Print API page type, `Label` by default, and the `dhl_freight_sweden_label_page_type` option overrides it per shipment.
-The page types of the vendored print spec 2.10.0 are `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, and `LabelCompact2x2PortraitA4`.
+The page types of the Print API 2.10.0 spec are `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, and `LabelCompact2x2PortraitA4`.
 The 112 label to FR is a 100 × 150 mm label in a different layout that carries the Chronopost reference from the booking response ([label-2906761867-112-se-fr.json](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json)).
 A two-parcel 102 booking's print call returned one report bundling both parcel labels as a two-page PDF, one 105 × 210 mm page per parcel carrying its piece id as the (00) barcode text and an x/N counter ([label-2906788993-102-se-se-two-parcels.json](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json)).
 The booking's `meta.tracking_numbers` carries those piece ids, one per parcel in parcel order ([booking-2906788993-102-se-se-two-parcels.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json)).
@@ -54,7 +54,7 @@ The labels of 109 bookings to DK ParcelShop 8009-115191 and NO ParcelShop 8009-1
 
 ## References
 
-The vendored transport-instruction spec 2.10.0 (`vendor/se-api-farm/transport-instruction-2.10.0.json`) defines `parties[].references`, up to 99 entries of at most 35 characters each, and gives the field no description.
+The TransportInstruction 2.10.0 spec, cited in [API Farm specification citations](../development/index.md#api-farm-specification-citations), defines `parties[].references`, up to 99 entries of at most 35 characters each, and gives the field no description.
 The manual's Appendix F scopes references to tracking, loading, delivery, and invoicing, with the qualifiers CU and AAO (§10.7 p198).
 The label's "Senders ref:" and "Receivers ref:" lines are field 12 of the label field description (§9.4.2 p174), and no DHL document connects `parties[].references` to those lines.
 The connector does not send references.

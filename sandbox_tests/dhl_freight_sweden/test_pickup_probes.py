@@ -1,7 +1,7 @@
 """Sandbox segment ``pickup-probes``: hand-built PickupRequest API calls,
 the evidence behind the request shape of the connector's ``schedule_pickup``.
 
-The PickupRequest API (vendor/se-api-farm/pickup-request-api-2.10.0.json)
+The PickupRequest API (spec 2.10.0, docs/development/index.md)
 books a pickup for one or several shipments of 102, 112, 209, 210, 211, 212,
 103, 109, 118, and 401 (product manual v5.26 §10.14.12 p236), and a booking
 cannot be cancelled electronically (§5.2 p14). The 102 probe sends the

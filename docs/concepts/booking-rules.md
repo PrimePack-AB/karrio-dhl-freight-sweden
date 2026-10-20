@@ -38,7 +38,7 @@ The same page also lists 501 under the domestic system and 232 and PPI under the
 The IFTMIN addresses 104 to a third recipient, DPST, and the connector sends 104 the domestic number that its 6-digit format row asks for.
 The IFTMIN also lists a third-party freight payer party for most products, carrying only the account number for the domestic products and all party details for 202, 205, 233, SPI, and 601 (IFTMIN v3.7 pp59-61); the connector sends no freight payer party.
 An international product without `international_account_number` fails with `InternationalAccountNumberError` keyed by `international_account_number`.
-The vendored Transport Instruction API spec 2.10.0 caps the party id at 15 characters, below the manual's 35, so an international number longer than 15 characters fails with the same error; a domestic booking ignores the international number.
+The TransportInstruction 2.10.0 spec, cited in [API Farm specification citations](../development/index.md#api-farm-specification-citations), caps the party id at 15 characters, below the manual's 35, so an international number longer than 15 characters fails with the same error; a domestic booking ignores the international number.
 The IFTMIN allows up to 17 characters for a party id (IFTMIN v3.7 p32), and which limit applies to the international number in the API is an open question for DHL API Farm.
 DHL API Farm support said on 2026-10-09 that 202 and 233 take the international customer number.
 Sandbox bookings made before that review with the domestic customer number were not rejected on 202 ([booking-2906762121-202-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762121-202-se-dk.json)), 233 ([booking-2906762147-233-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906762147-233-se-dk.json)), and 601 ([booking-2906761248-601-se-dk.json](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906761248-601-se-dk.json)).
@@ -145,7 +145,7 @@ The related-fields tables of 202 (§5.4 p23), 205 (§5.9 p42), 233 (§5.10 p47),
 
 The sandbox rejected a 109 booking to PL with no SENT entries with 22001 "SENT_REF and SENT_CARKEY are mandatory unless SENT_FREE is true." on 2026-10-05 and booked the same request on 2026-10-08 ([rejection](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22001-109-se-pl-without-sent.json), [booking](../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906769613-109-se-pl-without-sent.json)), and the connector sends `SENT_FREE` `"true"` when no SENT option is given.
 Whether 109 and 112 to PL take SENT entries is an open question for DHL API Farm.
-The vendored transport-instruction spec 2.10.0 defines the `AdditionalInformation` schema but does not reference it from the shipment; the sandbox booked it at shipment level.
+The TransportInstruction 2.10.0 spec defines the `AdditionalInformation` schema but does not reference it from the shipment; the sandbox booked it at shipment level.
 
 ## EKAER and UIT
 
@@ -201,7 +201,7 @@ No GR booking has been sent to the sandbox.
 Product manual v5.26 offers a QR code for Parcel Return Connect (107), shown by the consumer when handing over the return parcel, through the print API selection `"qrCode": true`, valid for BE, BG, CZ, DE, ES, LU, and PT (§5.15 p65), the countries a 107 return is sent from.
 The `dhl_freight_sweden_qr_code` option `true` adds `qrCode` `true` to the print-by-id options of 107 shipments whose shipper is in one of these countries.
 On other products or from other countries the option fails with `details` keyed by `dhl_freight_sweden_qr_code`, as access points do where the manual lists none, and `false` or no option requests no QR code.
-The vendored print spec 2.10.0 defines `qrCode` as a print option, but its `PrintResult` is a list of reports with `name`, `content`, `contentType`, `type`, and `valid`, and it does not say how a QR code report is named, typed, or ordered.
+The Print API 2.10.0 spec defines `qrCode` as a print option, but its `PrintResult` is a list of reports with `name`, `content`, `contentType`, `type`, and `valid`, and it does not say how a QR code report is named, typed, or ordered.
 The connector returns the first report as the label and does not surface a QR code document; no 107 booking with `qrCode` has been sent to the sandbox.
 
 ## Additional information pass-through

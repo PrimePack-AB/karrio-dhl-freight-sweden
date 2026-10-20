@@ -216,7 +216,7 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
 
 
 class TestSandboxEvidenceParses(unittest.TestCase):
-    """Live bodies carry fields the vendored schemas do not declare.
+    """Live bodies carry fields the API Farm 2.10.0 specs do not declare.
 
     jstruct logs a warning for each such field while parsing, so the logger
     is muted to keep the run output readable.

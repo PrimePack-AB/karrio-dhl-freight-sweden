@@ -30,7 +30,7 @@ def parse_error_response(
 def error_result_fields(response: dict) -> dict:
     """Pick the postalcodeapi ErrorResult fields in either casing.
 
-    The vendored spec declares camelCase (errorCode/userMessage); the live
+    The Postalcode API 2.10.0 spec declares camelCase (errorCode/userMessage); the live
     API returns PascalCase (ErrorCode/UserMessage), so keys are matched
     case-insensitively.
     """
