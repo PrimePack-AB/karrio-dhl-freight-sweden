@@ -45,3 +45,9 @@ The development pages are for working on the connector itself: setup and tests, 
 - [Plugin layout](development/architecture/plugin-layout.md)
 - [Documentation site](development/architecture/docs-site.md)
 - [Sandbox suite and evidence](development/traceability/sandbox-suite.md)
+
+## Trademarks and affiliation
+
+PrimePack AB is not affiliated with, endorsed by, or sponsored by DHL or any of its subsidiaries, including DHL Freight Sweden, and is not affiliated with Karrio Inc.
+DHL and karrio are names or trademarks of their respective owners and are used only to identify the carrier and the SDK this plugin works with.
+The DHL Freight Sweden API specifications are not included in this repository; [API Farm specification citations](development/index.md#api-farm-specification-citations) names them and where to obtain them.

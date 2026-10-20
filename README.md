@@ -501,3 +501,15 @@ The rules cite the DHL Freight (Sweden) product manual as `§x.y pN`, and [Produ
 [Booking rules](docs/concepts/booking-rules.md), [Destinations](docs/concepts/destinations.md), [Products](docs/concepts/products.md), and [Labels](docs/concepts/labels.md) explain each rule with its citation and evidence, [Service-point lookups](docs/guides/lookups.md) documents the lookups, and [Pickups](docs/guides/pickups.md) documents pickup scheduling.
 Every sandbox claim cites a redacted evidence file in [tests/dhl_freight_sweden/fixtures/sandbox/](tests/dhl_freight_sweden/fixtures/sandbox/), and the [sandbox findings](docs/notes/sandbox/sandbox-findings.md) record every booking, rejection, and deviation from the manual.
 [Development](docs/development/index.md) covers setup and tests, [Running the sandbox suite](docs/guides/sandbox-runs.md) runs the opt-in suite that books against the DHL sandbox, and [Sandbox suite and evidence](docs/development/traceability/sandbox-suite.md) describes its segments and the evidence it produces.
+
+## Licence
+
+Copyright (c) 2026 PrimePack AB.
+This Karrio Connector Plugin is distributed under the GNU Lesser General Public License v3.0; see [LICENSE](LICENSE).
+
+## Trademarks and affiliation
+
+PrimePack AB is not affiliated with, endorsed by, or sponsored by DHL or any of its subsidiaries, including DHL Freight Sweden.
+PrimePack AB does not own karrio and is not affiliated with Karrio Inc.
+DHL and karrio are names or trademarks of their respective owners and are used only to identify the carrier and the SDK this plugin works with.
+The DHL Freight Sweden API specifications are not included in this repository; see [the development guide](docs/development/index.md#api-farm-specification-citations) for where to obtain them.
