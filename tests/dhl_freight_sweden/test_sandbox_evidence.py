@@ -66,9 +66,8 @@ LABEL_KEYS = ("pdf_source", "page_size_pt", "text_extraction", "text_source", "t
 TI_PATH = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
 PRINT_PATH = "/printapi/v1/print/printdocumentsbyid"
 PICKUP_PATH = "/pickuprequestapi/v1/pickuprequest/pickuprequest"
-PICKUP_SPEC = (
-    pathlib.Path(__file__).parents[2] / "vendor" / "se-api-farm" / "pickup-request-api-2.10.0.json"
-)
+# PickupRequest API 2.10.0 ResponseStatus, sha256 2140fd50...48549894 (docs/development/index.md).
+PICKUP_RESPONSE_STATUSES = ("Accepted", "Rejected", "Moved", "InternalError")
 CAPTURED_AT = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 SHA256 = re.compile(r"^[0-9a-f]{64}$")
 TOKEN = re.compile(r"^[A-Za-z0-9_\-+/=]{30,}$")
@@ -352,9 +351,7 @@ class TestSandboxEvidenceParses(unittest.TestCase):
 class TestSandboxPickupEvidence(unittest.TestCase):
     def test_pickup_responses_carry_a_spec_status(self):
         """The live status is the index into the spec's ResponseStatus names."""
-        statuses = json.loads(PICKUP_SPEC.read_text())["components"]["schemas"][
-            "ResponseStatus"
-        ]["enum"]
+        statuses = PICKUP_RESPONSE_STATUSES
         pickups = 0
         for path in EVIDENCE_FILES:
             evidence = load(path)

@@ -7,6 +7,7 @@ import typing
 import unittest
 
 import karrio.lib as lib
+import karrio.providers.dhl_freight_sweden.pickup.create as pickup_create
 from sandbox_tests.dhl_freight_sweden import (
     booking,
     harness,
@@ -18,6 +19,7 @@ from sandbox_tests.dhl_freight_sweden import (
 )
 
 from .fixture import gateway, serialize_request, shipment_request
+from .test_sandbox_evidence import PICKUP_RESPONSE_STATUSES
 
 NOW = datetime.datetime(2026, 10, 5, 12, 0, 0)
 PICKUP_SPEC = (
@@ -681,6 +683,9 @@ def schema_errors(value: typing.Any, schema: dict, schemas: dict, path: str = "$
     return [] if valid else [f"{path}: {value!r} is not {kind}"]
 
 
+@unittest.skipUnless(
+    PICKUP_SPEC.is_file(), "local PickupRequest API 2.10.0 spec absent (docs/development/index.md)"
+)
 class TestSandboxPickupPayloads(unittest.TestCase):
     def setUp(self):
         spec = json.loads(PICKUP_SPEC.read_text())
@@ -688,6 +693,12 @@ class TestSandboxPickupPayloads(unittest.TestCase):
         self.model = spec["paths"]["/pickuprequest/pickuprequest"]["post"]["requestBody"][
             "content"
         ]["application/json"]["schema"]
+
+    def test_response_statuses_match_the_spec(self):
+        self.assertEqual(
+            list(PICKUP_RESPONSE_STATUSES), self.schemas["ResponseStatus"]["enum"]
+        )
+        self.assertEqual(pickup_create.RESPONSE_STATUSES, PICKUP_RESPONSE_STATUSES)
 
     def test_validator_reports_unknown_keys_types_and_enums(self):
         bad = {
@@ -711,6 +722,12 @@ class TestSandboxPickupPayloads(unittest.TestCase):
         payload = pickup.pickup_request_102("999999")
 
         self.assertEqual(schema_errors(payload, self.model, self.schemas), [])
+
+
+class TestSandboxPickupPayloadShape(unittest.TestCase):
+    def test_102_pickup_request_shape(self):
+        payload = pickup.pickup_request_102("999999")
+
         self.assertEqual(datetime.datetime.fromisoformat(payload["pickupDate"]).weekday(), 1)
         self.assertEqual(
             [(party["type"], party.get("id")) for party in payload["parties"]],
