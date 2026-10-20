@@ -10,3 +10,4 @@ build/
 .claude.local.md
 logs/
 /DHL-FREIGHT-SWEDEN-PRODUCT-MANUAL-v5.26.pdf
+/vendor/se-api-farm/

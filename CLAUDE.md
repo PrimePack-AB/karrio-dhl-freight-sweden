@@ -20,6 +20,7 @@
 - Follow the sandbox only where it rejects something the manual allows (e.g. Åland 24003): refuse it before booking, keep the manual citation, and record the outcome in the findings note
 - Where the sandbox or the Product API accepts more than the manual allows, follow the manual; the one operator-chosen exception is the customs joint declaration to CH (manual §6.8 p98 lists NO only), which rests on Product API product matches
 - EDI specifications (IFTMIN v3.7) at https://dhlpaket.se/dashboard/specifications/edi/ supplement the manual on per-product receiving systems and party ids; cite version and sha as in docs/development/index.md, never vendor the PDF
+- API Farm OpenAPI specs (2.10.0): cite by title and version against the table in docs/development/index.md (API Farm specification citations); never vendor or commit them, a local copy goes in the gitignored vendor/se-api-farm/
 - Describe sandbox outcomes neutrally as what the sandbox did, never as contradicting DHL or the manual
 
 ## Evidence rules
