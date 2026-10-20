@@ -26,7 +26,7 @@
 ## Evidence rules
 - Every sandbox claim in README.md, any docs/ page outside docs/notes/, or docs/notes/sandbox/sandbox-findings.md cites a committed redacted fixture in tests/dhl_freight_sweden/fixtures/sandbox/ produced by sandbox_tests evidence tooling; `test_doc_links.py` enforces the links
 - README sandbox claims carry their fixture links inline where the claim asserts a sandbox outcome; a link delegating to a concept page supplements the inline citation rather than substituting for it
-- Client key is secret (repo-root `.env`, never print); account number 999999 is not secret and must stay unredacted
+- Client key and the DHL customer number are secret: both are kept only in the repo-root `.env` (the customer number as `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`), never printed; evidence, fixtures, tests, and docs carry the placeholder 999999 in its place
 - The API has no cancel endpoint; sandbox bookings stay booked
 - DHL API Farm correspondence is written in Swedish and cites only DHL's own documents (manual, EDI specs, API spec), never fixtures or sandbox outcomes
 - Probe with free lookups (product matches, service points) before spending bookings; `require_product_match=False` forces a single case past the matches gate

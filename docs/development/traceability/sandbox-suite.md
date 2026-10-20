@@ -29,7 +29,9 @@ Results, with every booking, rejection, and deviation from the product manual, a
 ## Captures
 
 Every live call writes its request and response as JSON to the capture directory set by `DHL_FREIGHT_SWEDEN_SANDBOX_CAPTURE_DIR`, with the `client-key` header and the client key redacted.
-The domestic and international customer numbers stay in the captures, because DHL API Farm support traces sandbox bookings by them.
+The captures, which stay outside the repository, keep the domestic and international customer numbers, because DHL API Farm support traces sandbox bookings by them.
+Within the repository the real domestic customer number is kept only in `.env`, as `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`.
+Evidence files, fixtures, tests, and docs carry the placeholder 999999 in its place.
 Sandbox bookings cannot be cancelled through the API, so `bookings.jsonl` in the capture directory records the product, shipment id, and timestamp of every attempt.
 
 ## Evidence
@@ -48,7 +50,8 @@ Each finding is backed by an evidence file in [`tests/dhl_freight_sweden/fixture
 Evidence files are named by kind: `booking-<id>-...`, `rejection-<error code>-...`, `lookup-...`, `label-<id>-...`, or `pickup-...`, the last holding one PickupRequest API call with the booking number in its name when DHL accepts it.
 A file's metadata names the endpoint, product, route, booking id or error code, and the capturing script or suite test, and each call records the path of its original capture relative to `$XDG_STATE_HOME` and the sha256 of that capture, so the original can be checked against the committed copy.
 The committed copies drop the `client-key` header and the response headers, and replace label and document base64 with a length marker.
-The earliest captures masked the account number in the Consignor party id; they predate the international customer number and booked every product with the domestic 999999, so their evidence files restore that number and record the masked placeholders under `account_number_restored`.
+The build reads the real domestic customer number from `KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER`, replaces it with 999999 wherever it stands as a separate digit run, and refuses to run when that variable is unset.
+The earliest captures masked the account number in the Consignor party id; they predate the international customer number and booked every product with the domestic customer number, so their evidence files restore it as 999999 and record the masked placeholders under `account_number_restored`.
 `test_sandbox_evidence.py` expects 999999 on international products only in captures before 2026-10-09, when DHL API Farm support said those products take the international customer number.
 Product API responses are reduced to the fields a finding uses, and such calls carry a `response_reduced` note.
 A `label` file holds a Print API call with the label's page size and its `pdftotext -layout` text, citing the PDF and text files it was taken from.

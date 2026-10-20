@@ -2,8 +2,10 @@
 
 The captures stay under the XDG state directory, outside the repository.
 This module reads them, drops the client key and the response headers,
-replaces label base64 with a length marker, and writes one evidence file
-per finding into ``tests/dhl_freight_sweden/fixtures/sandbox/``.
+replaces label base64 with a length marker, replaces the domestic customer
+number, read from ``KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER``, with the
+placeholder ``ACCOUNT_NUMBER``, and writes one evidence file per finding into
+``tests/dhl_freight_sweden/fixtures/sandbox/``.
 Every exchange records its capture path relative to the state directory
 and the capture's sha256, so the same captures always rebuild the same
 bytes, and the committed files can be checked against the originals.
@@ -35,10 +37,13 @@ Json = typing.Any
 Exchange = typing.Dict[str, Json]
 
 HOST = "test-api.freight-logistics.dhl.com"
+# The placeholder evidence files carry in place of the domestic customer
+# number, which is kept only in .env under ACCOUNT_NUMBER_VARIABLE.
 # Only the earliest script captures masked the Consignor id, and all of them
 # predate the international customer number: they booked every product,
 # international ones included, with the domestic number.
 ACCOUNT_NUMBER = "999999"
+ACCOUNT_NUMBER_VARIABLE = "KARRIO_DHL_FREIGHT_SWEDEN_ACCOUNT_NUMBER"
 ACCOUNT_PLACEHOLDERS = frozenset({"<redacted>", "<ACCOUNT>", "__ACCOUNT__"})
 BASE64 = re.compile(r"^[A-Za-z0-9+/=\s]{200,}$")
 TI = "/transportinstructionapi/v1/transportinstruction/sendtransportinstruction"
@@ -67,6 +72,11 @@ def header_date(value: str) -> str:
 
 def mtime(path: pathlib.Path) -> str:
     return utc(datetime.datetime.fromtimestamp(path.stat().st_mtime, datetime.timezone.utc))
+
+
+def scrub(text: str, account_number: str) -> str:
+    """``text`` with every standalone ``account_number`` replaced by ``ACCOUNT_NUMBER``."""
+    return re.sub(rf"(?<![0-9]){re.escape(account_number)}(?![0-9])", ACCOUNT_NUMBER, text)
 
 
 def json_or_text(text: str) -> Json:
@@ -1517,8 +1527,11 @@ def render(document: Json) -> str:
     return json.dumps(document, ensure_ascii=False, indent=1) + "\n"
 
 
-def build(state_root: pathlib.Path, out: pathlib.Path, names: typing.Iterable[str]) -> typing.List[pathlib.Path]:
-    """Write the named evidence files (all of ``CATALOG`` when empty) into ``out``."""
+def build(
+    state_root: pathlib.Path, out: pathlib.Path, names: typing.Iterable[str], account_number: str
+) -> typing.List[pathlib.Path]:
+    """Write the named evidence files (all of ``CATALOG`` when empty) into ``out``,
+    with the real ``account_number`` replaced by ``ACCOUNT_NUMBER``."""
     selected = list(names) or list(CATALOG)
     unknown = [name for name in selected if name not in CATALOG]
     if unknown:
@@ -1528,7 +1541,7 @@ def build(state_root: pathlib.Path, out: pathlib.Path, names: typing.Iterable[st
     written: typing.List[pathlib.Path] = []
     for name in selected:
         path = out / name
-        path.write_text(render(CATALOG[name](builder)))
+        path.write_text(scrub(render(CATALOG[name](builder)), account_number))
         written.append(path)
     return written
 
@@ -1538,6 +1551,7 @@ class Arguments:
     state_root: pathlib.Path
     out: pathlib.Path
     names: typing.List[str]
+    account_number: str
 
 
 def parse_arguments(argv: typing.Sequence[str], environ: typing.Mapping[str, str]) -> Arguments:
@@ -1552,12 +1566,15 @@ def parse_arguments(argv: typing.Sequence[str], environ: typing.Mapping[str, str
     )
     parser.add_argument("names", nargs="*", help="evidence file names to build (default: all)")
     parsed = parser.parse_args(argv)
-    return Arguments(parsed.state_root.expanduser(), parsed.out, parsed.names)
+    account_number = (environ.get(ACCOUNT_NUMBER_VARIABLE) or "").strip()
+    if not account_number:
+        parser.error(f"{ACCOUNT_NUMBER_VARIABLE} is not set; the build replaces it with {ACCOUNT_NUMBER}")
+    return Arguments(parsed.state_root.expanduser(), parsed.out, parsed.names, account_number)
 
 
 def main(argv: typing.Sequence[str]) -> None:
     arguments = parse_arguments(argv, os.environ)
-    for path in build(arguments.state_root, arguments.out, arguments.names):
+    for path in build(arguments.state_root, arguments.out, arguments.names, arguments.account_number):
         print(path)
 
 
