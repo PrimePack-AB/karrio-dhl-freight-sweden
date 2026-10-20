@@ -47,6 +47,32 @@ The products' booking systems are cited from the DHL Freight (Sweden) Shipment I
 DHL lists it at <https://dhlpaket.se/dashboard/specifications/edi/>, and the cited copy has sha256 `5f6900bdc60121de6c789f4bc5406026a45ab4bca7c6008928200a2ca1926e5d`.
 The connector books through the API Farm rather than EDI, and cites the IFTMIN for the UNB recipient addresses on p10, which assign each product to DHL's domestic or international booking system — a mapping the manual's per-product "Information to be sent via EDI or API" tables corroborate (§5.2 p16, §5.14 p64) — for the party id length on p32, and, in Appendix A on pp59-61, for the 103 service point terminal id and the parties each product takes; it is cited rather than vendored like the manual.
 
+## API Farm specification citations
+
+Comments, tests, and documentation cite the DHL Freight (Sweden) API Farm OpenAPI specifications by title and version, for example "PickupRequest API 2.10.0".
+DHL publishes them in Swagger in the API Farm, which requires registering an organisation and an application, as the [API Farm get-started page](https://dhlpaket.se/dashboard/services/api-farm/get-started/) describes; the [API Farm page](https://dhlpaket.se/dashboard/services/api-farm/) lists an overview page per API.
+Each specification names its sandbox server under `https://test-api.freight-logistics.dhl.com/`, which answered HTTP 401 without a client key on 2026-10-20, so no public per-file URL is cited.
+Only the TransportInstruction specification names a contact, the API Farm page and `se.dbi@dhl.com`; none carries a licence, terms of service, or `externalDocs` field.
+
+The cited copies were vendored into the karrio fork on 2026-08-11 and are no longer included in this repository; the overview pages were checked on 2026-10-20.
+To keep a local copy for development, place the JSON files under `vendor/se-api-farm/`, which `.gitignore` excludes; the schema check in `tests/dhl_freight_sweden/test_sandbox_harness.py` runs only when `vendor/se-api-farm/pickup-request-api-2.10.0.json` is present.
+
+| File | Title | Version | sha256 | DHL overview page |
+| --- | --- | --- | --- | --- |
+| `additional-service-api-2.10.0.json` | Additional Service API | 2.10.0 | `049cfa208c990bc2ae01c02bc3257f7bae894482797cec1b4f13236917f87554` | [AdditionalService API](https://dhlpaket.se/dashboard/services/api-farm/additionalservice/) |
+| `eid-api-2.10.0.json` | EId API | 2.10.0 | `629cc4ed1beabfc9294f43e807925991e0075ca2fe88ef23a1aee4159b3c53d5` | [e-ID API](https://dhlpaket.se/dashboard/services/api-farm/e-id/) |
+| `home-delivery-locator-api-2.10.0.json` | HomeDeliveryLocator API | 2.10.0 | `b86dcf08320a3a09709c55a291d329cf64dddf4731748e79777889a1b6a2895c` | [HomeDeliveryLocator API](https://dhlpaket.se/dashboard/services/api-farm/homedeliverylocator/) |
+| `pallet-api-2.10.0.json` | Pallet API | 2.10.0 | `d776df5c4fa97d62723e652e80942927b809e93e0d98c74b8c291e10073d6515` | none listed |
+| `pickup-request-api-2.10.0.json` | PickupRequest API | 2.10.0 | `2140fd50864a3c6367b1d54af54c3bcaae57ad27bdd539438bba3e4c48549894` | [PickupRequest API](https://dhlpaket.se/dashboard/services/api-farm/pickuprequest/) |
+| `postalcode-api-2.10.0.json` | Postalcode API | 2.10.0 | `8a33a298b7fc925f68f81c7059c6ad0115280152fa2d62d5770aef40fcbaa1c2` | [PostalCodes API](https://dhlpaket.se/dashboard/services/api-farm/postalcodes/) |
+| `pricequote-api-2.10.0.json` | PriceQuote API | 2.10.0 | `20f68b2eb16e26934335dd8566948b35257e9502ccf09f4cbaf1d76cac309a7a` | [PriceQuote API](https://dhlpaket.se/dashboard/services/api-farm/pricequote/) |
+| `print-api-2.10.0.json` | Print API | 2.10.0 | `166698e8a2a003d411565e5c27db4735b73b6244dfefbb9937be7d4be3829549` | [Print API](https://dhlpaket.se/dashboard/services/api-farm/print/) |
+| `product-api-2.10.0.json` | Product API | 2.10.0 | `d69b561096d55a3be915cee4843515993798b4478ae94b63872d8156a6ece69e` | [Product API](https://dhlpaket.se/dashboard/services/api-farm/product/) |
+| `servicepoint-api-2.10.0.json` | Servicepoint API | 2.10.0 | `1d9b8cc31273df2099d61346d0d8ced97e14471384b98621bfe96a3827d1173a` | [ServicePointLocator API](https://dhlpaket.se/dashboard/services/api-farm/servicepointlocator/) |
+| `terminal-api-2.10.0.json` | Terminal API | 2.10.0 | `3b7e48f9cbc84ebb2a176dfdcdd238b7f92a7970a44810db3a47ecd6d3aa7355` | none listed |
+| `timetable-api-2.10.0.json` | TimeTable Api | 2.10.0 | `f015284f31ec0a60631df61a967fc5f9c65879110d650939acf0e0065cd7abf6` | [TimeTable API](https://dhlpaket.se/dashboard/services/api-farm/timetable/) |
+| `transport-instruction-2.10.0.json` | TransportInstruction | 2.10.0 | `553baeca6456183142f03af2252d47391a21484e68811c333accf76c354e22ac` | [TransportInstruction API](https://dhlpaket.se/dashboard/services/api-farm/transportinstruction/) |
+
 ## Breaking changes
 
 Rating and booking follow the lanes that the "Valid countries" tables of manual v5.26 allow for each product, listed in [Products](../concepts/products.md#lanes).
