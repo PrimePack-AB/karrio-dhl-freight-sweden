@@ -34,9 +34,9 @@ For DHL Road Freight Direct (205) the server-side minimum is on chargeable weigh
 ## Piece measurement decimals
 
 Each product section's "Number of decimals" row states how many decimals the weight, volume, and dimensions take, and bookings and pickups send pieces at those decimals (`PRODUCT_MEASURE_DECIMALS` in units.py).
-Values are rounded half up, and a positive value that would round to zero goes out as the smallest step instead (0.1 kg, 1 or 0.1 cm, 0.001 m³).
+Weight and dimensions are rounded half up, the volume is rounded up, and a positive value that would round to zero goes out as the smallest step instead (0.1 kg, 1 or 0.1 cm, 0.001 m³).
 Weight goes out in kg to one decimal, and the total weight is the sum of the pieces' sent weights.
-Dimensions go out in cm to the product's decimals, and the volume is computed from the sent dimensions in m³ to three decimals, so a 30 × 20 × 10 cm parcel is 0.006 m³; it is omitted unless all three dimensions are set.
+Dimensions go out in cm to the product's decimals, and the volume is the product of the sent dimensions in m³ rounded up to three decimals, so a 30 × 20 × 10 cm parcel is 0.006 m³ and a 10 × 20 × 11 cm parcel is 0.003 m³; it is omitted unless all three dimensions are set.
 
 | Products | Weight | Volume | Dimensions | Manual |
 |----------|--------|--------|------------|--------|

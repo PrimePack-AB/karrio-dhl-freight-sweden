@@ -69,7 +69,7 @@ The matches verdict runs first, so a matches refusal wins over a notification re
 ## Out of scope
 
 The `deliveryMonitoring*` remap is the recorded follow-up decision, not implemented by this change.
-The 22028 volume validation error from the same rejection body was set aside by the operator as unrelated and is recorded nowhere else.
+The 22028 volume validation error from the same rejection body was set aside by the operator as unrelated and is taken up in [volume-ceiling.md](volume-ceiling.md).
 
 ## Test plan
 

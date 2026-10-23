@@ -1,0 +1,40 @@
+{
+ "kind": "rejection",
+ "summary": "118 within SE with a 10 x 20 x 11 cm piece (0.0022 m3), booked live through the karrio server in test mode, was rejected with 22028 'Calculated volume 0.003 is larger than given volume 0.002' after the connector's half-up rounding sent volume 0.002; the same body carries the 24000 notification error behind the notification guard.",
+ "captured_at": "2026-10-23",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+ "product": "118",
+ "route": "SE -> SE",
+ "booking_id": null,
+ "error_code": "22028",
+ "http_status": 400,
+ "captured_by": "operator: karrio server test-mode booking; response body pasted verbatim, request not retained",
+ "redaction": "none needed: the body carries validation errors only",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /transportinstructionapi/v1/transportinstruction/sendtransportinstruction",
+   "http_status": 400,
+   "date": "2026-10-23",
+   "date_basis": "operator report; the 24000 error matches the notification-guard rejection of the same day",
+   "response": {
+    "http_message": "Bad Request",
+    "http_status": 400,
+    "status": "Error",
+    "validationErrors": [
+     {
+      "errorCode": 24000,
+      "field": "notification",
+      "message": "notification is not available for this product."
+     },
+     {
+      "errorCode": 22028,
+      "field": "Pieces[0].Volume",
+      "message": "Calculated volume 0.003 is larger than given volume 0.002 "
+     }
+    ]
+   }
+  }
+ ]
+}
