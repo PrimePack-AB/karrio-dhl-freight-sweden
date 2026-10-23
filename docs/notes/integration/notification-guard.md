@@ -5,7 +5,7 @@ created: 2026-10-23
 
 ## Status
 
-Designed on 2026-10-23; not yet implemented.
+Implemented on 2026-10-23.
 This note records the observed rejection, the evidence behind the design, the decisions taken with the operator, and the design to implement.
 The README settings row and the `docs/concepts/booking-rules.md` section accompany the implementation.
 
@@ -33,9 +33,9 @@ A live `productapi/v1/productmatches` answer for SE to SE, captured 2026-10-23, 
 `notification` (sv "Avisering", handling code AVI — the consignor assures that the consignee is present at delivery) appears only for 102 (DHL Paket) and 211 (DHL Stycke).
 118 lists neither `notification` nor any `deliveryMonitoring*` service.
 The "via SMS or e-mail" wording in the answer belongs to the `deliveryMonitoring*` family, whose booking wire (`DeliveryMonitoringOptions`) carries `email` and `smsPhoneNumber` fields; the `notification` boolean itself carries no channel distinction.
-The reduced answer is to be committed as `tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se-additional-services.json`; the existing `lookup-product-matches-se-se.json` keeps only code, isDomestic, name, and shortName per product.
+The reduced answer was committed as `tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se-additional-services.json`; the existing `lookup-product-matches-se-se.json` keeps only code, isDomestic, name, and shortName per product.
 The response body needs no redaction (catalog constants and catalog ids only) and the request postcodes stay per fixture convention.
-The original capture moves to `~/.local/state/karrio-dhl-freight-sweden/productmatches.se_to_se.md` once the fixture exists.
+The original capture moved to `~/.local/state/karrio-dhl-freight-sweden/productmatches.se_to_se.md`.
 No committed fixture today records any product's notification presence: the plain matches fixtures keep only product codes and names, and the customs variant keeps only customs-filtered service codes.
 
 ## Decisions
