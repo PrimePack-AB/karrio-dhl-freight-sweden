@@ -591,6 +591,8 @@ git commit -m "feat(guard): refuse or warn the notification flag from the matche
 - Modify: `karrio/mappers/dhl_freight_sweden/proxy.py` (methods `create_shipment`, `_product_match_messages`; new methods `_match_answer`, `_notification_messages`)
 - Test: `tests/dhl_freight_sweden/test_notification_guard.py`
 
+Controller addition 2026-10-23 (from Task 4's quality review): while appending the proxy tests, also drop the unused `import typing` from `tests/dhl_freight_sweden/test_notification_guard.py` and add a guard-function test covering a product entry that exists with an absent `additional_services` key (the Task 2 clear-empty shape): it refuses in enforce with the listing sentence ending "Additional services offered for this product: none."
+
 - [ ] **Step 1: Write the failing proxy-level tests**
 
 Append to `tests/dhl_freight_sweden/test_notification_guard.py` (new imports at top; reuse the existing `CRITERIA`-style constants). Add to the imports:
