@@ -2,8 +2,10 @@
 
 Every product section of product manual v5.26 except 107 (§5.15 p65-p67)
 states the decimals of weight and volume: weight to 1 decimal throughout,
-volume to 3 decimals, and no volume ("-") for 210 (§5.6 p30) and 109
-(§5.14 p62). Bookings and pickups send pieces at those decimals.
+volume to 3 decimals rounded up (DHL recomputes the volume from the sent
+dimensions and rejects a smaller given volume with 22028), and no volume
+("-") for 210 (§5.6 p30) and 109 (§5.14 p62). Bookings and pickups send
+pieces at those decimals.
 """
 
 import copy
@@ -136,7 +138,7 @@ class TestMeasureDecimals(unittest.TestCase):
     def test_dimensions_round_to_the_table_decimals(self):
         parcel = {**_PARCEL, "length": 30.46, "width": 20.04, "height": 10.55}
         for service, sides, volume in (
-            ("dhl_freight_sweden_paket", (30.5, 20.0, 10.6), 0.006),
+            ("dhl_freight_sweden_paket", (30.5, 20.0, 10.6), 0.007),
             ("dhl_freight_sweden_stycke", (30.0, 20.0, 11.0), 0.007),
         ):
             with self.subTest(service=service):
@@ -150,6 +152,21 @@ class TestMeasureDecimals(unittest.TestCase):
                         (piece["length"], piece["width"], piece["height"]), sides
                     )
                     self.assertEqual(piece["volume"], volume)
+
+    def test_volume_rounds_up_to_dhls_calculated_volume(self):
+        parcel = {**_PARCEL, "length": 10.0, "width": 20.0, "height": 11.0}
+        package = _package(length=10.0, width=20.0, height=11.0)
+
+        self.assertEqual(provider_utils.volume_m3(package, "118"), 0.003)
+        self.assertEqual(
+            _booking("dhl_freight_sweden_paket", _recipient_se, [parcel])["pieces"][0][
+                "volume"
+            ],
+            0.003,
+        )
+        self.assertEqual(
+            _pickup("dhl_freight_sweden_paket", [parcel])["totalVolume"], 0.003
+        )
 
     def test_positive_dimension_below_the_step_goes_out_as_the_step(self):
         package = _package(height=0.4)

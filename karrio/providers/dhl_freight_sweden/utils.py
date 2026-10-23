@@ -142,6 +142,12 @@ def volume_m3(package: lib.units.Package, product_code: str) -> typing.Optional[
     §5.2 p14), three decimals for a product without one, or None where the
     table lists no volume or a dimension is missing.
 
+    The volume is the exact decimal product of the sent dimensions rounded
+    up: DHL recomputes it from the dimensions the same way and rejects a
+    smaller given volume with 22028 ("Calculated volume 0.003 is larger
+    than given volume 0.002", an 118 SE to SE booking with 10 x 20 x 11 cm
+    pieces, 2026-10-23), so half-up rounding sent 0.002 for 0.0022 m³.
+
     ``Package.volume.m3`` rounds to 2 decimals, which turns a 30 x 20 x 10 cm
     parcel's 0.006 m³ into 0.01.
     """
@@ -152,7 +158,16 @@ def volume_m3(package: lib.units.Package, product_code: str) -> typing.Optional[
         return None
 
     length, width, height = typing.cast(typing.Tuple[float, float, float], sides)
-    return _to_decimals(length * width * height / 1e6, places)
+    cubic_cm = (
+        decimal.Decimal(str(length))
+        * decimal.Decimal(str(width))
+        * decimal.Decimal(str(height))
+    )
+    return float(
+        cubic_cm.scaleb(-6).quantize(
+            decimal.Decimal(1).scaleb(-places), rounding=decimal.ROUND_CEILING
+        )
+    )
 
 
 def customer_number(product_code: str, settings: Settings) -> typing.Optional[str]:
