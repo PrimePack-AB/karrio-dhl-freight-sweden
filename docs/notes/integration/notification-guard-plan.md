@@ -15,7 +15,7 @@ created: 2026-10-23
 
 **Spec:** `docs/notes/integration/notification-guard.md` (approved 2026-10-23).
 **Branch:** `notification-guard` (already checked out; verify with `git branch --show-current` before starting).
-**Test commands:** `.venv/bin/python -m unittest tests.dhl_freight_sweden.<module> -v` for one module, `.venv/bin/python -m unittest discover -s tests` for the suite, `pyright` from the repo root.
+**Test commands:** `cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.<module> -v` for one module, `.venv/bin/python -m unittest discover -s tests` for the suite, `pyright` from the repo root.
 
 ---
 
@@ -27,6 +27,8 @@ created: 2026-10-23
 - Move: `./productmatches.se_to_se.md` to `~/.local/state/karrio-dhl-freight-sweden/productmatches.se_to_se.md`
 
 The fixture must satisfy `tests/dhl_freight_sweden/test_sandbox_evidence.py` exactly: `tuple(evidence) == METADATA_KEYS` (key order), `environment == "test-api.freight-logistics.dhl.com"` (the operator confirmed the sandbox host), exchange keys exactly `EXCHANGE_KEYS` plus optional `response_reduced`, `captured_at` matching `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`, and sha256 values matching 64 lowercase hex. `test_doc_links.py` then requires the fixture to be linked from a checked document, so the findings-note entry lands in this task.
+
+Deviation recorded 2026-10-23 (controller-approved during execution): the no-secrets scan in `test_sandbox_evidence.py` flags token-like values ≥30 characters, and five genuine DHL catalog additional-service codes cross that line (`deliveryMonitoringArrivedAtDhlTerminal`, `deliveryMonitoringNotCollectedByReciever`, `deliveryMonitoringCollectedByReciever`, `deliveryMonitoringOutForDelivery`, `deliveryWithoutProofOfDelivery`). The scan's exact-value exemption was extended to members of `additionalServices` lists (structure-aware, keeping the flat-`code` non-exemption the existing unit test asserts), committed as `test(evidence): exempt DHL additional-service catalog codes in the token scan` before the fixture commit so every commit stays green.
 
 - [ ] **Step 1: Write the reducer and run it**
 
@@ -119,7 +121,7 @@ Add the reference definition beside the existing `[l-pm-se]` definition (around 
 - [ ] **Step 4: Verify the evidence and link tests**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_sandbox_evidence tests.dhl_freight_sweden.test_doc_links -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_sandbox_evidence tests.dhl_freight_sweden.test_doc_links -v
 ```
 
 Expected: all pass. If `test_sandbox_evidence` reports an envelope mismatch, fix the fixture to the exact key order or value it names and rerun; do not weaken the test.
@@ -175,7 +177,7 @@ The file already imports `lib`, `gateway`, and `settings_of`; if `settings_of` i
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_product_matches -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_product_matches -v
 ```
 
 Expected: FAIL — `test_parse_product_matches_additional_services` with a `KeyError: 'additional_services'`, and `test_parse_product_matches_response` with a dict inequality naming the missing key.
@@ -193,7 +195,7 @@ In `_normalize_product` in `karrio/providers/dhl_freight_sweden/product_matches.
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_product_matches -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_product_matches -v
 ```
 
 Expected: all pass.
@@ -251,7 +253,7 @@ to:
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_option_flags tests.dhl_freight_sweden.test_services -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_option_flags tests.dhl_freight_sweden.test_services -v
 ```
 
 Expected: FAIL — `sms_notification` is dropped by the initializer (state `None`, not `True`), and `connection_config.notifications` raises `AttributeError`.
@@ -281,7 +283,7 @@ directly above the existing `email_notification` alias line.
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_option_flags tests.dhl_freight_sweden.test_services -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_option_flags tests.dhl_freight_sweden.test_services -v
 ```
 
 Expected: all pass.
@@ -438,7 +440,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_notification_guard -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_notification_guard -v
 ```
 
 Expected: FAIL with `ImportError: cannot import name 'NotificationNotOfferedError'`.
@@ -564,7 +566,7 @@ def _notification_not_offered_message(
 - [ ] **Step 4: Run the tests to verify they pass**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_notification_guard -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_notification_guard -v
 ```
 
 Expected: all five guard-function tests pass.
@@ -817,7 +819,7 @@ Note: `_expected_refusal` pins the 118 service name `dhl_freight_sweden_hemlever
 - [ ] **Step 2: Run the tests to verify they fail**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_notification_guard -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_notification_guard -v
 ```
 
 Expected: the five guard-function tests pass; the new booking tests FAIL — the booking succeeds with no warning (no guard wired), and `test_enforce_refuses_118_before_booking` fails because no error is raised.
@@ -1039,7 +1041,7 @@ The Product API's "via SMS or e-mail" wording belongs to the separate `deliveryM
 - [ ] **Step 4: Verify the docs tests**
 
 ```bash
-.venv/bin/python -m unittest tests.dhl_freight_sweden.test_doc_links -v
+cd tests && ../.venv/bin/python -m unittest dhl_freight_sweden.test_doc_links -v
 ```
 
 Expected: pass (the fixture remains linked from the findings note; the new booking-rules link resolves).
