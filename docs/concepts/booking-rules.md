@@ -23,6 +23,16 @@ For 109 to GB the sandbox exchange offered HDI, 202, 601, and 233 ([rejection-22
 A lookup that fails, whether with an error answer, an HTTP error, a client key whose DHL application lacks the Product API, or a network error, leaves availability unverified: the booking proceeds in every mode with a `product_availability_unverified` warning that carries DHL's error text.
 The check skips 205, 209, 210, 212, SPI, and 107, because no committed product matches answer lists them: 205 was not listed from SE to NO ([rejection-22020-205-se-no.json](../../tests/dhl_freight_sweden/fixtures/sandbox/rejection-22020-205-se-no.json)), the only SE to SE answer used a parcel-sized piece ([lookup-product-matches-se-se.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se.json)), and no SPI or inbound 107 lookup has been captured.
 
+## Notification guard
+
+The `notifications` connection setting guards the notification additional service that karrio's `email_notification` and `sms_notification` options and the native `dhl_freight_sweden_notification` option set on the transport instruction.
+`enforce`, the default, fails with `NotificationNotOfferedError` keyed by `notification` and sends no booking when the product's product matches answer does not list the `notification` service, `warn` drops the flag and books with a `notification_not_offered` warning, and `off` sends the flag verbatim.
+The message names the product, the lane, and the additional services the answer does list.
+The capability is read from the same product matches answer as [product matches](#product-matches): one lookup serves both guards, so no extra call is made, and when no answer is available — the lookup did not run because `product_matches` is `off`, or it failed — the booking proceeds with a `notification_availability_unverified` warning and the flag unchanged, like a failed product matches lookup.
+An explicit `notification: false` passes through untouched in every mode.
+The sandbox SE to SE answer lists `notification` for 102 and 211 only, and neither `notification` nor any delivery monitoring service for 118 ([lookup-product-matches-se-se-additional-services.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se-additional-services.json)).
+The Product API's "via SMS or e-mail" wording belongs to the separate `deliveryMonitoring*` services, a wire concept the notification flag does not touch.
+
 ## Customer numbers
 
 The Consignor party id carries the DHL customer number, and DHL Freight Sweden books products in two systems that number customers separately.

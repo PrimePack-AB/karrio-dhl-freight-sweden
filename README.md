@@ -69,6 +69,7 @@ The `config` dict holds these settings.
 | `label_page_type` | `Label` | The Print API page layout: `Label`, `Label2xPortraitA4`, `Label3xLandscapeA4`, `LabelCompact`, or `LabelCompact2x2PortraitA4`. |
 | `product_matches` | `enforce` | `off`, `warn`, or `enforce` the product matches check before every booking, which refuses or warns when DHL does not offer the product for the lane, as [Booking rules](docs/concepts/booking-rules.md#product-matches) describes. |
 | `address_validation` | `off` | `off`, `warn`, or `enforce` the PostalCodes check for 118 bookings, which needs the PostalCode API on the DHL application, as described under home delivery below. |
+| `notifications` | `enforce` | `off`, `warn`, or `enforce` the notification flag check before every booking, which refuses or drops the notification additional service when the product's matches answer does not list it, as [Booking rules](docs/concepts/booking-rules.md#notification-guard) describes. |
 | `server_url` | | Overrides the host that `test_mode` selects. |
 | `shipping_services` | all | A list of karrio service codes; karrio returns only rates for these services. |
 | `shipping_options` | all | A list of option codes that the Karrio server offers on the connection; neither the connector nor the SDK reads it. |
@@ -425,7 +426,7 @@ An excluded booking fails with `ExcludedDestinationError` keyed by the party's `
 | `dhl_freight_sweden_label_page_type` | string | The page layout for one shipment |
 | `dhl_freight_sweden_doorstep_access_code` | integer | The door access code for 401 |
 | `dhl_freight_sweden_pickup_instruction`, `..._delivery_instruction` | string, 140 characters | Driver instructions; karrio's `shipper_instructions` and `recipient_instructions` map to them |
-| `dhl_freight_sweden_notification`, `..._pre_advice`, `..._tail_lift_unloading` | boolean | DHL additional services; karrio's `email_notification` maps to the first |
+| `dhl_freight_sweden_notification`, `..._pre_advice`, `..._tail_lift_unloading` | boolean | DHL additional services; karrio's `email_notification` and `sms_notification` map to the first |
 | `dhl_freight_sweden_insurance` | number | Insurance value in the `currency` option; karrio's `insurance` maps to it |
 | `shipment_date` | date | The shipping date, also the invoice date fallback |
 
