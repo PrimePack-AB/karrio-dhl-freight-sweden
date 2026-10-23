@@ -69,23 +69,28 @@ class Proxy(proxy.Proxy):
         The shipment id only exists once the booking response returns, so the
         by-id print request is completed here with the runtime id and posted
         to ``/print/printdocumentsbyid`` — the booked shipment is not re-sent.
-        Two config-gated pre-flights run first, product matches and then
-        address validation; their warnings travel to the parser as optional
-        trailing elements.
+        Three config-gated pre-flights run first, product matches, the
+        notification guard, and then address validation; their warnings travel
+        to the parser as optional trailing elements.
         """
         ctx = request.ctx or {}
         headers = {
             "Content-Type": "application/json",
             "client-key": self.settings.client_key,
         }
+        data = provider_utils.to_dict(request.serialize())
+        criteria = provider_product_matches.booking_match_criteria(data)
+        match_answer = self._match_answer(criteria)
+
         warnings = [
-            *self._product_match_messages(request),
+            *self._product_match_messages(data, request, criteria, match_answer),
+            *self._notification_messages(data, criteria, match_answer),
             *self._destination_route_messages(request),
         ]
 
         booking = lib.request(
             url=f"{self.settings.transport_instruction_url}/transportinstruction/sendtransportinstruction",
-            data=lib.to_json(request.serialize()),
+            data=lib.to_json(data),
             trace=self.trace_as("json"),
             method="POST",
             headers=headers,
@@ -178,7 +183,13 @@ class Proxy(proxy.Proxy):
         )
 
     def _product_match_messages(
-        self, request: lib.Serializable
+        self,
+        data: dict,
+        request: lib.Serializable,
+        criteria: typing.Any,
+        answer: typing.Optional[
+            typing.Tuple[typing.List[dict], typing.List[models.Message]]
+        ],
     ) -> typing.List[models.Message]:
         """Run the config-gated product matches booking guard.
 
@@ -190,8 +201,6 @@ class Proxy(proxy.Proxy):
         failing the booking.
         """
         mode = _preflight_mode(self.settings.connection_config.product_matches.state)
-        data = provider_utils.to_dict(request.serialize())
-        criteria = provider_product_matches.booking_match_criteria(data)
 
         if mode == "off" or criteria is None:
             return []
@@ -203,18 +212,7 @@ class Proxy(proxy.Proxy):
                 )
             ]
 
-        try:
-            products, messages = provider_product_matches.parse_product_matches_response(
-                self.find_product_matches(
-                    lib.Serializable(criteria, provider_utils.to_dict)
-                ),
-                self.settings,
-            )
-        except Exception as exception:
-            products, messages = [], [
-                provider_product_matches.lookup_failure(exception, self.settings)
-            ]
-
+        products, messages = answer or ([], [])
         return provider_product_matches.check_booking_product(
             criteria,
             str(data.get("productCode")),
@@ -224,6 +222,93 @@ class Proxy(proxy.Proxy):
             mode,
             (request.ctx or {}).get("separate_agreement"),
         )
+
+    def _match_answer(
+        self, criteria: typing.Any
+    ) -> typing.Optional[
+        typing.Tuple[typing.List[dict], typing.List[models.Message]]
+    ]:
+        """The parsed product matches answer for the booking guards.
+
+        The lookup runs only for the product guard's own trigger (mode not
+        off and criteria available); the notification guard consults the
+        answer and never triggers a lookup of its own, so a booking's HTTP
+        behavior is unchanged.
+        """
+        mode = _preflight_mode(self.settings.connection_config.product_matches.state)
+
+        if (
+            mode == "off"
+            or criteria is None
+            or isinstance(criteria, provider_product_matches.CriteriaUnavailable)
+        ):
+            return None
+
+        try:
+            return provider_product_matches.parse_product_matches_response(
+                self.find_product_matches(
+                    lib.Serializable(criteria, provider_utils.to_dict)
+                ),
+                self.settings,
+            )
+        except Exception as exception:
+            return [], [
+                provider_product_matches.lookup_failure(exception, self.settings)
+            ]
+
+    def _notification_messages(
+        self,
+        data: dict,
+        criteria: typing.Any,
+        answer: typing.Optional[
+            typing.Tuple[typing.List[dict], typing.List[models.Message]]
+        ],
+    ) -> typing.List[models.Message]:
+        """Run the config-gated notification booking guard.
+
+        The guard triggers only when the serialized request carries a truthy
+        ``additionalServices.notification`` (an explicit false passes through)
+        and the product is one the matches guard covers. With no answer in
+        hand the booking proceeds with an unverified warning in warn and
+        enforce alike; in warn mode a definitive negative strips the flag
+        before the booking POST.
+        """
+        mode = _preflight_mode(self.settings.connection_config.notifications.state)
+        flag = (data.get("additionalServices") or {}).get("notification")
+
+        if mode == "off" or not flag or criteria is None:
+            return []
+
+        if isinstance(criteria, provider_product_matches.CriteriaUnavailable):
+            return [
+                provider_product_matches.notification_unverified_warning(
+                    f"{criteria.reason} for product matches", self.settings
+                )
+            ]
+
+        if answer is None:
+            return [
+                provider_product_matches.notification_unverified_warning(
+                    "the product matches lookup did not run", self.settings
+                )
+            ]
+
+        products, messages = answer
+        warnings = provider_product_matches.check_booking_notification(
+            criteria,
+            str(data.get("productCode")),
+            products,
+            messages,
+            self.settings,
+            mode,
+        )
+
+        if mode == "warn" and any(
+            message.code == "notification_not_offered" for message in warnings
+        ):
+            data.setdefault("additionalServices", {}).pop("notification", None)
+
+        return warnings
 
     def find_product_matches(
         self, request: lib.Serializable
