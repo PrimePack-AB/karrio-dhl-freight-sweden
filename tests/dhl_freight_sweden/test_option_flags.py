@@ -18,7 +18,7 @@ from karrio.providers.dhl_freight_sweden.shipment.create import (
     SentInformationError,
 )
 
-from .fixture import detail_keys, gateway, serialize_request
+from .fixture import _gateway, detail_keys, gateway, serialize_request
 from .test_customs_service_combination import SERVICES, _to_no
 from .test_sent import SentFree, SentIdentified, _recipient_pl
 from .test_sent import _parcel_connect as _parcel_connect_pl
@@ -100,6 +100,21 @@ class TestDHLFreightFlagParsing(unittest.TestCase):
         )
 
         self.assertIs(options.dhl_freight_sweden_notification.state, False)
+
+    def test_sms_notification_alias_is_read_strictly(self):
+        for value, expected in [("true", True), ("false", False)]:
+            with self.subTest(value=value):
+                options = provider_units.shipping_options_initializer(
+                    {"sms_notification": value}
+                )
+
+                self.assertIs(options.dhl_freight_sweden_notification.state, expected)
+
+    def test_notifications_setting_defaults_to_enforce(self):
+        self.assertEqual(
+            str(_gateway({}).settings.connection_config.notifications.state),
+            "enforce",
+        )
 
     def test_initializer_never_raises_and_drops_invalid_flags(self):
         for value in INVALID_VALUES:

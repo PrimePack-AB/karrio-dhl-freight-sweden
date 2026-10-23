@@ -43,6 +43,13 @@ class ConnectionConfig(lib.Enum):
     product_matches = lib.OptionEnum(
         "product_matches", ServabilityMode, default="enforce"
     )
+    # Booking pre-flight for the notification additional service: off sends
+    # the flag verbatim, warn drops the flag and annotates the shipment when
+    # the product's matches answer lists no notification service, enforce
+    # refuses the booking before the transport instruction is sent.
+    notifications = lib.OptionEnum(
+        "notifications", ServabilityMode, default="enforce"
+    )
     shipping_options = lib.OptionEnum("shipping_options", list)
     shipping_services = lib.OptionEnum("shipping_services", list)
 
@@ -960,6 +967,7 @@ class ShippingOption(lib.Enum):
     )
 
     """ Unified Option type mapping """
+    sms_notification = dhl_freight_sweden_notification
     email_notification = dhl_freight_sweden_notification
     insurance = dhl_freight_sweden_insurance
     shipper_instructions = dhl_freight_sweden_pickup_instruction

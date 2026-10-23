@@ -27,7 +27,7 @@ class TestDHLFreightServiceLevels(unittest.TestCase):
             )
 
     def test_option_codes_prefixed_with_carrier_id(self):
-        unified_aliases = {"email_notification", "insurance"}
+        unified_aliases = {"email_notification", "insurance", "sms_notification"}
         for member in units.ShippingOption:
             self.assertTrue(
                 member.name.startswith("dhl_freight_sweden_")
