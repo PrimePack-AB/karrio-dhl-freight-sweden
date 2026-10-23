@@ -1,0 +1,396 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for a domestic SE lane, kept for the additional services each product offers.",
+ "captured_at": "2026-10-23T08:52:12Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE -> SE",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "operator lookup via the Product API, manually reduced",
+ "redaction": "no redaction needed: the response body carries catalog constants and catalog ids only, and the request carries the two lane postcodes kept per fixture convention",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-10-23T08:52:12Z",
+   "date_basis": "operator capture time",
+   "request_source": {
+    "path": "~/.local/state/karrio-dhl-freight-sweden/productmatches.se_to_se.md",
+    "sha256": "505d1d86703b70188f321ac973f7fee3ff704827edbd362294127cc6b927e203"
+   },
+   "response_source": {
+    "path": "~/.local/state/karrio-dhl-freight-sweden/productmatches.se_to_se.md",
+    "sha256": "505d1d86703b70188f321ac973f7fee3ff704827edbd362294127cc6b927e203"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "425 36"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "17173"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 10,
+      "length": 20,
+      "volume": 0.002,
+      "weight": 0.1,
+      "width": 11
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "502",
+      "name": "DHL Home Delivery Return",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "carryingHelpPickup"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       },
+       {
+        "code": "deliveryMonitoringPickup"
+       },
+       {
+        "code": "deliveryMonitoringArrivedAtDhlTerminal"
+       },
+       {
+        "code": "deliveryMonitoringOutForDelivery"
+       },
+       {
+        "code": "deliveryMonitoringDelivered"
+       },
+       {
+        "code": "eveningDeliveryZoneA"
+       },
+       {
+        "code": "eveningDeliveryZoneB"
+       },
+       {
+        "code": "eveningDeliveryZoneC"
+       },
+       {
+        "code": "eveningDeliveryZoneD"
+       },
+       {
+        "code": "eveningDeliveryZoneE"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "118",
+      "name": "DHL Hemleverans Paket",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "deliveryWithIdControl"
+       },
+       {
+        "code": "personalDelivery"
+       },
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "104",
+      "name": "DHL Service Point Retur",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "102",
+      "name": "DHL Paket",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "preAdviceByDriverPickup"
+       },
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "preAdviceByDriver"
+       },
+       {
+        "code": "notification"
+       },
+       {
+        "code": "priorityServiceG7"
+       },
+       {
+        "code": "priorityServiceG10"
+       },
+       {
+        "code": "priorityServiceG12"
+       },
+       {
+        "code": "indoorDelivery"
+       },
+       {
+        "code": "collectionAtTerminal"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       },
+       {
+        "code": "deliveryMonitoringPickup"
+       },
+       {
+        "code": "deliveryMonitoringArrivedAtDhlTerminal"
+       },
+       {
+        "code": "deliveryMonitoringOutForDelivery"
+       },
+       {
+        "code": "deliveryMonitoringDelivered"
+       },
+       {
+        "code": "deliveryWithoutProofOfDelivery"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "402",
+      "name": "DHL Home Delivery Return",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       },
+       {
+        "code": "deliveryMonitoringPickup"
+       },
+       {
+        "code": "deliveryMonitoringArrivedAtDhlTerminal"
+       },
+       {
+        "code": "deliveryMonitoringOutForDelivery"
+       },
+       {
+        "code": "deliveryMonitoringDelivered"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "211",
+      "name": "DHL Stycke",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "preAdviceByDriverPickup"
+       },
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "preAdviceByDriver"
+       },
+       {
+        "code": "notification"
+       },
+       {
+        "code": "priorityServiceG7"
+       },
+       {
+        "code": "priorityServiceG10"
+       },
+       {
+        "code": "priorityServiceG12"
+       },
+       {
+        "code": "indoorDelivery"
+       },
+       {
+        "code": "collectionAtTerminal"
+       },
+       {
+        "code": "dangerousGoods"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       },
+       {
+        "code": "deliveryMonitoringPickup"
+       },
+       {
+        "code": "deliveryMonitoringArrivedAtDhlTerminal"
+       },
+       {
+        "code": "deliveryMonitoringOutForDelivery"
+       },
+       {
+        "code": "deliveryMonitoringDelivered"
+       },
+       {
+        "code": "deliveryWithoutProofOfDelivery"
+       },
+       {
+        "code": "eurPalletExchange"
+       },
+       {
+        "code": "thermoWarm"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "401",
+      "name": "DHL Home Delivery",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "preAdviceByDriverPickup"
+       },
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "collectionAtTerminal"
+       },
+       {
+        "code": "dangerousGoods"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       },
+       {
+        "code": "deliveryMonitoringPickup"
+       },
+       {
+        "code": "deliveryMonitoringArrivedAtDhlTerminal"
+       },
+       {
+        "code": "deliveryMonitoringOutForDelivery"
+       },
+       {
+        "code": "deliveryMonitoringDelivered"
+       },
+       {
+        "code": "deliveryWithoutIdControl"
+       },
+       {
+        "code": "deliveryWithoutProofOfDelivery"
+       },
+       {
+        "code": "onlineAppointmentBooking"
+       }
+      ]
+     }
+    },
+    {
+     "product": {
+      "code": "103",
+      "name": "DHL Service Point",
+      "shortName": null,
+      "isDomestic": true,
+      "additionalServices": [
+       {
+        "code": "personalDelivery"
+       },
+       {
+        "code": "greenFreight"
+       },
+       {
+        "code": "cashOnDelivery"
+       },
+       {
+        "code": "insurance"
+       },
+       {
+        "code": "dangerousGoodsLimitedQuantity"
+       },
+       {
+        "code": "deliveryMonitoringPickup"
+       },
+       {
+        "code": "deliveryMonitoringArrivedAtDhlTerminal"
+       },
+       {
+        "code": "deliveryMonitoringOutForDelivery"
+       },
+       {
+        "code": "deliveryMonitoringCollectedByReciever"
+       },
+       {
+        "code": "deliveryMonitoringNotCollectedByReciever"
+       }
+      ]
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, isDomestic, and the additionalServices codes; the full body is identified by response_source.sha256"
+  }
+ ]
+}

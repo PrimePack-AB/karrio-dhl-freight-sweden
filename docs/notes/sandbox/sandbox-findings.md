@@ -331,6 +331,7 @@ The manual excludes FR 97100-99999 for both, while the 109 entry excludes `97*,9
 The manual excludes ES Ceuta (51080) and Melilla (52080) for both, while the 109 entry excludes `51*,52*`.
 For 112 to IT the manual lists Serle (25080) and Bella Island (28838), while the 112 entry lists 25050, 25080, and 28898.
 The manual excludes GB Jersey (JE), Guernsey (GY), and Northern Ireland (BT) and the NL Caribbean islands for both, while neither entry lists GB or NL excludes, and product matches offered neither 109 nor 112 to any GB postal code.
+On 2026-10-23 an operator lookup for SE to SE kept each product's additional services ([lookup-product-matches-se-se-additional-services.json][l-pm-se-as]): `notification` (Avisering) is listed for 102 and 211 only, and the "via SMS or e-mail" wording belongs to the separate `deliveryMonitoring*` family.
 
 ## Deviations from manual v5.26
 
@@ -522,6 +523,7 @@ These were never exercised:
 [l-pm-ro]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ro-030031.json
 [l-pm-pl]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-pl.json
 [l-pm-se]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se.json
+[l-pm-se-as]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se-additional-services.json
 [l-products]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-products-109-112-payer-codes.json
 [lb-222]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761222-102-se-se.json
 [lb-230]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761230-103-se-se-service-point.json
