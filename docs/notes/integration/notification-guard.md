@@ -23,7 +23,7 @@ A booking on 118 (DHL Hemleverans Paket B2C) within Sweden with the notification
 
 The same body carried a second validation error (22028, `Pieces[0].Volume`), which the operator set aside as unrelated to this work.
 
-Today `email_notification` is an alias of `dhl_freight_sweden_notification`, the initializer reads it strictly, and `shipment_request` in `karrio/providers/dhl_freight_sweden/shipment/create.py` serializes it as `additionalServices.notification` on every booking with no product gating.
+Today `email_notification` is an alias of `dhl_freight_sweden_notification`, `shipping_options_initializer` reads it strictly, and `shipment_request` in `karrio/providers/dhl_freight_sweden/shipment/create.py` serializes it as `additionalServices.notification` on every booking with no product gating.
 karrio's `sms_notification` has no alias in the connector and is silently dropped, so the rejection can only have come from `email_notification` or the native option name.
 `email_notification_to` is likewise unmapped and stays so.
 
@@ -58,7 +58,7 @@ A new `notifications` member on `ConnectionConfig` (`lib.OptionEnum("notificatio
 - warn: strip `additionalServices.notification` from the serialized request, book, and append a `notification_not_offered` warning message — the option is a preference, not a requirement.
 - off: no check; the flag passes through verbatim, which is today's behavior.
 - A product that offers notification: the flag is sent with no warning in every mode.
-- No answer in hand, because the matches lookup did not run or failed: book in every mode with a `notification_availability_unverified` warning, mirroring `product_availability_unverified`; enforce refuses only on positive evidence.
+- No answer in hand, because the matches lookup did not run or failed: book, in warn and enforce alike, with a `notification_availability_unverified` warning, mirroring `product_availability_unverified`; enforce refuses only on positive evidence.
 - Products in `PRODUCT_MATCH_UNGUARDED` skip the guard silently, mirroring the matches guard.
 
 The guard lives in `create_shipment` on the proxy beside `_product_match_messages`, before the booking POST, because only the proxy performs the matches lookup.
