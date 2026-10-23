@@ -593,6 +593,8 @@ git commit -m "feat(guard): refuse or warn the notification flag from the matche
 
 Controller addition 2026-10-23 (from Task 4's quality review): while appending the proxy tests, also drop the unused `import typing` from `tests/dhl_freight_sweden/test_notification_guard.py` and add a guard-function test covering a product entry that exists with an absent `additional_services` key (the Task 2 clear-empty shape): it refuses in enforce with the listing sentence ending "Additional services offered for this product: none."
 
+Task 5 deviation recorded 2026-10-23 (controller-approved during execution): the plan's original warn-mode setUp `_gateway({"product_matches": "warn"})` left `notifications` at its `enforce` default, which refuses the 118 booking instead of warning — the warn test's assertions uniquely require `notifications: "warn"` as well, so the setUp is `_gateway({"product_matches": "warn", "notifications": "warn"})`.
+
 - [ ] **Step 1: Write the failing proxy-level tests**
 
 Append to `tests/dhl_freight_sweden/test_notification_guard.py` (new imports at top; reuse the existing `CRITERIA`-style constants). Add to the imports:
@@ -685,7 +687,7 @@ class TestNotificationGuardBooking(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
         self.enforce = _gateway({"product_matches": "enforce"})
-        self.warn = _gateway({"product_matches": "warn"})
+        self.warn = _gateway({"product_matches": "warn", "notifications": "warn"})
 
     def test_enforce_refuses_118_before_booking(self):
         for payload, name in ((PAYLOAD_118, "email"), (PAYLOAD_118_SMS, "sms")):
