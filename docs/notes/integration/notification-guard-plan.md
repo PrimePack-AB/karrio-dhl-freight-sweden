@@ -30,6 +30,8 @@ The fixture must satisfy `tests/dhl_freight_sweden/test_sandbox_evidence.py` exa
 
 Deviation recorded 2026-10-23 (controller-approved during execution): the no-secrets scan in `test_sandbox_evidence.py` flags token-like values ≥30 characters, and five genuine DHL catalog additional-service codes cross that line (`deliveryMonitoringArrivedAtDhlTerminal`, `deliveryMonitoringNotCollectedByReciever`, `deliveryMonitoringCollectedByReciever`, `deliveryMonitoringOutForDelivery`, `deliveryWithoutProofOfDelivery`). The scan's exact-value exemption was extended to members of `additionalServices` lists (structure-aware, keeping the flat-`code` non-exemption the existing unit test asserts), committed as `test(evidence): exempt DHL additional-service catalog codes in the token scan` before the fixture commit so every commit stays green.
 
+Task 2 deviation recorded 2026-10-23 (controller-approved during execution): the plan's `"additional_services": []` insertions into `ParsedProductMatches` are unreachable — the module's `to_dict` normalization (clear-empty) drops empty lists at both the parser wrap and the test comparison, the same convention that omits `short_name` when null. The normalized key is therefore present exactly when the product offers at least one additional service; the expected dicts stay at their committed shape, and consumers read the key as `(entry or {}).get("additional_services") or []` (Task 4's guard code already does).
+
 - [ ] **Step 1: Write the reducer and run it**
 
 Run from the repo root:
