@@ -15,7 +15,6 @@ from unittest.mock import patch
 
 import karrio.core.models as models
 import karrio.lib as lib
-import karrio.sdk as karrio
 from karrio.providers.dhl_freight_sweden.product_matches import (
     NotificationNotOfferedError,
     ProductNotOfferedError,
@@ -23,7 +22,7 @@ from karrio.providers.dhl_freight_sweden.product_matches import (
 )
 
 from .fixture import _gateway, as_dict, http_error, proxy_of, settings_of
-from .test_product_match_guard import _answers
+from .test_product_match_guard import _answers, _book
 from .test_shipment import _payload, _recipient_se
 
 FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures" / "sandbox"
@@ -61,6 +60,11 @@ PAYLOAD_102 = _payload(
     _recipient_se,
     {"email_notification": True},
 )
+PAYLOAD_118_FALSE = _payload(
+    "dhl_freight_sweden_hemleverans_paket_b2c",
+    _recipient_se,
+    {"email_notification": False},
+)
 
 
 def _matches_answer() -> str:
@@ -94,17 +98,6 @@ def _expected_refusal(product_code: str) -> str:
         "sms_notification, or dhl_freight_sweden_notification) was set "
         f"explicitly. Additional services offered for this product: {listing}."
     )
-
-
-def _book(gateway_, payload: dict, *responses):
-    with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
-        mock.side_effect = _answers(*responses)
-        result = (
-            karrio.Shipment.create(models.ShipmentRequest(**payload))
-            .from_(gateway_)
-            .parse()
-        )
-    return result, [call.kwargs["url"] for call in mock.call_args_list], mock
 
 
 class TestCheckBookingNotification(unittest.TestCase):
@@ -277,6 +270,35 @@ class TestNotificationGuardBooking(unittest.TestCase):
         sent = as_dict(lib.to_dict(booking_call.kwargs["data"]))
         self.assertIs(sent["additionalServices"]["notification"], True)
 
+    def test_warn_mode_with_offered_product_sends_the_flag_without_warning(self):
+        warn = _gateway({"product_matches": "enforce", "notifications": "warn"})
+        (details, messages), urls, mock = _book(
+            warn, PAYLOAD_102, _matches_answer(), *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
+        booking_call = next(
+            call for call in mock.call_args_list
+            if call.kwargs["url"].endswith(TI_PATH)
+        )
+        sent = as_dict(lib.to_dict(booking_call.kwargs["data"]))
+        self.assertIs(sent["additionalServices"]["notification"], True)
+
+    def test_explicit_false_passes_through_verbatim(self):
+        (details, messages), urls, mock = _book(
+            self.enforce, PAYLOAD_118_FALSE, _matches_answer(), *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
+        booking_call = next(
+            call for call in mock.call_args_list
+            if call.kwargs["url"].endswith(TI_PATH)
+        )
+        sent = as_dict(lib.to_dict(booking_call.kwargs["data"]))
+        self.assertIs(sent["additionalServices"]["notification"], False)
+
     def test_off_mode_sends_the_flag_verbatim(self):
         off = _gateway({"product_matches": "off", "notifications": "off"})
         (details, messages), urls, mock = _book(
@@ -295,7 +317,7 @@ class TestNotificationGuardBooking(unittest.TestCase):
 
     def test_starved_lookup_warns_unverified_and_sends_the_flag(self):
         starved = _gateway({"product_matches": "off"})
-        (details, messages), urls, _ = _book(
+        (details, messages), urls, mock = _book(
             starved, PAYLOAD_118, *_booking_answers()
         )
 
@@ -309,6 +331,12 @@ class TestNotificationGuardBooking(unittest.TestCase):
             "lookup did not run); the booking proceeded without the check",
         )
         self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
+        booking_call = next(
+            call for call in mock.call_args_list
+            if call.kwargs["url"].endswith(TI_PATH)
+        )
+        sent = as_dict(lib.to_dict(booking_call.kwargs["data"]))
+        self.assertIs(sent["additionalServices"]["notification"], True)
 
     def test_failed_lookup_warns_both_guards_unverified(self):
         (details, messages), urls, _ = _book(
