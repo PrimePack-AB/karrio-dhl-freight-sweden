@@ -113,6 +113,29 @@ class TestDHLFreightSwedenProductMatches(unittest.TestCase):
             )
             self.assertListEqual(as_list(lib.to_dict(parsed)), ParsedProductMatches)
 
+    def test_parse_product_matches_additional_services(self):
+        response = lib.Deserializable(
+            [
+                {
+                    "product": {
+                        "code": "102",
+                        "name": "DHL Paket",
+                        "additionalServices": [
+                            {"code": "notification", "name": "Notification"},
+                            {"code": "signature", "name": "Signature"},
+                        ],
+                    }
+                }
+            ]
+        )
+
+        products, messages = product_matches.parse_product_matches_response(
+            response, settings_of(gateway)
+        )
+
+        self.assertEqual(messages, [])
+        self.assertEqual(products[0]["additional_services"], ["notification", "signature"])
+
     def test_parse_product_matches_error(self):
         with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
             mock.return_value = ErrorResponse

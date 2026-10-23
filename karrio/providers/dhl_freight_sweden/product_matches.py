@@ -177,6 +177,9 @@ def _normalize_product(product: dict) -> dict:
     return provider_utils.to_dict(
         {
             "code": product.get("code"),
+            "additional_services": [
+                item.get("code") for item in product.get("additionalServices") or []
+            ],
             "name": product.get("name"),
             "short_name": product.get("shortName"),
             "is_domestic": product.get("isDomestic"),
