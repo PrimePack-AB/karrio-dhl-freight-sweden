@@ -1047,6 +1047,8 @@ The sandbox SE to SE answer lists `notification` for 102 and 211 only, and neith
 The Product API's "via SMS or e-mail" wording belongs to the separate `deliveryMonitoring*` services, a wire concept the notification flag does not touch.
 ```
 
+Task 6 additions recorded 2026-10-23 (controller-approved after quality review): (1) the README errors reference gains a `NotificationNotOfferedError` row beside `ProductNotOfferedError` — booking-rules states the reference lists every error, so the row is required, not optional; (2) the booking-rules section gains the unguarded-products skip sentence (205, 209, 210, 212, SPI, 107 send the flag verbatim with no warning in every mode) and the unverified-warning sentence's causes gain "or a party lacks a postal code"; (3) the "via SMS or e-mail" sentence is replaced by a spec-citing sentence — the quoted Product API prose exists only in the uncommitted capture, while the TransportInstruction 2.10.0 spec's `DeliveryMonitoringOptions` (`email`, `smsPhoneNumber`) is citable by title and version against docs/development/index.md; (4) "the native `dhl_freight_sweden_notification` option" reads "the connector's".
+
 - [ ] **Step 4: Verify the docs tests**
 
 ```bash
