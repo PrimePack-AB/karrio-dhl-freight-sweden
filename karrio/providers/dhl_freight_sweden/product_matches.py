@@ -30,6 +30,12 @@ class ProductNotOfferedError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class NotificationNotOfferedError(errors.ShippingSDKDetailedError):
+    """Raised before booking when the product offers no notification service."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 MATCH_PIECE_FIELDS = ("weight", "length", "width", "height", "volume")
 
 ACCEPTED_PAYLOAD_KEYS = frozenset(
@@ -336,6 +342,23 @@ def criteria_unavailable_warning(
     )
 
 
+def notification_unverified_warning(
+    reason: str, settings: provider_utils.Settings
+) -> models.Message:
+    """The warning for a notification flag whose support was not verified."""
+    return models.Message(
+        carrier_name=settings.carrier_name,
+        carrier_id=settings.carrier_id,
+        code="notification_availability_unverified",
+        level="warning",
+        message=(
+            f"Notification support was not verified ({reason}); "
+            "the booking proceeded without the check"
+        ),
+        details=dict(reason=reason),
+    )
+
+
 def check_booking_product(
     criteria: dict,
     product: str,
@@ -376,6 +399,63 @@ def check_booking_product(
             level="warning",
             message=message,
             details=dict(product=product, offered=offered),
+        )
+    ]
+
+
+def check_booking_notification(
+    criteria: dict,
+    product: str,
+    products: typing.List[dict],
+    messages: typing.List[models.Message],
+    settings: provider_utils.Settings,
+    mode: str,
+) -> typing.List[models.Message]:
+    """Apply the notification guard to a product matches answer.
+
+    A lookup that produced messages leaves the flag's support unverified and
+    yields a warning in warn and enforce alike. A product whose matches entry
+    does not list the notification additional service raises
+    ``NotificationNotOfferedError`` in ``enforce`` and yields a warning in
+    ``warn``; the caller strips the flag before booking in warn. A product
+    missing from the answer returns no message: the product guard has
+    already reported the product itself.
+    """
+    if any(messages):
+        return [
+            notification_unverified_warning(
+                "product matches lookup failed: "
+                + "; ".join(str(m.message) for m in messages),
+                settings,
+            )
+        ]
+
+    entry = next(
+        (item for item in products if str(item.get("code")) == product), None
+    )
+    services = (entry or {}).get("additional_services") or []
+    if entry is None or "notification" in services:
+        return []
+
+    message = _notification_not_offered_message(criteria, product, services)
+    if mode == provider_units.ServabilityMode.enforce:
+        raise NotificationNotOfferedError(
+            message,
+            details={
+                "notification": dict(
+                    code="notification_not_offered", message=message
+                )
+            },
+        )
+
+    return [
+        models.Message(
+            carrier_name=settings.carrier_name,
+            carrier_id=settings.carrier_id,
+            code="notification_not_offered",
+            level="warning",
+            message=message,
+            details=dict(product=product, additional_services=services),
         )
     ]
 
@@ -439,6 +519,30 @@ def _not_offered_message(
             else "no product is offered for this lane."
         )
         + agreement
+    )
+
+
+def _notification_not_offered_message(
+    criteria: dict,
+    product: str,
+    services: typing.List[str],
+) -> str:
+    names = {
+        service.value: service.name
+        for service in provider_units.ShippingService.__members__.values()
+    }
+    origin, destination = (
+        f"{party['address']['countryCode']} {party['address']['postalCode']}"
+        for party in criteria["parties"]
+    )
+    listing = ", ".join(services) if services else "none"
+
+    return (
+        f"Product {product} ({names.get(product, product)}) does not offer the "
+        f"notification service from {origin} to {destination} by DHL product "
+        "matches; the notification option (email_notification, "
+        "sms_notification, or dhl_freight_sweden_notification) was set "
+        f"explicitly. Additional services offered for this product: {listing}."
     )
 
 
