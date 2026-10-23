@@ -304,6 +304,9 @@ git commit -m "feat(options): alias sms_notification and add the notifications s
 **Files:**
 - Modify: `karrio/providers/dhl_freight_sweden/product_matches.py`
 - Create: `tests/dhl_freight_sweden/test_notification_guard.py`
+- Modify: `tests/dhl_freight_sweden/test_option_flags.py` (controller addition below)
+
+Controller addition 2026-10-23 (from Task 3's quality review): this task also moves `test_notifications_setting_defaults_to_enforce` out of `tests/dhl_freight_sweden/test_option_flags.py` into the new `test_notification_guard.py` — the guard module owns connection-config coverage, matching the `test_default_mode_is_enforce` precedent in `test_product_match_guard.py` — removing the now-unused `_gateway` import from `test_option_flags.py` if nothing else in that file uses it, and adds `"sms_notification": 1.0` beside `email_notification` in both the input and the expected dict of `test_invalid_flags_names_each_invalid_option`.
 
 - [ ] **Step 1: Write the failing guard-function tests**
 
