@@ -25,13 +25,14 @@ The check skips 205, 209, 210, 212, SPI, and 107, because no committed product m
 
 ## Notification guard
 
-The `notifications` connection setting guards the notification additional service that karrio's `email_notification` and `sms_notification` options and the native `dhl_freight_sweden_notification` option set on the transport instruction.
+The `notifications` connection setting guards the notification additional service that karrio's `email_notification` and `sms_notification` options and the connector's `dhl_freight_sweden_notification` option set on the transport instruction.
 `enforce`, the default, fails with `NotificationNotOfferedError` keyed by `notification` and sends no booking when the product's product matches answer does not list the `notification` service, `warn` drops the flag and books with a `notification_not_offered` warning, and `off` sends the flag verbatim.
 The message names the product, the lane, and the additional services the answer does list.
-The capability is read from the same product matches answer as [product matches](#product-matches): one lookup serves both guards, so no extra call is made, and when no answer is available — the lookup did not run because `product_matches` is `off`, or it failed — the booking proceeds with a `notification_availability_unverified` warning and the flag unchanged, like a failed product matches lookup.
+The capability is read from the same product matches answer as [product matches](#product-matches): one lookup serves both guards, so no extra call is made, and when no answer is available — the lookup did not run because `product_matches` is `off` or a party lacks a postal code, or it failed — the booking proceeds with a `notification_availability_unverified` warning and the flag unchanged, like a failed product matches lookup.
+The guard skips the same products as product matches (205, 209, 210, 212, SPI, and 107), because no committed product matches answer lists them, so the flag is sent verbatim with no warning in every mode.
 An explicit `notification: false` passes through untouched in every mode.
 The sandbox SE to SE answer lists `notification` for 102 and 211 only, and neither `notification` nor any delivery monitoring service for 118 ([lookup-product-matches-se-se-additional-services.json](../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-se-additional-services.json)).
-The Product API's "via SMS or e-mail" wording belongs to the separate `deliveryMonitoring*` services, a wire concept the notification flag does not touch.
+The SMS and e-mail channels belong to the separate `deliveryMonitoring*` services instead, whose `DeliveryMonitoringOptions` the [TransportInstruction 2.10.0 spec](../development/index.md#api-farm-specification-citations) gives an `email` address and an `smsPhoneNumber`; the notification flag itself carries no channel.
 
 ## Customer numbers
 

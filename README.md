@@ -464,6 +464,7 @@ The connector checks these rules before it sends a booking, and each fails with 
 | `QrCodeEligibilityError` | a QR code outside 107 from the listed countries | `dhl_freight_sweden_qr_code` |
 | `AdditionalInformationError` | an entry without a code, or a SENT, EKAER, or UIT code where its option applies | `dhl_freight_sweden_additional_information` |
 | `ProductNotOfferedError` | `enforce` product matches that do not list the product for the booking's postal codes and pieces | `service` |
+| `NotificationNotOfferedError` | `enforce` notification guard when the product's matches answer lists no `notification` service | `notification` |
 | `PostalCodeNotServableError` | `enforce` validation of an unservable 118 postal code | `recipient.postal_code` |
 | `PostalCodeApiUnavailableError` | `enforce` validation with a client key whose DHL application lacks the PostalCode API | `recipient.postal_code` |
 | `ProductMatchPartiesError`, `UnexpectedPayloadKeysError` | a lookup without both parties, or with an unknown key | the party or key |
