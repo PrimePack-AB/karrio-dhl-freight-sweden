@@ -75,9 +75,22 @@ SHA256 = re.compile(r"^(?:[0-9a-f]{64}|redacted-2026-10-20)$")
 TOKEN = re.compile(r"^[A-Za-z0-9_\-+/=]{30,}$")
 OMITTED = re.compile(r"^<base64 omitted: \d+ characters>$")
 # DHL additional-service codes that match TOKEN, exempt only as exact values
-# under the key the evidence reducer stores them in.
+# inside the additional-services lists the evidence reducers store them in.
 SERVICE_CODES_KEY = "customsAdditionalServices"
-LONG_SERVICE_CODES = frozenset({"customsCustomersOwnDeclaration"})
+SERVICE_CODES_LIST_KEYS = frozenset({SERVICE_CODES_KEY, "additionalServices"})
+# All but customsCustomersOwnDeclaration are DHL catalog additional-service
+# codes per the committed SE-SE capture,
+# lookup-product-matches-se-se-additional-services.json.
+LONG_SERVICE_CODES = frozenset(
+    {
+        "customsCustomersOwnDeclaration",
+        "deliveryMonitoringArrivedAtDhlTerminal",
+        "deliveryMonitoringCollectedByReciever",
+        "deliveryMonitoringNotCollectedByReciever",
+        "deliveryMonitoringOutForDelivery",
+        "deliveryWithoutProofOfDelivery",
+    }
+)
 
 
 def load(path: pathlib.Path) -> dict:
@@ -91,16 +104,27 @@ def token_like(key: str, value: str) -> bool:
     return TOKEN.match(value) is not None
 
 
-def walk(value: typing.Any, key: str = "") -> typing.Iterator[typing.Tuple[str, typing.Any]]:
-    """Yield every (key, value) pair in a JSON tree, keys of lists repeated."""
+def listed_service_code(list_key: str, value: str) -> bool:
+    """Whether ``value`` is a known DHL catalog code inside an additional-services list."""
+    return list_key in SERVICE_CODES_LIST_KEYS and value in LONG_SERVICE_CODES
+
+
+def walk(
+    value: typing.Any, key: str = "", list_key: str = ""
+) -> typing.Iterator[typing.Tuple[str, str, typing.Any]]:
+    """Yield every (key, list key, value) pair in a JSON tree.
+
+    Keys of lists are repeated per element; the list key names the innermost
+    enclosing list and is empty outside any list.
+    """
     if isinstance(value, dict):
         for child_key, child in value.items():
-            yield child_key, child
-            yield from walk(child, child_key)
+            yield child_key, list_key, child
+            yield from walk(child, child_key, list_key)
     elif isinstance(value, list):
         for child in value:
-            yield key, child
-            yield from walk(child, key)
+            yield key, key, child
+            yield from walk(child, key, key)
 
 
 def exchanges_to(evidence: dict, path: str) -> typing.List[dict]:
@@ -160,9 +184,11 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
                         re.search(rf"(?<![0-9]){re.escape(account_number)}(?![0-9])", text),
                         "customer number present",
                     )
-                for key, value in walk(load(path)):
+                for key, list_key, value in walk(load(path)):
                     self.assertNotIn(key.lower(), ("client-key", "request_headers"))
                     if not isinstance(value, str) or key == "sha256":
+                        continue
+                    if listed_service_code(list_key, value):
                         continue
                     self.assertFalse(token_like(key, value), f"{key} carries a token-like value {value!r}")
                     if key == "content":
@@ -177,6 +203,25 @@ class TestSandboxEvidenceFiles(unittest.TestCase):
         )
         self.assertTrue(token_like("code", "customsCustomersOwnDeclaration"))
         self.assertFalse(token_like("customsAdditionalServices", "customsJointDeclaration"))
+
+    def test_token_check_exempts_codes_inside_additional_services_lists(self):
+        catalog = "deliveryMonitoringOutForDelivery"
+        token = "AbCdEf0123456789GhIjKl0123456789MnOp"
+        payload = {
+            "product": {"additionalServices": [{"code": catalog}, {"code": token}]},
+            "payerCodes": [{"code": catalog}],
+        }
+
+        flagged = [
+            value
+            for key, list_key, value in walk(payload)
+            if isinstance(value, str)
+            and key != "sha256"
+            and not listed_service_code(list_key, value)
+            and token_like(key, value)
+        ]
+
+        self.assertEqual(flagged, [token, catalog])
 
     def test_consignor_carries_the_booking_system_account_number(self):
         pre_review_international = 0
