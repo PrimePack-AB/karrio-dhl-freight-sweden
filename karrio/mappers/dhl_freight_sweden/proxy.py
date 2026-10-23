@@ -212,7 +212,8 @@ class Proxy(proxy.Proxy):
                 )
             ]
 
-        products, messages = answer or ([], [])
+        assert answer is not None
+        products, messages = answer
         return provider_product_matches.check_booking_product(
             criteria,
             str(data.get("productCode")),
