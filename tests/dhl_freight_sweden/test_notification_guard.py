@@ -315,28 +315,21 @@ class TestNotificationGuardBooking(unittest.TestCase):
         sent = as_dict(lib.to_dict(booking_call.kwargs["data"]))
         self.assertIs(sent["additionalServices"]["notification"], True)
 
-    def test_starved_lookup_warns_unverified_and_sends_the_flag(self):
-        starved = _gateway({"product_matches_check": "off"})
+    def test_product_check_off_lookup_failure_warns_notification_only(self):
+        product_off = _gateway({"product_matches_check": "off"})
         (details, messages), urls, mock = _book(
-            starved, PAYLOAD_118, *_booking_answers()
+            product_off,
+            PAYLOAD_118,
+            http_error(502, "<html>Bad Gateway</html>"),
+            *_booking_answers(),
         )
 
         self.assertIsNotNone(details)
         (warning,) = messages
         self.assertEqual(warning.code, "notification_availability_unverified")
         self.assertEqual(warning.level, "warning")
-        self.assertEqual(
-            warning.message,
-            "Notification support was not verified (the product matches "
-            "lookup did not run); the booking proceeded without the check",
-        )
-        self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
-        booking_call = next(
-            call for call in mock.call_args_list
-            if call.kwargs["url"].endswith(TI_PATH)
-        )
-        sent = as_dict(lib.to_dict(booking_call.kwargs["data"]))
-        self.assertIs(sent["additionalServices"]["notification"], True)
+        self.assertTrue(urls[0].endswith(MATCHES_PATH))
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
 
     def test_failed_lookup_warns_both_guards_unverified(self):
         (details, messages), urls, _ = _book(
@@ -461,18 +454,6 @@ class TestNotificationCheckOption(unittest.TestCase):
         self.assertIsNotNone(details)
         self.assertEqual([m.code for m in messages], ["notification_not_offered"])
 
-    def test_product_matches_option_off_leaves_the_notification_unverified(self):
-        (details, messages), urls, mock = _book(
-            self.enforce,
-            _with_check(PAYLOAD_118, product_matches_check="off"),
-            *_booking_answers(),
-        )
-
-        self.assertIsNotNone(details)
-        self.assertEqual([m.code for m in messages], ["notification_availability_unverified"])
-        self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
-        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
-
     def test_options_are_not_sent_to_dhl(self):
         (details, _), urls, mock = _book(
             self.enforce,
@@ -484,6 +465,81 @@ class TestNotificationCheckOption(unittest.TestCase):
         self.assertIsNotNone(details)
         for call in mock.call_args_list:
             self.assertNotIn("_check", str(call.kwargs.get("data")))
+
+
+class TestNotificationLookupWithProductCheckOff(unittest.TestCase):
+    """The notification guard runs its own matches lookup when the product check is off."""
+
+    def setUp(self):
+        self.maxDiff = None
+        self.product_off = _gateway({"product_matches_check": "off"})
+
+    def test_enforce_refuses_a_product_without_notification(self):
+        for gateway_, payload in (
+            (self.product_off, PAYLOAD_118),
+            (
+                _gateway({"product_matches_check": "enforce"}),
+                _with_check(PAYLOAD_118, product_matches_check="off"),
+            ),
+        ):
+            with self.subTest(options=payload["options"]):
+                request = gateway_.mapper.create_shipment_request(
+                    models.ShipmentRequest(**payload)
+                )
+                with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                    mock.side_effect = _answers(_matches_answer())
+                    with self.assertRaises(NotificationNotOfferedError) as context:
+                        proxy_of(gateway_).create_shipment(request)
+
+                self.assertEqual(mock.call_count, 1)
+                self.assertTrue(mock.call_args.kwargs["url"].endswith(MATCHES_PATH))
+                self.assertEqual(str(context.exception), _expected_refusal("118"))
+
+    def test_warn_books_without_the_flag(self):
+        (details, messages), urls, mock = _book(
+            self.product_off,
+            _with_check(PAYLOAD_118, notification_check="warn"),
+            _matches_answer(),
+            *_booking_answers(),
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual([m.code for m in messages], ["notification_not_offered"])
+        self.assertEqual(messages[0].message, _expected_refusal("118"))
+        self.assertNotIn("notification", _sent(mock).get("additionalServices") or {})
+
+    def test_product_missing_from_the_answer_is_not_refused(self):
+        (details, messages), urls, mock = _book(
+            self.product_off, PAYLOAD_118, "[]", *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
+        self.assertTrue(urls[0].endswith(MATCHES_PATH))
+        self.assertTrue(urls[1].endswith(TI_PATH))
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_offered_product_books_with_the_flag(self):
+        (details, messages), urls, mock = _book(
+            self.product_off, PAYLOAD_102, _matches_answer(), *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
+        self.assertTrue(urls[0].endswith(MATCHES_PATH))
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_unset_or_false_flag_makes_no_lookup(self):
+        unset = _payload("dhl_freight_sweden_hemleverans_paket_b2c", _recipient_se)
+        for payload in (unset, PAYLOAD_118_FALSE):
+            with self.subTest(options=payload["options"]):
+                (details, messages), urls, _ = _book(
+                    self.product_off, payload, *_booking_answers()
+                )
+
+                self.assertIsNotNone(details)
+                self.assertEqual(messages, [])
+                self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
 
 
 if __name__ == "__main__":

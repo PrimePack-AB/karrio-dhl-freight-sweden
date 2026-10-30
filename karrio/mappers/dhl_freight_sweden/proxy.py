@@ -90,7 +90,12 @@ class Proxy(proxy.Proxy):
             ctx.get("notification_check")
             or self.settings.connection_config.notification_check.state
         )
-        match_answer = self._match_answer(criteria, product_mode)
+        notification_requested = notification_mode != "off" and bool(
+            (data.get("additionalServices") or {}).get("notification")
+        )
+        match_answer = self._match_answer(
+            criteria, product_mode != "off" or notification_requested
+        )
 
         warnings = [
             *self._product_match_messages(
@@ -238,19 +243,19 @@ class Proxy(proxy.Proxy):
         )
 
     def _match_answer(
-        self, criteria: typing.Any, mode: str
+        self, criteria: typing.Any, wanted: bool
     ) -> typing.Optional[
         typing.Tuple[typing.List[dict], typing.List[models.Message]]
     ]:
         """The parsed product matches answer for the booking guards.
 
-        The lookup runs only for the product guard's own trigger (mode not
-        off and criteria available); the notification guard consults the
-        answer and never triggers a lookup of its own, so a booking's HTTP
-        behavior is unchanged.
+        The lookup runs when a guard ``wanted`` it, the product guard in
+        warn or enforce or the notification guard in warn or enforce with the
+        flag set, and the criteria are available; both guards share the one
+        answer, so a booking makes at most one matches call.
         """
         if (
-            mode == "off"
+            not wanted
             or criteria is None
             or isinstance(criteria, provider_product_matches.CriteriaUnavailable)
         ):
@@ -281,10 +286,11 @@ class Proxy(proxy.Proxy):
 
         The guard triggers only when the serialized request carries a truthy
         ``additionalServices.notification`` (an explicit false passes through)
-        and the product is one the matches guard covers. With no answer in
-        hand the booking proceeds with an unverified warning in warn and
-        enforce alike; in warn mode a definitive negative strips the flag
-        before the booking POST.
+        and the product is one the matches guard covers; the matches lookup
+        then runs even when the product guard is off. Without criteria or with
+        a failed lookup the booking proceeds with an unverified warning in
+        warn and enforce alike; in warn mode a definitive negative strips the
+        flag before the booking POST.
         """
         flag = (data.get("additionalServices") or {}).get("notification")
 
@@ -298,13 +304,7 @@ class Proxy(proxy.Proxy):
                 )
             ]
 
-        if answer is None:
-            return [
-                provider_product_matches.notification_unverified_warning(
-                    "the product matches lookup did not run", self.settings
-                )
-            ]
-
+        assert answer is not None
         products, messages = answer
         warnings = provider_product_matches.check_booking_notification(
             criteria,
