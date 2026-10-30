@@ -82,4 +82,5 @@ The 22028 volume validation error from the same rejection body was set aside by 
 On 2026-10-30 the connection setting was renamed from `notifications` to `notification_check`, and `product_matches` to `product_matches_check`, with no fallback for the former names.
 The shipment options `dhl_freight_sweden_notification_check` and `dhl_freight_sweden_product_matches_check` take off, warn, or enforce and, when set, override the connection setting for one booking; `shipment_request` passes them to the proxy in the request context, so they are never sent to DHL.
 With the product matches check off, the notification guard in warn or enforce with a true flag now makes the matches lookup itself, and the answer feeds only the notification guard; the design above, where the guard never triggered a lookup of its own, held until then.
+A product the matches answer does not list, which the design above passed silently, now keeps the flag with a `notification_availability_unverified` warning naming the product and the lane, the outcome of a failed lookup.
 The names in the sections above are those of 2026-10-23.

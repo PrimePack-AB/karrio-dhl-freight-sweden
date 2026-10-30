@@ -33,7 +33,8 @@ The notification flag itself stays a true or false request for the service.
 The message names the product, the lane, and the additional services the answer does list.
 The capability is read from the same product matches answer as [product matches](#product-matches), and when both checks are on one lookup serves both guards.
 When the product matches check is `off` and the notification check is `warn` or `enforce` with the flag set, the notification guard makes the lookup itself and its answer feeds only the notification guard, so the product guard adds no refusal or warning; with the flag false or unset, or both checks `off`, no lookup is made.
-A product that the answer does not list at all passes the notification guard with the flag sent unchanged, whatever the mode.
+A product that the answer does not list at all leaves the notification unverified: in `warn` and `enforce` the booking keeps the flag and adds a `notification_availability_unverified` warning naming the product and the lane, for example "Notification support was not verified (product 118 is not listed in the product matches answer from SE 11143 to SE 41103); the booking proceeded without the check".
+With the product matches check in `warn` that warning follows the `product_not_offered` warning, and in `enforce` the `ProductNotOfferedError` refusal comes first, so no notification warning is added.
 When no answer is available, because a party lacks a postal code or the lookup failed, the booking proceeds with a `notification_availability_unverified` warning and the flag unchanged, like a failed product matches lookup.
 The guard skips the same products as product matches (205, 209, 210, 212, SPI, and 107), because no committed product matches answer lists them, so the flag is sent verbatim with no warning in every mode.
 An explicit `notification: false` passes through untouched in every mode.
