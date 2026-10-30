@@ -418,8 +418,8 @@ def check_booking_notification(
     does not list the notification additional service raises
     ``NotificationNotOfferedError`` in ``enforce`` and yields a warning in
     ``warn``; the caller strips the flag before booking in warn. A product
-    missing from the answer returns no message: the product guard has
-    already reported the product itself.
+    missing from the answer is no evidence either way, so it yields the same
+    unverified warning as a failed lookup and the flag is kept.
     """
     if any(messages):
         return [
@@ -433,8 +433,18 @@ def check_booking_notification(
     entry = next(
         (item for item in products if str(item.get("code")) == product), None
     )
-    services = (entry or {}).get("additional_services") or []
-    if entry is None or "notification" in services:
+    if entry is None:
+        origin, destination = _lane(criteria)
+        return [
+            notification_unverified_warning(
+                f"product {product} is not listed in the product matches "
+                f"answer from {origin} to {destination}",
+                settings,
+            )
+        ]
+
+    services = entry.get("additional_services") or []
+    if "notification" in services:
         return []
 
     message = _notification_not_offered_message(criteria, product, services)
@@ -483,10 +493,7 @@ def _not_offered_message(
         service.value: service.name
         for service in provider_units.ShippingService.__members__.values()
     }
-    origin, destination = (
-        f"{party['address']['countryCode']} {party['address']['postalCode']}"
-        for party in criteria["parties"]
-    )
+    origin, destination = _lane(criteria)
     supported = [f"{code} ({names[code]})" for code in offered if code in names]
     unsupported = [code for code in offered if code not in names]
     listing = ", ".join(
@@ -522,6 +529,15 @@ def _not_offered_message(
     )
 
 
+def _lane(criteria: dict) -> typing.Tuple[str, str]:
+    """The origin and destination of the criteria as "CC postal code" pairs."""
+    origin, destination = (
+        f"{party['address']['countryCode']} {party['address']['postalCode']}"
+        for party in criteria["parties"]
+    )
+    return origin, destination
+
+
 def _notification_not_offered_message(
     criteria: dict,
     product: str,
@@ -531,10 +547,7 @@ def _notification_not_offered_message(
         service.value: service.name
         for service in provider_units.ShippingService.__members__.values()
     }
-    origin, destination = (
-        f"{party['address']['countryCode']} {party['address']['postalCode']}"
-        for party in criteria["parties"]
-    )
+    origin, destination = _lane(criteria)
     listing = ", ".join(services) if services else "none"
 
     return (

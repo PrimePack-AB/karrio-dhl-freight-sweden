@@ -42,6 +42,12 @@ REFUSAL_118 = (
     "offered for this product: signature."
 )
 
+UNLISTED_118 = (
+    "Notification support was not verified (product 118 is not listed in the "
+    "product matches answer from SE 11143 to SE 41103); the booking proceeded "
+    "without the check"
+)
+
 MATCHES_PATH = "/productapi/v1/productmatches"
 TI_PATH = "/transportinstruction/sendtransportinstruction"
 FIXTURE_NAME = "lookup-product-matches-se-se-additional-services.json"
@@ -171,13 +177,16 @@ class TestCheckBookingNotification(unittest.TestCase):
             [],
         )
 
-    def test_product_missing_from_the_answer_returns_no_message(self):
-        self.assertEqual(
-            check_booking_notification(
-                CRITERIA, "401", self.products, [], self.settings, "warn"
-            ),
-            [],
-        )
+    def test_product_missing_from_the_answer_warns_unverified(self):
+        for mode in ("warn", "enforce"):
+            with self.subTest(mode=mode):
+                (warning,) = check_booking_notification(
+                    CRITERIA, "401", self.products, [], self.settings, mode
+                )
+
+                self.assertEqual(warning.code, "notification_availability_unverified")
+                self.assertEqual(warning.level, "warning")
+                self.assertEqual(warning.message, UNLISTED_118.replace("118", "401"))
 
     def test_failed_lookup_warns_unverified(self):
         failure = models.Message(
@@ -508,13 +517,16 @@ class TestNotificationLookupWithProductCheckOff(unittest.TestCase):
         self.assertEqual(messages[0].message, _expected_refusal("118"))
         self.assertNotIn("notification", _sent(mock).get("additionalServices") or {})
 
-    def test_product_missing_from_the_answer_is_not_refused(self):
+    def test_product_missing_from_the_answer_warns_unverified(self):
         (details, messages), urls, mock = _book(
             self.product_off, PAYLOAD_118, "[]", *_booking_answers()
         )
 
         self.assertIsNotNone(details)
-        self.assertEqual(messages, [])
+        self.assertEqual(
+            [(m.code, m.message) for m in messages],
+            [("notification_availability_unverified", UNLISTED_118)],
+        )
         self.assertTrue(urls[0].endswith(MATCHES_PATH))
         self.assertTrue(urls[1].endswith(TI_PATH))
         self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
@@ -540,6 +552,55 @@ class TestNotificationLookupWithProductCheckOff(unittest.TestCase):
                 self.assertIsNotNone(details)
                 self.assertEqual(messages, [])
                 self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
+
+
+class TestNotificationUnlistedProduct(unittest.TestCase):
+    """A product the matches answer does not list leaves notification support unverified."""
+
+    def test_product_warn_adds_both_warnings_and_keeps_the_flag(self):
+        warn = _gateway({"product_matches_check": "warn"})
+        (details, messages), urls, mock = _book(
+            warn, PAYLOAD_118, "[]", *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(
+            [m.code for m in messages],
+            ["product_not_offered", "notification_availability_unverified"],
+        )
+        self.assertEqual(messages[1].message, UNLISTED_118)
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_notification_warn_keeps_the_flag(self):
+        warn = _gateway({"product_matches_check": "off", "notification_check": "warn"})
+        (details, messages), urls, mock = _book(
+            warn, PAYLOAD_118, "[]", *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(
+            [(m.code, m.message) for m in messages],
+            [("notification_availability_unverified", UNLISTED_118)],
+        )
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_product_enforce_refuses_before_the_notification_guard(self):
+        enforce = _gateway({"product_matches_check": "enforce"})
+        (details, messages), urls, _ = _book(enforce, PAYLOAD_118, "[]")
+
+        self.assertIsNone(details)
+        self.assertEqual(len(urls), 1)
+        self.assertEqual([m.code for m in messages], ["SHIPPING_SDK_FIELD_ERROR"])
+        self.assertIn("is not offered from SE 11143 to SE 41103", messages[0].message)
+
+    def test_notification_off_adds_no_notification_warning(self):
+        warn = _gateway({"product_matches_check": "warn", "notification_check": "off"})
+        (details, messages), urls, _ = _book(
+            warn, PAYLOAD_118, "[]", *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual([m.code for m in messages], ["product_not_offered"])
 
 
 if __name__ == "__main__":
