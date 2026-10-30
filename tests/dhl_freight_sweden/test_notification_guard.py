@@ -15,6 +15,7 @@ from unittest.mock import patch
 
 import karrio.core.models as models
 import karrio.lib as lib
+from karrio.providers.dhl_freight_sweden import units
 from karrio.providers.dhl_freight_sweden.product_matches import (
     NotificationNotOfferedError,
     ProductNotOfferedError,
@@ -354,7 +355,7 @@ class TestNotificationGuardBooking(unittest.TestCase):
             ["product_availability_unverified", "notification_availability_unverified"],
         )
 
-    def test_unguarded_product_skips_the_guard(self):
+    def test_unguarded_product_warns_unverified_without_a_lookup(self):
         payload = _payload(
             "dhl_freight_sweden_pall",
             _recipient_se,
@@ -365,7 +366,18 @@ class TestNotificationGuardBooking(unittest.TestCase):
         )
 
         self.assertIsNotNone(details)
-        self.assertEqual(messages, [])
+        self.assertEqual(
+            [(m.code, m.level, m.message) for m in messages],
+            [
+                (
+                    "notification_availability_unverified",
+                    "warning",
+                    "Notification support was not verified (no product matches "
+                    "answer covers product 210); the booking proceeded without "
+                    "the check",
+                )
+            ],
+        )
         self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
         booking_call = next(
             call for call in mock.call_args_list
@@ -601,6 +613,66 @@ class TestNotificationUnlistedProduct(unittest.TestCase):
 
         self.assertIsNotNone(details)
         self.assertEqual([m.code for m in messages], ["product_not_offered"])
+
+
+class TestNotificationUnguardedProduct(unittest.TestCase):
+    """PRODUCT_MATCH_UNGUARDED products are never looked up, so a set flag stays unverified."""
+
+    def _book_unguarded(self, config: dict, options: dict):
+        payload = _payload("dhl_freight_sweden_pall", _recipient_se, options)
+        return _book(_gateway(config), payload, *_booking_answers())
+
+    def test_warn_and_enforce_warn_and_keep_the_flag(self):
+        for product_check in ("off", "warn", "enforce"):
+            for notification_check in ("warn", "enforce"):
+                with self.subTest(product=product_check, notification=notification_check):
+                    (details, messages), urls, mock = self._book_unguarded(
+                        {
+                            "product_matches_check": product_check,
+                            "notification_check": notification_check,
+                        },
+                        {"sms_notification": True},
+                    )
+
+                    self.assertIsNotNone(details)
+                    self.assertEqual(
+                        [m.code for m in messages],
+                        ["notification_availability_unverified"],
+                    )
+                    self.assertIn("product 210", messages[0].message)
+                    self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
+                    self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_every_unguarded_product_is_named(self):
+        for code in sorted(units.PRODUCT_MATCH_UNGUARDED):
+            with self.subTest(product=code):
+                (warning,) = proxy_of(_gateway({}))._notification_messages(
+                    {"productCode": code, "additionalServices": {"notification": True}},
+                    None,
+                    None,
+                    "enforce",
+                )
+
+                self.assertEqual(
+                    warning.message,
+                    "Notification support was not verified (no product matches "
+                    f"answer covers product {code}); the booking proceeded "
+                    "without the check",
+                )
+
+    def test_no_warning_when_the_check_is_off_or_the_flag_is_not_set(self):
+        cases = {
+            "check off": ({"notification_check": "off"}, {"email_notification": True}),
+            "flag false": ({}, {"email_notification": False}),
+            "flag unset": ({}, {}),
+        }
+        for case, (config, options) in cases.items():
+            with self.subTest(case=case):
+                (details, messages), urls, _ = self._book_unguarded(config, options)
+
+                self.assertIsNotNone(details)
+                self.assertEqual(messages, [])
+                self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
 
 
 if __name__ == "__main__":

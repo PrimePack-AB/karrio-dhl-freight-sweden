@@ -9,6 +9,7 @@ import karrio.core.models as models
 import karrio.mappers.dhl_freight_sweden.settings as provider_settings
 import karrio.providers.dhl_freight_sweden.address as provider_address
 import karrio.providers.dhl_freight_sweden.product_matches as provider_product_matches
+import karrio.providers.dhl_freight_sweden.units as provider_units
 import karrio.providers.dhl_freight_sweden.utils as provider_utils
 import karrio.schemas.dhl_freight_sweden.print_request_by_id as dhl_freight_sweden_print
 from karrio.universal.mappers.rating_proxy import RatingMixinProxy
@@ -286,15 +287,28 @@ class Proxy(proxy.Proxy):
 
         The guard triggers only when the serialized request carries a truthy
         ``additionalServices.notification`` (an explicit false passes through)
-        and the product is one the matches guard covers; the matches lookup
-        then runs even when the product guard is off. Without criteria or with
-        a failed lookup the booking proceeds with an unverified warning in
-        warn and enforce alike; in warn mode a definitive negative strips the
-        flag before the booking POST.
+        and the mode is not off; the matches lookup then runs even when the
+        product guard is off. A ``PRODUCT_MATCH_UNGUARDED`` product, which no
+        lookup covers, missing criteria, or a failed lookup leave the flag
+        unverified: the booking proceeds with a warning in warn and enforce
+        alike. In warn mode a definitive negative strips the flag before the
+        booking POST.
         """
         flag = (data.get("additionalServices") or {}).get("notification")
+        product = str(data.get("productCode") or "")
 
-        if mode == "off" or not flag or criteria is None:
+        if mode == "off" or not flag:
+            return []
+
+        if product in provider_units.PRODUCT_MATCH_UNGUARDED:
+            return [
+                provider_product_matches.notification_unverified_warning(
+                    f"no product matches answer covers product {product}",
+                    self.settings,
+                )
+            ]
+
+        if criteria is None:
             return []
 
         if isinstance(criteria, provider_product_matches.CriteriaUnavailable):
