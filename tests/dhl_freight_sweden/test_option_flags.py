@@ -206,6 +206,100 @@ class TestDHLFreightInvalidFlagRefusal(unittest.TestCase):
         self.assertEqual(set(messages[0].details), {"dhl_freight_sweden_notification"})
 
 
+CHECK_OPTIONS = {
+    "dhl_freight_sweden_notification_check": "notification_check",
+    "dhl_freight_sweden_product_matches_check": "product_matches_check",
+}
+
+
+class TestDHLFreightCheckModeOptions(unittest.TestCase):
+    def test_check_modes_reach_the_request_context(self):
+        spellings = {"off": "off", "warn": "warn", "enforce": "enforce", " Warn ": "warn", "ENFORCE": "enforce"}
+        for option, context_key in CHECK_OPTIONS.items():
+            for value, mode in spellings.items():
+                with self.subTest(option=option, value=value):
+                    request = _request(_domestic({option: value}))
+
+                    self.assertEqual((request.ctx or {})[context_key], mode)
+
+    def test_unset_check_modes_leave_the_context_empty(self):
+        for option, context_key in CHECK_OPTIONS.items():
+            for value in UNSET_SPELLINGS:
+                with self.subTest(option=option, value=value):
+                    request = _request(_domestic({option: value}))
+
+                    self.assertIsNone((request.ctx or {})[context_key])
+
+    def test_check_modes_are_not_sent_to_dhl(self):
+        request = _request(
+            _domestic(
+                {
+                    "dhl_freight_sweden_notification_check": "off",
+                    "dhl_freight_sweden_product_matches_check": "warn",
+                    "dhl_freight_sweden_notification": True,
+                }
+            )
+        )
+        body = str(serialize_request(request))
+
+        self.assertNotIn("_check", body)
+        self.assertNotIn("'off'", body)
+        self.assertNotIn("'warn'", body)
+
+    def test_invalid_check_modes_are_refused(self):
+        for option in sorted(CHECK_OPTIONS):
+            for value in ["maybe", "on", True, 1, 1.0, []]:
+                with self.subTest(option=option, value=value):
+                    with self.assertRaises(OptionValueError) as context:
+                        _request(_domestic({option: value}))
+
+                    self.assertEqual(context.exception.code, "SHIPPING_SDK_FIELD_ERROR")
+                    self.assertEqual(
+                        context.exception.details,
+                        {
+                            option: dict(
+                                code="invalid",
+                                message=f"expected off, warn, or enforce, got {value!r}",
+                            )
+                        },
+                    )
+                    self.assertEqual(
+                        str(context.exception),
+                        f"Options {option} must be off, warn, or enforce",
+                    )
+
+    def test_check_mode_refusal_names_every_invalid_option(self):
+        with self.assertRaises(OptionValueError) as context:
+            _request(
+                _domestic(
+                    {
+                        "dhl_freight_sweden_notification_check": "maybe",
+                        "dhl_freight_sweden_product_matches_check": "strict",
+                    }
+                )
+            )
+
+        self.assertEqual(detail_keys(context.exception), set(CHECK_OPTIONS))
+
+    def test_check_mode_refusal_sends_no_request(self):
+        with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+            details, messages = (
+                karrio.Shipment.create(
+                    models.ShipmentRequest(
+                        **_domestic({"dhl_freight_sweden_product_matches_check": "maybe"})
+                    )
+                )
+                .from_(gateway)
+                .parse()
+            )
+
+        mock.assert_not_called()
+        self.assertIsNone(details)
+        (message,) = messages
+        self.assertEqual(message.code, "SHIPPING_SDK_FIELD_ERROR")
+        self.assertEqual(set(message.details), {"dhl_freight_sweden_product_matches_check"})
+
+
 class TestDHLFreightCustomsServiceFlags(unittest.TestCase):
     def test_false_spelled_customs_services_are_not_sent(self):
         for option in SERVICES:

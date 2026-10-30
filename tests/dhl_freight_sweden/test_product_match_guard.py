@@ -460,5 +460,91 @@ class TestProductMatchGuard(unittest.TestCase):
         self.assertIsNotNone(details)
         self.assertEqual(messages, [])
 
+def _with_check(payload: dict, mode: str) -> dict:
+    return {
+        **payload,
+        "options": {
+            **(payload.get("options") or {}),
+            "dhl_freight_sweden_product_matches_check": mode,
+        },
+    }
+
+
+class TestProductMatchCheckOption(unittest.TestCase):
+    """The per-shipment option overrides the connection setting in both directions."""
+
+    def setUp(self):
+        self.maxDiff = None
+
+    def test_option_off_skips_the_lookup_on_an_enforcing_connection(self):
+        for gateway_ in (enforce_gateway, unset_gateway):
+            with self.subTest(gateway=gateway_.settings.connection_config.product_matches_check.state):
+                (details, messages), urls, _ = _book(
+                    gateway_, _with_check(DOMESTIC_PAYLOAD, "off"), *DOMESTIC_BOOKING
+                )
+
+                self.assertIsNotNone(details)
+                self.assertEqual(messages, [])
+                self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
+
+    def test_option_warn_books_and_warns_on_an_enforcing_connection(self):
+        rejection = _exchange("rejection-22005-109-se-gb.json", TI_PATH)["response"]
+        (details, messages), urls, _ = _book(
+            enforce_gateway,
+            _with_check(LONDON, "warn"),
+            lib.to_json(GB_MATCHES["response"]),
+            http_error(400, json.dumps(rejection)),
+        )
+
+        self.assertIsNone(details)
+        self.assertTrue(urls[0].endswith(MATCHES_PATH))
+        self.assertTrue(urls[1].endswith(TI_PATH))
+        warning = next(m for m in messages if m.code == "product_not_offered")
+        self.assertEqual(warning.level, "warning")
+        self.assertEqual(warning.message, REFUSAL_109_GB_TEST_MODE)
+
+    def test_option_enforce_refuses_on_an_off_or_warn_connection(self):
+        for gateway_ in (_gateway({"product_matches_check": "off"}), warn_gateway):
+            with self.subTest(gateway=gateway_.settings.connection_config.product_matches_check.state):
+                (details, messages), urls, _ = _book(
+                    gateway_,
+                    _with_check(LONDON, "enforce"),
+                    lib.to_json(GB_MATCHES["response"]),
+                )
+
+                self.assertIsNone(details)
+                self.assertEqual(len(urls), 1)
+                self.assertTrue(urls[0].endswith(MATCHES_PATH))
+                self.assertEqual(
+                    [(m.code, m.message) for m in messages],
+                    [("SHIPPING_SDK_FIELD_ERROR", REFUSAL_109_GB_TEST_MODE)],
+                )
+
+    def test_option_warn_looks_up_on_an_off_connection(self):
+        (details, messages), urls, _ = _book(
+            _gateway({"product_matches_check": "off"}),
+            _with_check(DOMESTIC_PAYLOAD, "warn"),
+            lib.to_json(SE_MATCHES["response"]),
+            *DOMESTIC_BOOKING,
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
+        self.assertTrue(urls[0].endswith(MATCHES_PATH))
+        self.assertTrue(urls[1].endswith(TI_PATH))
+
+    def test_option_is_not_sent_in_the_lookup_or_the_booking(self):
+        (details, _), urls, mock = _book(
+            _gateway({"product_matches_check": "off"}),
+            _with_check(DOMESTIC_PAYLOAD, "enforce"),
+            lib.to_json(SE_MATCHES["response"]),
+            *DOMESTIC_BOOKING,
+        )
+
+        self.assertIsNotNone(details)
+        for call in mock.call_args_list:
+            self.assertNotIn("_check", str(call.kwargs.get("data")))
+
+
 if __name__ == "__main__":
     unittest.main()

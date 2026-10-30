@@ -71,7 +71,9 @@ class Proxy(proxy.Proxy):
         to ``/print/printdocumentsbyid`` — the booked shipment is not re-sent.
         Three config-gated pre-flights run first, product matches, the
         notification guard, and then address validation; their warnings travel
-        to the parser as optional trailing elements.
+        to the parser as optional trailing elements. The product matches and
+        notification modes come from the shipment's check options in the
+        request context when set, and from the connection settings otherwise.
         """
         ctx = request.ctx or {}
         headers = {
@@ -80,11 +82,23 @@ class Proxy(proxy.Proxy):
         }
         data = provider_utils.to_dict(request.serialize())
         criteria = provider_product_matches.booking_match_criteria(data)
-        match_answer = self._match_answer(criteria)
+        product_mode = _preflight_mode(
+            ctx.get("product_matches_check")
+            or self.settings.connection_config.product_matches_check.state
+        )
+        notification_mode = _preflight_mode(
+            ctx.get("notification_check")
+            or self.settings.connection_config.notification_check.state
+        )
+        match_answer = self._match_answer(criteria, product_mode)
 
         warnings = [
-            *self._product_match_messages(data, request, criteria, match_answer),
-            *self._notification_messages(data, criteria, match_answer),
+            *self._product_match_messages(
+                data, request, criteria, match_answer, product_mode
+            ),
+            *self._notification_messages(
+                data, criteria, match_answer, notification_mode
+            ),
             *self._destination_route_messages(request),
         ]
 
@@ -190,8 +204,9 @@ class Proxy(proxy.Proxy):
         answer: typing.Optional[
             typing.Tuple[typing.List[dict], typing.List[models.Message]]
         ],
+        mode: str,
     ) -> typing.List[models.Message]:
-        """Run the config-gated product matches booking guard.
+        """Run the product matches booking guard in the resolved ``mode``.
 
         Off mode and ``PRODUCT_MATCH_UNGUARDED`` products skip the lookup
         silently; a booking whose consignor, or whose consignee and access
@@ -200,8 +215,6 @@ class Proxy(proxy.Proxy):
         into a message, so it leaves availability unverified rather than
         failing the booking.
         """
-        mode = _preflight_mode(self.settings.connection_config.product_matches_check.state)
-
         if mode == "off" or criteria is None:
             return []
 
@@ -225,7 +238,7 @@ class Proxy(proxy.Proxy):
         )
 
     def _match_answer(
-        self, criteria: typing.Any
+        self, criteria: typing.Any, mode: str
     ) -> typing.Optional[
         typing.Tuple[typing.List[dict], typing.List[models.Message]]
     ]:
@@ -236,8 +249,6 @@ class Proxy(proxy.Proxy):
         answer and never triggers a lookup of its own, so a booking's HTTP
         behavior is unchanged.
         """
-        mode = _preflight_mode(self.settings.connection_config.product_matches_check.state)
-
         if (
             mode == "off"
             or criteria is None
@@ -264,8 +275,9 @@ class Proxy(proxy.Proxy):
         answer: typing.Optional[
             typing.Tuple[typing.List[dict], typing.List[models.Message]]
         ],
+        mode: str,
     ) -> typing.List[models.Message]:
-        """Run the config-gated notification booking guard.
+        """Run the notification booking guard in the resolved ``mode``.
 
         The guard triggers only when the serialized request carries a truthy
         ``additionalServices.notification`` (an explicit false passes through)
@@ -274,7 +286,6 @@ class Proxy(proxy.Proxy):
         enforce alike; in warn mode a definitive negative strips the flag
         before the booking POST.
         """
-        mode = _preflight_mode(self.settings.connection_config.notification_check.state)
         flag = (data.get("additionalServices") or {}).get("notification")
 
         if mode == "off" or not flag or criteria is None:

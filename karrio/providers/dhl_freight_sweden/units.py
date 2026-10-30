@@ -966,6 +966,16 @@ class ShippingOption(lib.Enum):
         "additionalInformation", list
     )
 
+    # Per-shipment overrides of the notification_check and
+    # product_matches_check connection settings. shipment_request hands them
+    # to the proxy in the request context; they are never sent to DHL.
+    dhl_freight_sweden_notification_check = lib.OptionEnum(
+        "notification_check", ServabilityMode
+    )
+    dhl_freight_sweden_product_matches_check = lib.OptionEnum(
+        "product_matches_check", ServabilityMode
+    )
+
     """ Unified Option type mapping """
     sms_notification = dhl_freight_sweden_notification
     email_notification = dhl_freight_sweden_notification
@@ -1034,26 +1044,80 @@ def invalid_flags(options: typing.Dict[str, typing.Any]) -> typing.Dict[str, typ
     }
 
 
+CHECK_MODE_OPTIONS: typing.Tuple[str, ...] = (
+    "dhl_freight_sweden_notification_check",
+    "dhl_freight_sweden_product_matches_check",
+)
+
+
+@attr.s(auto_attribs=True, frozen=True)
+class InvalidCheckMode:
+    """A raw check-mode option value that names no ServabilityMode."""
+
+    value: typing.Any
+
+
+def parse_check_mode(
+    value: typing.Any,
+) -> typing.Union[str, None, InvalidCheckMode]:
+    """Read a raw check-mode option value strictly.
+
+    Strings naming off, warn, or enforce (trimmed, case-insensitive) read as
+    that mode; None and a blank string read as None (unset). Any other value
+    is an InvalidCheckMode.
+    """
+    if value is None:
+        return None
+
+    if isinstance(value, str):
+        spelling = value.strip().lower()
+
+        if not spelling:
+            return None
+        if spelling in ServabilityMode.__members__:
+            return spelling
+
+    return InvalidCheckMode(value)
+
+
+def invalid_check_modes(
+    options: typing.Dict[str, typing.Any],
+) -> typing.Dict[str, typing.Any]:
+    """The raw value of each check-mode option key that reads as an InvalidCheckMode."""
+    return {
+        key: options[key]
+        for key in CHECK_MODE_OPTIONS
+        if key in options and isinstance(parse_check_mode(options[key]), InvalidCheckMode)
+    }
+
+
 def shipping_options_initializer(
     options: dict,
     package_options: typing.Optional[units.ShippingOptions] = None,
 ) -> units.ShippingOptions:
     """Apply default values to the given options.
 
-    Bool-typed options are read with ``parse_flag``: unset and invalid values
-    are dropped, so the option reads as absent, and the initializer never
-    raises. ``shipment_request`` refuses the invalid values it finds through
-    ``invalid_flags``.
+    Bool-typed options are read with ``parse_flag`` and check-mode options
+    with ``parse_check_mode``: unset and invalid values are dropped, so the
+    option reads as absent, and the initializer never raises.
+    ``shipment_request`` refuses the invalid values it finds through
+    ``invalid_flags`` and ``invalid_check_modes``.
     """
 
     if package_options is not None:
         options.update(package_options.content)
 
     flags = _flag_values(options)
+    modes = {
+        key: parse_check_mode(options[key])
+        for key in CHECK_MODE_OPTIONS
+        if key in options
+    }
     readable = {
-        key: flags.get(key, value)
+        key: {**flags, **modes}.get(key, value)
         for key, value in options.items()
-        if key not in flags or isinstance(flags[key], bool)
+        if (key not in flags or isinstance(flags[key], bool))
+        and (key not in modes or isinstance(modes[key], str))
     }
 
     def items_filter(key: str) -> bool:

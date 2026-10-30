@@ -382,5 +382,109 @@ class TestNotificationGuardBooking(unittest.TestCase):
                 proxy_of(self.enforce).create_shipment(request)
 
 
+def _with_check(payload: dict, **checks: str) -> dict:
+    return {
+        **payload,
+        "options": {
+            **payload["options"],
+            **{f"dhl_freight_sweden_{name}": mode for name, mode in checks.items()},
+        },
+    }
+
+
+def _sent(mock) -> dict:
+    booking_call = next(
+        call for call in mock.call_args_list if call.kwargs["url"].endswith(TI_PATH)
+    )
+    return as_dict(lib.to_dict(booking_call.kwargs["data"]))
+
+
+class TestNotificationCheckOption(unittest.TestCase):
+    """The per-shipment option overrides the connection setting in both directions."""
+
+    def setUp(self):
+        self.maxDiff = None
+        self.enforce = _gateway({"product_matches_check": "enforce"})
+
+    def test_option_off_sends_the_flag_on_an_enforcing_connection(self):
+        (details, messages), urls, mock = _book(
+            self.enforce,
+            _with_check(PAYLOAD_118, notification_check="off"),
+            _matches_answer(),
+            *_booking_answers(),
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual(messages, [])
+        self.assertTrue(urls[0].endswith(MATCHES_PATH), "the product guard still looks up")
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_option_warn_strips_the_flag_on_an_enforcing_connection(self):
+        (details, messages), urls, mock = _book(
+            self.enforce,
+            _with_check(PAYLOAD_118, notification_check="warn"),
+            _matches_answer(),
+            *_booking_answers(),
+        )
+
+        self.assertIsNotNone(details)
+        (warning,) = messages
+        self.assertEqual(warning.code, "notification_not_offered")
+        self.assertEqual(warning.message, _expected_refusal("118"))
+        self.assertNotIn("notification", _sent(mock).get("additionalServices") or {})
+
+    def test_option_enforce_refuses_on_an_off_or_warn_connection(self):
+        for setting in ("off", "warn"):
+            with self.subTest(setting=setting):
+                gateway_ = _gateway(
+                    {"product_matches_check": "enforce", "notification_check": setting}
+                )
+                request = gateway_.mapper.create_shipment_request(
+                    models.ShipmentRequest(
+                        **_with_check(PAYLOAD_118, notification_check="enforce")
+                    )
+                )
+                with patch("karrio.mappers.dhl_freight_sweden.proxy.lib.request") as mock:
+                    mock.side_effect = _answers(_matches_answer())
+                    with self.assertRaises(NotificationNotOfferedError) as context:
+                        proxy_of(gateway_).create_shipment(request)
+
+                self.assertEqual(mock.call_count, 1)
+                self.assertEqual(str(context.exception), _expected_refusal("118"))
+
+    def test_connection_setting_applies_without_the_option(self):
+        warn = _gateway({"product_matches_check": "enforce", "notification_check": "warn"})
+        (details, messages), urls, mock = _book(
+            warn, PAYLOAD_118, _matches_answer(), *_booking_answers()
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual([m.code for m in messages], ["notification_not_offered"])
+
+    def test_product_matches_option_off_leaves_the_notification_unverified(self):
+        (details, messages), urls, mock = _book(
+            self.enforce,
+            _with_check(PAYLOAD_118, product_matches_check="off"),
+            *_booking_answers(),
+        )
+
+        self.assertIsNotNone(details)
+        self.assertEqual([m.code for m in messages], ["notification_availability_unverified"])
+        self.assertFalse(any(url.endswith(MATCHES_PATH) for url in urls))
+        self.assertIs(_sent(mock)["additionalServices"]["notification"], True)
+
+    def test_options_are_not_sent_to_dhl(self):
+        (details, _), urls, mock = _book(
+            self.enforce,
+            _with_check(PAYLOAD_118, notification_check="off", product_matches_check="warn"),
+            _matches_answer(),
+            *_booking_answers(),
+        )
+
+        self.assertIsNotNone(details)
+        for call in mock.call_args_list:
+            self.assertNotIn("_check", str(call.kwargs.get("data")))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -19,7 +19,8 @@ import karrio.providers.dhl_freight_sweden.units as provider_units
 
 
 class OptionValueError(errors.ShippingSDKDetailedError):
-    """Raised when a bool-typed option spells neither true, false, nor unset."""
+    """Raised when a bool-typed option spells neither true, false, nor unset,
+    or a check-mode option names neither off, warn, enforce, nor unset."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -37,6 +38,24 @@ def _check_flag_options(payload: models.ShipmentRequest) -> None:
             option: dict(
                 code="invalid",
                 message=f"expected true or false, got {value!r}",
+            )
+            for option, value in invalid.items()
+        },
+    )
+
+
+def _check_mode_options(payload: models.ShipmentRequest) -> None:
+    invalid = provider_units.invalid_check_modes(payload.options or {})
+
+    if not any(invalid):
+        return
+
+    raise OptionValueError(
+        f"Options {', '.join(invalid)} must be off, warn, or enforce",
+        details={
+            option: dict(
+                code="invalid",
+                message=f"expected off, warn, or enforce, got {value!r}",
             )
             for option, value in invalid.items()
         },
@@ -409,6 +428,7 @@ def shipment_request(
 ) -> lib.Serializable:
     _check_label_type(payload, settings)
     _check_flag_options(payload)
+    _check_mode_options(payload)
     _check_territory_postal_codes(dict(shipper=payload.shipper, recipient=payload.recipient))
     shipper = lib.to_address(provider_units.with_parent_country(payload.shipper))
     recipient = lib.to_address(provider_units.with_parent_country(payload.recipient))
@@ -618,6 +638,8 @@ def shipment_request(
         provider_utils.to_dict,
         dict(
             print_options=provider_utils.to_dict(print_options),
+            notification_check=options.dhl_freight_sweden_notification_check.state,
+            product_matches_check=options.dhl_freight_sweden_product_matches_check.state,
             separate_agreement=separate_agreement_lane(provider_utils.to_dict(request)),
             customs_omitted=lib.identity(
                 dict(
