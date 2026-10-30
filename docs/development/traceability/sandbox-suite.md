@@ -20,7 +20,7 @@ It is opt-in and sits outside `tests/`, so the default offline run never discove
 | `rejections` | nothing accepted | expected DHL error codes |
 
 Before each booking a free product-match lookup, and for 109 a service-point lookup, checks that DHL offers the product on the lane, and the case skips otherwise; the few cases that book past this check exist to record DHL's answer.
-Sandbox gateways set the connector's `product_matches` setting to `off` (`harness.gateway_config`), so the connector's own product matches check neither refuses those cases nor adds an exchange to booking captures.
+Sandbox gateways set the connector's `product_matches_check` setting to `off` (`harness.gateway_config`), so the connector's own product matches check neither refuses those cases nor adds an exchange to booking captures.
 The `rejections` cases build a valid request through the connector and `harness.mutated_request` changes the serialized TransportInstruction just before the call, so connector validation stays intact, and a response carrying a shipment id fails the test and reports the id as a finding.
 The `booking-probes` cases mutate a valid request the same way but assert acceptance, and the segment is deliberately absent from every default run: a probe spends its booking only when `DHL_FREIGHT_SWEDEN_SANDBOX_SEGMENTS` names `booking-probes`.
 The `pickup-probes` segment is absent from every default run in the same way, and its pickup requests draw on the booking budget, because a booked pickup cannot be cancelled electronically (manual §5.2 p14).

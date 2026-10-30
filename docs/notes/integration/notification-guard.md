@@ -76,3 +76,9 @@ The 22028 volume validation error from the same rejection body was set aside by 
 `tests/dhl_freight_sweden/test_notification_guard.py` mirrors `test_product_match_guard.py`: the default mode is enforce; off performs no check; enforce refuses with the message and details above; warn strips the serialized flag and warns; a 102 booking sends the flag with no warning; `PRODUCT_MATCH_UNGUARDED` products skip; a starved or failed lookup warns `notification_availability_unverified`.
 `test_option_flags.py` gains a strict-read test for the `sms_notification` alias, and `test_services.py`'s `unified_aliases` set gains `sms_notification`.
 `tests/dhl_freight_sweden/fixture.py` keeps `product_matches` off, so no existing mocked answer shifts, and no committed fixture sets the notification flag today.
+
+## Later changes
+
+On 2026-10-30 the connection setting was renamed from `notifications` to `notification_check`, and `product_matches` to `product_matches_check`, with no fallback for the former names.
+The shipment options `dhl_freight_sweden_notification_check` and `dhl_freight_sweden_product_matches_check` take off, warn, or enforce and, when set, override the connection setting for one booking; `shipment_request` passes them to the proxy in the request context, so they are never sent to DHL.
+The names in the sections above are those of 2026-10-23.
