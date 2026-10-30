@@ -258,7 +258,7 @@ def gateway_config(connection_config: typing.Optional[dict]) -> dict:
     """
     if "server_url" in (connection_config or {}):
         raise SandboxConfigError("The sandbox suite does not accept a server_url")
-    return {"product_matches": "off", **(connection_config or {})}
+    return {"product_matches_check": "off", **(connection_config or {})}
 
 
 class Session:

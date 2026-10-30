@@ -55,7 +55,7 @@ production_gateway = karrio.gateway["dhl_freight_sweden"].create(
         client_key="TEST_CLIENT_KEY",
         account_number="1234567",
         international_account_number="123456",
-        config={"product_matches": "off"},
+        config={"product_matches_check": "off"},
     )
 )
 AGREEMENT_SENTENCES = {

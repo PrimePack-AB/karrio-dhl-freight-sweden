@@ -35,7 +35,7 @@ def _gateway(config: dict):
             client_key="TEST_CLIENT_KEY",
             account_number="1234567",
             international_account_number="123456",
-            config={"product_matches": "off", **config},
+            config={"product_matches_check": "off", **config},
         )
     )
 

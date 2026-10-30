@@ -200,9 +200,9 @@ class TestCheckBookingNotification(unittest.TestCase):
             "booking proceeded without the check",
         )
 
-    def test_notifications_setting_defaults_to_enforce(self):
+    def test_notification_check_setting_defaults_to_enforce(self):
         self.assertEqual(
-            str(_gateway({}).settings.connection_config.notifications.state),
+            str(_gateway({}).settings.connection_config.notification_check.state),
             "enforce",
         )
 
@@ -210,8 +210,8 @@ class TestCheckBookingNotification(unittest.TestCase):
 class TestNotificationGuardBooking(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        self.enforce = _gateway({"product_matches": "enforce"})
-        self.warn = _gateway({"product_matches": "warn", "notifications": "warn"})
+        self.enforce = _gateway({"product_matches_check": "enforce"})
+        self.warn = _gateway({"product_matches_check": "warn", "notification_check": "warn"})
 
     def test_enforce_refuses_118_before_booking(self):
         for payload, name in ((PAYLOAD_118, "email"), (PAYLOAD_118_SMS, "sms")):
@@ -271,7 +271,7 @@ class TestNotificationGuardBooking(unittest.TestCase):
         self.assertIs(sent["additionalServices"]["notification"], True)
 
     def test_warn_mode_with_offered_product_sends_the_flag_without_warning(self):
-        warn = _gateway({"product_matches": "enforce", "notifications": "warn"})
+        warn = _gateway({"product_matches_check": "enforce", "notification_check": "warn"})
         (details, messages), urls, mock = _book(
             warn, PAYLOAD_102, _matches_answer(), *_booking_answers()
         )
@@ -300,7 +300,7 @@ class TestNotificationGuardBooking(unittest.TestCase):
         self.assertIs(sent["additionalServices"]["notification"], False)
 
     def test_off_mode_sends_the_flag_verbatim(self):
-        off = _gateway({"product_matches": "off", "notifications": "off"})
+        off = _gateway({"product_matches_check": "off", "notification_check": "off"})
         (details, messages), urls, mock = _book(
             off, PAYLOAD_118, *_booking_answers()
         )
@@ -316,7 +316,7 @@ class TestNotificationGuardBooking(unittest.TestCase):
         self.assertIs(sent["additionalServices"]["notification"], True)
 
     def test_starved_lookup_warns_unverified_and_sends_the_flag(self):
-        starved = _gateway({"product_matches": "off"})
+        starved = _gateway({"product_matches_check": "off"})
         (details, messages), urls, mock = _book(
             starved, PAYLOAD_118, *_booking_answers()
         )

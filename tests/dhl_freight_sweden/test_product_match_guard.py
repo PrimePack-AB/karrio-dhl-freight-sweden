@@ -34,9 +34,9 @@ FIXTURES = pathlib.Path(__file__).resolve().parent / "fixtures" / "sandbox"
 MATCHES_PATH = "/productapi/v1/productmatches"
 TI_PATH = "/transportinstruction/sendtransportinstruction"
 
-enforce_gateway = _gateway({"product_matches": "enforce"})
-warn_gateway = _gateway({"product_matches": "warn"})
-# A connection that never set product_matches, unlike the shared offline
+enforce_gateway = _gateway({"product_matches_check": "enforce"})
+warn_gateway = _gateway({"product_matches_check": "warn"})
+# A connection that never set product_matches_check, unlike the shared offline
 # test gateways, which turn the guard off.
 unset_gateway = karrio.gateway["dhl_freight_sweden"].create(
     dict(
@@ -121,18 +121,34 @@ class TestProductMatchGuard(unittest.TestCase):
 
     def test_default_mode_is_enforce(self):
         self.assertEqual(
-            str(enforce_gateway.settings.connection_config.product_matches.state),
+            str(enforce_gateway.settings.connection_config.product_matches_check.state),
             "enforce",
         )
         self.assertEqual(
-            str(_gateway({}).settings.connection_config.product_matches.state),
+            str(_gateway({}).settings.connection_config.product_matches_check.state),
             "off",
             "the shared offline test gateway turns the guard off",
         )
         self.assertEqual(
-            str(unset_gateway.settings.connection_config.product_matches.state),
+            str(unset_gateway.settings.connection_config.product_matches_check.state),
             "enforce",
         )
+
+    def test_former_setting_names_are_not_read(self):
+        renamed = karrio.gateway["dhl_freight_sweden"].create(
+            dict(
+                test_mode=True,
+                carrier_id="dhl_freight_sweden",
+                client_key="TEST_CLIENT_KEY",
+                account_number="1234567",
+                international_account_number="123456",
+                config={"product_matches": "off", "notifications": "off"},
+            )
+        )
+        config = renamed.settings.connection_config
+
+        self.assertEqual(str(config.product_matches_check.state), "enforce")
+        self.assertEqual(str(config.notification_check.state), "enforce")
 
     def test_offered_product_books_after_the_lookup(self):
         for service in ("102", "dhl_freight_sweden_paket"):
@@ -257,7 +273,7 @@ class TestProductMatchGuard(unittest.TestCase):
 
     def test_off_mode_sends_no_lookup(self):
         (details, messages), urls, _ = _book(
-            _gateway({"product_matches": "off"}), DOMESTIC_PAYLOAD, *DOMESTIC_BOOKING
+            _gateway({"product_matches_check": "off"}), DOMESTIC_PAYLOAD, *DOMESTIC_BOOKING
         )
 
         self.assertIsNotNone(details)
@@ -438,7 +454,7 @@ class TestProductMatchGuard(unittest.TestCase):
     def test_off_mode_stays_silent_without_postal_codes(self):
         payload = _payload("dhl_freight_sweden_paket", {**_recipient_se, "postal_code": ""})
         (details, messages), urls, _ = _book(
-            _gateway({"product_matches": "off"}), payload, *DOMESTIC_BOOKING
+            _gateway({"product_matches_check": "off"}), payload, *DOMESTIC_BOOKING
         )
 
         self.assertIsNotNone(details)

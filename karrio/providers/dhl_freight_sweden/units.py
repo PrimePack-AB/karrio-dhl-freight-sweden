@@ -40,15 +40,15 @@ class ConnectionConfig(lib.Enum):
     # Booking pre-flight against Product API product matches: off skips the
     # lookup, warn annotates the shipment when the product is not offered,
     # enforce refuses the booking before the transport instruction is sent.
-    product_matches = lib.OptionEnum(
-        "product_matches", ServabilityMode, default="enforce"
+    product_matches_check = lib.OptionEnum(
+        "product_matches_check", ServabilityMode, default="enforce"
     )
     # Booking pre-flight for the notification additional service: off sends
     # the flag verbatim, warn drops the flag and annotates the shipment when
     # the product's matches answer lists no notification service, enforce
     # refuses the booking before the transport instruction is sent.
-    notifications = lib.OptionEnum(
-        "notifications", ServabilityMode, default="enforce"
+    notification_check = lib.OptionEnum(
+        "notification_check", ServabilityMode, default="enforce"
     )
     shipping_options = lib.OptionEnum("shipping_options", list)
     shipping_services = lib.OptionEnum("shipping_services", list)

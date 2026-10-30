@@ -200,7 +200,7 @@ class Proxy(proxy.Proxy):
         into a message, so it leaves availability unverified rather than
         failing the booking.
         """
-        mode = _preflight_mode(self.settings.connection_config.product_matches.state)
+        mode = _preflight_mode(self.settings.connection_config.product_matches_check.state)
 
         if mode == "off" or criteria is None:
             return []
@@ -236,7 +236,7 @@ class Proxy(proxy.Proxy):
         answer and never triggers a lookup of its own, so a booking's HTTP
         behavior is unchanged.
         """
-        mode = _preflight_mode(self.settings.connection_config.product_matches.state)
+        mode = _preflight_mode(self.settings.connection_config.product_matches_check.state)
 
         if (
             mode == "off"
@@ -274,7 +274,7 @@ class Proxy(proxy.Proxy):
         enforce alike; in warn mode a definitive negative strips the flag
         before the booking POST.
         """
-        mode = _preflight_mode(self.settings.connection_config.notifications.state)
+        mode = _preflight_mode(self.settings.connection_config.notification_check.state)
         flag = (data.get("additionalServices") or {}).get("notification")
 
         if mode == "off" or not flag or criteria is None:

@@ -103,10 +103,10 @@ class TestSandboxHarnessConfig(unittest.TestCase):
                     harness.check_host(url)
 
     def test_gateway_config_turns_the_product_matches_guard_off(self):
-        self.assertEqual(harness.gateway_config(None), {"product_matches": "off"})
+        self.assertEqual(harness.gateway_config(None), {"product_matches_check": "off"})
         self.assertEqual(
             harness.gateway_config({"address_validation": "enforce"}),
-            {"product_matches": "off", "address_validation": "enforce"},
+            {"product_matches_check": "off", "address_validation": "enforce"},
         )
         with self.assertRaises(harness.SandboxConfigError):
             harness.gateway_config({"server_url": "https://example.com"})
