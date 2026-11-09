@@ -176,6 +176,12 @@ class RecipientContactError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class ShipperContactError(errors.ShippingSDKDetailedError):
+    """Raised when the shipper lacks the phone number its product requires."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class JointDeclarationDestinationError(errors.ShippingSDKDetailedError):
     """Raised when the customs joint declaration is requested to a recipient country other than NO or CH."""
 
@@ -450,7 +456,7 @@ def shipment_request(
     _check_lane(service, shipper.country_code, recipient.country_code)
     _check_aland_customs_services(options, dict(shipper=shipper, recipient=recipient))
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
-    _check_recipient_contact(service, recipient)
+    _check_party_contacts(service, dict(shipper=shipper, recipient=recipient))
     consignor_id = provider_utils.customer_number(service, settings)
     payer_code = _payer_code(
         service,
@@ -1180,17 +1186,38 @@ def _check_party_tax_ids(
         )
 
 
-def _check_recipient_contact(product_code: str, recipient: typing.Any) -> None:
-    required = provider_units.RECIPIENT_CONTACT_FIELDS.get(product_code, ())
+def _check_party_contacts(
+    product_code: str, parties: typing.Dict[str, typing.Any]
+) -> None:
+    for role, required_fields, error_type in [
+        ("shipper", provider_units.SHIPPER_CONTACT_FIELDS, ShipperContactError),
+        ("recipient", provider_units.RECIPIENT_CONTACT_FIELDS, RecipientContactError),
+    ]:
+        _check_party_contact(
+            product_code,
+            role,
+            parties[role],
+            required_fields.get(product_code, ()),
+            error_type,
+        )
+
+
+def _check_party_contact(
+    product_code: str,
+    role: str,
+    party: typing.Any,
+    required: typing.Tuple[str, ...],
+    error_type: typing.Type[errors.ShippingSDKDetailedError],
+) -> None:
     missing = [
-        f"recipient.{field}"
+        f"{role}.{field}"
         for field in required
-        if not (getattr(recipient, field, None) or "").strip()
+        if not (getattr(party, field, None) or "").strip()
     ]
 
     if any(missing):
-        raise RecipientContactError(
-            f"Product {product_code} requires the recipient's "
+        raise error_type(
+            f"Product {product_code} requires the {role}'s "
             f"{' and '.join(_CONTACT_FIELD_NAMES[field] for field in required)}; "
             f"missing {', '.join(missing)}",
             details={

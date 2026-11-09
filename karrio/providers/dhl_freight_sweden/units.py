@@ -529,14 +529,24 @@ PARTY_TAX_ID_PRODUCTS = (
 
 # Recipient contact fields the shipment information must carry, by product.
 # Product manual v5.26: the receiver's mobile phone number for 118
-# (§5.16 p68), the consignee's phone number and e-mail address for 601
-# (§5.19 p81). Presence only; the connector checks no format.
+# (§5.16 p68), the consignee's phone number for 401 (§5.17 p72), the
+# consignee's phone number and e-mail address for 601 (§5.19 p81).
+# Presence only; the connector checks no format.
 RECIPIENT_CONTACT_FIELDS: typing.Dict[str, typing.Tuple[str, ...]] = {
     ShippingService.dhl_freight_sweden_hemleverans_paket_b2c.value: ("phone_number",),
+    ShippingService.dhl_freight_sweden_home_delivery_b2c.value: ("phone_number",),
     ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: (
         "phone_number",
         "email",
     ),
+}
+
+# Shipper contact fields the shipment information must carry, by product.
+# Product manual v5.26: the sender's phone number for 402 and 502
+# (§5.18 p76). Presence only; the connector checks no format.
+SHIPPER_CONTACT_FIELDS: typing.Dict[str, typing.Tuple[str, ...]] = {
+    ShippingService.dhl_freight_sweden_home_delivery_c2b.value: ("phone_number",),
+    ShippingService.dhl_freight_sweden_home_delivery_c2b_502.value: ("phone_number",),
 }
 
 
