@@ -133,7 +133,8 @@ The Karrio server accepts the same fields at `POST /api/v1/shipments`.
 The connector prints the label right after booking and returns the first printed report.
 The `dhl_freight_sweden_label_page_type` option overrides the `label_page_type` setting for one shipment.
 The connector sends `phone_number` as given, and the manual allows exactly one prefix followed by digits, dashes, and spaces only (Appendix E §10.6 p197).
-Product 118 needs the recipient's `phone_number` (§5.16 p68) and 601 needs its `phone_number` and `email` (§5.19 p81), and the connector refuses a booking without them with `RecipientContactError`.
+Products 118 and 401 need the recipient's `phone_number` (§5.16 p68, §5.17 p72) and 601 needs its `phone_number` and `email` (§5.19 p81), and the connector refuses a booking without them with `RecipientContactError`.
+Products 402 and 502 need the shipper's `phone_number` (§5.18 p76), and the connector refuses a booking without it with `ShipperContactError`.
 Most labels do not print the receiver's phone number, which the manual forbids for 118 and 401 and for 109 and 112 except to SK (§9.4.2 p170); [Labels](docs/concepts/labels.md) has the evidence per product.
 
 ### Home delivery with address validation

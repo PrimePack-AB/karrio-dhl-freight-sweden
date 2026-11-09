@@ -89,6 +89,8 @@ Booking 112 with an explicit payer code 022, or with the Incoterm CPT, CIP, DAP,
 
 Booking 118 without the recipient's `phone_number`, or 601 without its `phone_number` or `email`, now fails before the booking request with `RecipientContactError`, per manual §5.16 p68 and §5.19 p81; a blank value counts as missing (see [Booking rules](../concepts/booking-rules.md#recipient-phone-and-e-mail)).
 
+Booking 401 without the recipient's `phone_number` now fails before the booking request with `RecipientContactError`, per manual §5.17 p72, and booking 402 or 502 without the shipper's `phone_number` with `ShipperContactError`, per manual §5.18 p76; a blank value counts as missing (see [Booking rules](../concepts/booking-rules.md#sender-phone)).
+
 ## Known limitations
 
 The README is also the PyPI long description (`readme = "README.md"` in `pyproject.toml`), and its relative links to `docs/`, `examples/`, and the evidence files do not resolve on PyPI; fixing them is deferred until the package is published.

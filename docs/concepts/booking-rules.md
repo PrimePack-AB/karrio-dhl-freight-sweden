@@ -224,11 +224,18 @@ No GR booking has been sent to the sandbox.
 
 ## Recipient phone and e-mail
 
-Product 118 makes the receiver's mobile phone number mandatory (§5.16 p68), and product 601 makes the consignee's phone number and e-mail address mandatory (§5.19 p81).
-Booking 118 without the recipient's `phone_number`, or 601 without its `phone_number` or `email`, fails before the booking request with `RecipientContactError`, a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by `recipient.phone_number` and `recipient.email`, one entry per missing field, each with code `required`.
+Product 118 makes the receiver's mobile phone number mandatory (§5.16 p68), product 401 makes the consignee's phone number mandatory (§5.17 p72), and product 601 makes the consignee's phone number and e-mail address mandatory (§5.19 p81).
+Booking 118 or 401 without the recipient's `phone_number`, or 601 without its `phone_number` or `email`, fails before the booking request with `RecipientContactError`, a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by `recipient.phone_number` and `recipient.email`, one entry per missing field, each with code `required`.
 A value that is empty or only whitespace counts as missing.
 The check is for presence only: the connector does not tell a mobile number from a landline for 118, and it does not check the format of either field.
 Other products send the fields when given and do not require them.
+
+## Sender phone
+
+Products 402 and 502 make the sender's phone number mandatory (§5.18 p76).
+Booking either without the shipper's `phone_number` fails before the booking request with `ShipperContactError`, a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by `shipper.phone_number` with code `required`.
+As for the recipient, a value that is empty or only whitespace counts as missing, and the check is for presence only.
+Other products send the shipper's `phone_number` when given and do not require it.
 
 ## QR code for 107
 
