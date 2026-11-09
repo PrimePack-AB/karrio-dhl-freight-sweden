@@ -527,6 +527,19 @@ PARTY_TAX_ID_PRODUCTS = (
 )
 
 
+# Recipient contact fields the shipment information must carry, by product.
+# Product manual v5.26: the receiver's mobile phone number for 118
+# (§5.16 p68), the consignee's phone number and e-mail address for 601
+# (§5.19 p81). Presence only; the connector checks no format.
+RECIPIENT_CONTACT_FIELDS: typing.Dict[str, typing.Tuple[str, ...]] = {
+    ShippingService.dhl_freight_sweden_hemleverans_paket_b2c.value: ("phone_number",),
+    ShippingService.dhl_freight_sweden_home_delivery_international_b2c.value: (
+        "phone_number",
+        "email",
+    ),
+}
+
+
 # Products offering a QR code through the print API selection "qrCode":
 # true, by the country the shipment is sent from. Product manual v5.26
 # §5.15 p65 lists BE, BG, CZ, DE, ES, LU, and PT for 107, whose shipments

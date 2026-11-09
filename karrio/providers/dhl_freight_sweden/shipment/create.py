@@ -170,6 +170,12 @@ class PartyTaxIdError(errors.ShippingSDKDetailedError):
     code = "SHIPPING_SDK_FIELD_ERROR"
 
 
+class RecipientContactError(errors.ShippingSDKDetailedError):
+    """Raised when the recipient lacks the phone number or e-mail address its product requires."""
+
+    code = "SHIPPING_SDK_FIELD_ERROR"
+
+
 class JointDeclarationDestinationError(errors.ShippingSDKDetailedError):
     """Raised when the customs joint declaration is requested to a recipient country other than NO or CH."""
 
@@ -444,6 +450,7 @@ def shipment_request(
     _check_lane(service, shipper.country_code, recipient.country_code)
     _check_aland_customs_services(options, dict(shipper=shipper, recipient=recipient))
     _check_party_tax_ids(service, dict(shipper=shipper, recipient=recipient))
+    _check_recipient_contact(service, recipient)
     consignor_id = provider_utils.customer_number(service, settings)
     payer_code = _payer_code(
         service,
@@ -1171,6 +1178,32 @@ def _check_party_tax_ids(
                 for field in missing
             },
         )
+
+
+def _check_recipient_contact(product_code: str, recipient: typing.Any) -> None:
+    required = provider_units.RECIPIENT_CONTACT_FIELDS.get(product_code, ())
+    missing = [
+        f"recipient.{field}"
+        for field in required
+        if not (getattr(recipient, field, None) or "").strip()
+    ]
+
+    if any(missing):
+        raise RecipientContactError(
+            f"Product {product_code} requires the recipient's "
+            f"{' and '.join(_CONTACT_FIELD_NAMES[field] for field in required)}; "
+            f"missing {', '.join(missing)}",
+            details={
+                field: dict(
+                    code="required",
+                    message=f"{_CONTACT_FIELD_NAMES[field.split('.')[1]]} is required",
+                )
+                for field in missing
+            },
+        )
+
+
+_CONTACT_FIELD_NAMES = {"phone_number": "phone number", "email": "e-mail address"}
 
 
 def _payer_code(
