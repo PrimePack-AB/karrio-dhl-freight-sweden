@@ -582,10 +582,26 @@ def shipment_request(
         else None
     )
 
+    omit_shipper_phone = (
+        provider_units.phone_number_policy(
+            options.dhl_freight_sweden_phone_number_policy.state,
+            settings.connection_config.phone_number_policy.state,
+        )
+        == provider_units.PhoneNumberPolicy.omit_when_email_suffices
+        and bool((shipper.email or "").strip())
+        and "phone_number"
+        not in provider_units.SHIPPER_CONTACT_FIELDS.get(str(service), ())
+    )
+
     parties = [
         # The consignor id is the customer/agreement number and is mandatory
         # according to the payer code; the consignor-pays default always needs it.
-        _party(provider_units.PartyType.Consignor, shipper, id=consignor_id),
+        _party(
+            provider_units.PartyType.Consignor,
+            shipper,
+            id=consignor_id,
+            omit_phone=omit_shipper_phone,
+        ),
         _party(provider_units.PartyType.Consignee, recipient),
         *lib.identity([service_point_party] if service_point_party else []),
     ]
@@ -1840,7 +1856,10 @@ def _check_service_point_country(
 
 
 def _party(
-    role: str, address, id: typing.Optional[str] = None
+    role: str,
+    address,
+    id: typing.Optional[str] = None,
+    omit_phone: bool = False,
 ) -> dhl_freight_sweden_req.PartyType:
     return dhl_freight_sweden_req.PartyType(
         type=role,
@@ -1848,7 +1867,7 @@ def _party(
         name=address.company_name or address.person_name,
         contactName=address.contact,
         vatEoriSocialSecurityNumber=address.tax_id,
-        phone=address.phone_number,
+        phone=None if omit_phone else address.phone_number,
         email=address.email,
         address=dhl_freight_sweden_req.AddressType(
             street=address.address_line1,
