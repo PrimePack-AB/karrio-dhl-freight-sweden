@@ -24,6 +24,7 @@ The booking's `meta.tracking_numbers` carries those piece ids, one per parcel in
 ## Phone numbers
 
 The connector always transmits the consignee `phone_number` on the booking, and no sandbox label printed it.
+The phone is required for 118 and 601, as described with the other party fields in [Booking rules](booking-rules.md#parties).
 The table compares the labels with the receiver phone, field 9, of the manual's label field description (§9.4.2 p170).
 
 | Product | Receiver phone per §9.4.2 | Sandbox label | Evidence |

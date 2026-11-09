@@ -206,6 +206,14 @@ Those sources do not cover the older SENT goods categories, such as fuels; a shi
 The UIT exception covers goods with a value less than 10,000 RON and a weight less than 500 kg ([DHL Denmark](https://www.dhl.com/dk-en/home/about-us/local-news/071024.html)); the connector checks the weight only, not the value.
 The EKAER thresholds for risky products, a fiscal-risk product list that is distinct from ADR dangerous goods, are 500 kg and HUF 1,000,000 ([RSM Hungary](https://www.rsm.hu/tax-to-know/ekaer-obligation)); the connector checks the weight only and cannot detect whether goods are risky products.
 
+## Parties
+
+The connector maps each karrio address to a DHL party in the same way, on bookings the shipper as Consignor and the recipient as Consignee, and on pickups the pickup address as Consignor and Pickup party (see [Pickups](../guides/pickups.md)).
+The party's `name` is the address's `company_name`, else its `person_name`, and its `contactName` is the `person_name`, else the `company_name`.
+The party's `phone` is `phone_number` and its `email` is `email`, both sent as given.
+On bookings the party's `vatEoriSocialSecurityNumber` is the `federal_tax_id`, else the `state_tax_id`; pickups send no tax identifier.
+The connector drops no party field per product, so a field DHL does not use for a product, such as the receiver phone on a label that may not print it, is still sent; what a label prints is DHL's rendering, compared with the manual in [Labels](labels.md#phone-numbers).
+
 ## VAT number/TIN for GR
 
 Products 202 (§5.4 p22), SPI (§5.11 p51), and 601 (§5.19 p81) make a VAT number/TIN mandatory for all parties in the shipment information of shipments to or from Greece (GR).
@@ -213,6 +221,14 @@ The connector transmits two parties, the shipper as Consignor and the recipient 
 On these products, a shipment with the shipper or the recipient in GR fails when either party has neither identifier, with `details` keyed by `shipper.federal_tax_id` or `recipient.federal_tax_id`.
 Other products and lanes send the identifiers when given and do not require them.
 No GR booking has been sent to the sandbox.
+
+## Recipient phone and e-mail
+
+Product 118 makes the receiver's mobile phone number mandatory (§5.16 p68), and product 601 makes the consignee's phone number and e-mail address mandatory (§5.19 p81).
+Booking 118 without the recipient's `phone_number`, or 601 without its `phone_number` or `email`, fails before the booking request with `RecipientContactError`, a `SHIPPING_SDK_FIELD_ERROR` whose `details` are keyed by `recipient.phone_number` and `recipient.email`, one entry per missing field, each with code `required`.
+A value that is empty or only whitespace counts as missing.
+The check is for presence only: the connector does not tell a mobile number from a landline for 118, and it does not check the format of either field.
+Other products send the fields when given and do not require them.
 
 ## QR code for 107
 

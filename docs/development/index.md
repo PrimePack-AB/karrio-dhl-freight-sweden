@@ -87,6 +87,8 @@ Product 103 sends the four-digit terminal id nnnn of a service point id SE-nnnn0
 Product 112 accepts only payer code 023, per manual §5.3 p19, where it previously accepted 022 as well.
 Booking 112 with an explicit payer code 022, or with the Incoterm CPT, CIP, DAP, or DPU, which translate to 022, fails before the booking request with `PayerCodeError`; DDP still translates to 023 (see [Booking rules](../concepts/booking-rules.md#payer-codes)).
 
+Booking 118 without the recipient's `phone_number`, or 601 without its `phone_number` or `email`, now fails before the booking request with `RecipientContactError`, per manual §5.16 p68 and §5.19 p81; a blank value counts as missing (see [Booking rules](../concepts/booking-rules.md#recipient-phone-and-e-mail)).
+
 ## Known limitations
 
 The README is also the PyPI long description (`readme = "README.md"` in `pyproject.toml`), and its relative links to `docs/`, `examples/`, and the evidence files do not resolve on PyPI; fixing them is deferred until the package is published.
