@@ -32,7 +32,8 @@ The table compares the labels with the receiver phone, field 9, of the manual's 
 | 109 to DK and NO | not allowed | shipper phone only on the `Phn.` line | [DK](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json), [NO](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761305-109-se-no-parcelshop.json) |
 | 112 to HU | not allowed | `Phn.` line with no number | [HU](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761297-112-se-hu.json) |
 | 112 to FR | not allowed | no `Phn.` line | [FR](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761867-112-se-fr.json) |
-| 109 and 112 to SK | mandatory | not booked | |
+| 112 to SK | mandatory | `Phn.` line with no number | [SK](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906832668-112-se-sk.json) |
+| 109 to SK | mandatory | not booked | |
 | 118 | not allowed | `Phn.` line with no number | [118](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761255-118-se-se.json) |
 | 401 | not allowed | no label evidence | |
 | 102 | conditional | `Phn.` line with no number | [102](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761222-102-se-se.json) |
@@ -41,7 +42,9 @@ The table compares the labels with the receiver phone, field 9, of the manual's 
 
 "Not allowed" for 109 and 112 names the manual's 23 countries AT, BE, BG, CZ, DE, DK, EE, ES, FI, FR, HR, HU, IE, IT, LT, LU, LV, NL, NO, PL, PT, RO, and SI, with SK the one mandatory country.
 GB, which the manual lists as valid by separate agreement (§5.14 p63), is in neither list, so the generic conditional rule applies there.
-The 103 label is the one deviation from the manual, its `Phn.` line empty with and without an AccessPoint party phone in the booking request, and is recorded under [Deviations from manual v5.26](../notes/sandbox/sandbox-findings.md#deviations-from-manual-v526); whether DHL fills the parcelshop phone at production print time is an open question for DHL API Farm.
+The 103 label and the 112 label to SK are the deviations from the manual, both recorded under [Deviations from manual v5.26](../notes/sandbox/sandbox-findings.md#deviations-from-manual-v526).
+The 103 label's `Phn.` line stays empty with and without an AccessPoint party phone in the booking request, and whether DHL fills the parcelshop phone at production print time is an open question for DHL API Farm.
+The 112 label to SK prints a `Phn.` line with no number although the booking sent the consignee phone +421 2 1234 5678, and whether DHL prints the receiver phone on 109 and 112 labels to SK at production print time is an open question for DHL API Farm.
 The sender phone, field 6, is conditional, and printing it is not allowed for 104, for 402/502, or for 107 from every listed country except SK (§9.4.2 p168), so the labels without it do not contradict the manual.
 
 The phone format follows product manual v5.26 Appendix E (§10.6 p197): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only; dots, letters, and slash are forbidden.
