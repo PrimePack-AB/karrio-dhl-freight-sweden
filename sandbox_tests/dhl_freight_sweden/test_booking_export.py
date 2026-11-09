@@ -1,7 +1,7 @@
 """Sandbox segment ``booking-export``: export products from SE to a destination matrix.
 
 Each test books 109 (Parcel Connect B2C, to a service point) or 112 (Parcel
-Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 109 to a DK
+Connect Plus, home delivery) from SE to PL, RO, HU, or NO, 112 to SK, 109 to a DK
 ParcelShop, and 112 to FR and GB, which product manual v5.26 adds for 112,
 GB only according to a separate agreement, as it lists GB for 109; 109 is
 booked to a London ParcelShop past the product matches check. Åland (FI 22100) is booked with
@@ -280,6 +280,11 @@ class TestSandboxBookingExport(unittest.TestCase):
 
     def test_book_112_fr(self):
         self.export("112", "FR")
+
+    def test_book_112_sk(self):
+        # Product manual v5.26 §9.4.2 p170 makes the receiver phone mandatory
+        # on 112 labels to SK; the printed label records what the sandbox prints.
+        self.export("112", "SK")
 
     def test_book_112_gb(self):
         # Product matches did not offer 112 to GB (fixtures/sandbox/
