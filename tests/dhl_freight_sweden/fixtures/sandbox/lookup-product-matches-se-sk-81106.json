@@ -1,0 +1,109 @@
+{
+ "kind": "lookup",
+ "summary": "Product matches for SE 11143 to SK 81106 returned HDI, 109, 202, 112, 601, and 233, so the booking-export case 112 to SK booked.",
+ "captured_at": "2026-11-09T09:06:56Z",
+ "environment": "test-api.freight-logistics.dhl.com",
+ "endpoint": "POST /productapi/v1/productmatches",
+ "product": null,
+ "route": "SE 11143 -> SK 81106",
+ "booking_id": null,
+ "error_code": null,
+ "http_status": 200,
+ "captured_by": "sandbox_tests suite: test_booking_export.test_book_112_sk",
+ "redaction": "client-key request headers and response headers dropped; label and document base64 replaced by a length marker",
+ "account_number_restored": null,
+ "exchanges": [
+  {
+   "endpoint": "POST /productapi/v1/productmatches",
+   "http_status": 200,
+   "date": "2026-11-09T09:06:56Z",
+   "date_basis": "response Date header",
+   "request_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261109-100656/001-product-matches-112-sk.request.json",
+    "sha256": "0b7e2fa03d96aa459988beddf7e0554a8ef4c1ca82f5a04b79aab36b18f072fe"
+   },
+   "response_source": {
+    "path": "karrio-dhl-freight-sweden/sandbox/20261109-100656/001-product-matches-112-sk.response.json",
+    "sha256": "cf738579275e06c7606b7ba83d38656b641331779a71904f8cc4b6a790d251be"
+   },
+   "request": {
+    "parties": [
+     {
+      "address": {
+       "countryCode": "SE",
+       "postalCode": "11143"
+      },
+      "type": "Consignor"
+     },
+     {
+      "address": {
+       "countryCode": "SK",
+       "postalCode": "81106"
+      },
+      "type": "Consignee"
+     }
+    ],
+    "pieces": [
+     {
+      "height": 10.0,
+      "length": 30.0,
+      "volume": 0.006,
+      "weight": 1.0,
+      "width": 20.0
+     }
+    ]
+   },
+   "response": [
+    {
+     "product": {
+      "code": "HDI",
+      "name": "Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "109",
+      "name": "DHL Parcel Connect",
+      "shortName": null,
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "202",
+      "name": "DHL Road Freight Standard",
+      "shortName": "Road Freight Standard",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "112",
+      "name": "DHL Parcel Connect Plus",
+      "shortName": null,
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "601",
+      "name": "DHL Home Delivery International",
+      "shortName": "HOME DELIVERY INT.",
+      "isDomestic": false
+     }
+    },
+    {
+     "product": {
+      "code": "233",
+      "name": "DHL Road Freight Priority",
+      "shortName": "Road Freight Priority",
+      "isDomestic": false
+     }
+    }
+   ],
+   "response_reduced": "each match keeps product code, name, shortName, and isDomestic; the full body is identified by response_source.sha256"
+  }
+ ]
+}

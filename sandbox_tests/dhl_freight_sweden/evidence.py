@@ -628,6 +628,10 @@ SUITE_BOOKINGS: typing.Tuple[typing.Tuple[str, str, str, str, str, typing.Tuple[
      "103", "SE 11143 -> SE 11151", "20261009-094959",
      ("001-service-points-103-se", "003-booking-103", "004-booking-103"),
      "test_booking_pudo.test_book_103_service_point_se", 1),
+    ("booking-2906832668-112-se-sk.json",
+     "112 SE to SK home delivery with payer code 023 and consignee phone +421 2 1234 5678, then printed.",
+     "112", "SE 11143 -> SK 81106", "20261109-100656", ("003-booking-112", "004-booking-112"),
+     "test_booking_export.test_book_112_sk", 0),
 )
 
 for _name, _summary, _product, _route, _run, _stems, _test, _primary in SUITE_BOOKINGS:
@@ -1216,6 +1220,17 @@ def _(b: Builder) -> Json:
     )
 
 
+@evidence("lookup-product-matches-se-sk-81106.json")
+def _(b: Builder) -> Json:
+    return b.document(
+        "lookup",
+        "Product matches for SE 11143 to SK 81106 returned HDI, 109, 202, 112, 601, and 233, "
+        "so the booking-export case 112 to SK booked.",
+        None, "SE 11143 -> SK 81106", None, None, f"{SUITE_RUN}: test_booking_export.test_book_112_sk",
+        [reduce_product_matches(b.suite_exchange("20261109-100656", "001-product-matches-112-sk"))],
+    )
+
+
 @evidence("lookup-product-matches-se-hu-1052.json")
 def _(b: Builder) -> Json:
     return b.document(
@@ -1401,6 +1416,7 @@ def _(b: Builder) -> Json:
 SUITE_LABELS = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261005"
 SUITE_LABELS_20261006 = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261006"
 SUITE_LABELS_20261015 = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261015"
+SUITE_LABELS_20261109 = "agent-logs/karrio-dhl-freight-sweden/suite-labels-20261109"
 
 
 def suite_label(
@@ -1538,6 +1554,22 @@ def _(b: Builder) -> Json:
         "004-booking-103-access-point-phone",
         "TestSandboxBookingProbes.test_book_103_service_point_access_point_phone",
         labels=SUITE_LABELS_20261015,
+    )
+
+
+@evidence("label-2906832668-112-se-sk.json")
+def _(b: Builder) -> Json:
+    return suite_label(
+        b,
+        "112 SE to SK home delivery booked with consignor phone +46 8 123 456, Consignee Ján Novák, "
+        "Obchodná 10, 81106 Bratislava, and consignee phone +421 2 1234 5678, printed with page type Label "
+        "as one 297.638 x 595.276 pt (105 x 210 mm) PDF page; the label text shows the routing code "
+        "SK81106+74000000 and one Phn. line with no number, neither the consignee phone nor the "
+        "consignor phone.",
+        "112", "SE 11143 -> SK 81106", "2906832668",
+        "20261109-100656", "003-booking-112", "004-booking-112",
+        "test_booking_export.test_book_112_sk",
+        labels=SUITE_LABELS_20261109,
     )
 
 

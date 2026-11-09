@@ -53,14 +53,15 @@ A manual capacity probe with the connector also ran once.
 | 2026-10-19 | 10:48 | suite | PickupRequest for 102 within SE with the customer number on the Consignor and the Pickup party and no Consignee party |
 | 2026-10-19 | 10:49 | suite | PickupRequest for 212 within SE through the connector's pickup create path |
 | 2026-10-19 | 10:54 | suite | PickupRequest for 212 within SE through the connector's pickup create path with the delivery place and a FreightPayer party |
+| 2026-11-09 | 09:06 | suite | 112 SK case |
 
 Each finding cites one evidence file in `tests/dhl_freight_sweden/fixtures/sandbox/`.
 [Sandbox suite and evidence](../../development/traceability/sandbox-suite.md#evidence) describes the files' naming, metadata, and redaction, and how they are rebuilt byte for byte from the captures.
-The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, 2906761867, 2906788324, 2906788449, and 2906788993.
+The `label` files come from the suite's print calls of bookings 2906761222, 2906761230, 2906761248, 2906761255, 2906761297, 2906761305, 2906761354, 2906761867, 2906788324, 2906788449, 2906788993, and 2906832668.
 
 ## Bookings
 
-All 48 bookings returned status `Succes`, a transport instruction id, at least one piece id, and a routing code, and every shipper was Stockholm SE 11143.
+All 49 bookings returned status `Succes`, a transport instruction id, at least one piece id, and a routing code, and every shipper was Stockholm SE 11143.
 Every booking had one piece of 1 kg and 30 × 20 × 10 cm, except 2906762477 with one piece of 2 kg and 30 × 20 × 15 cm and 2906788993 with two parcels of 1 kg and 30 × 20 × 10 cm each.
 None was cancelled, because the API Farm has no cancellation operation.
 The evidence files keep each booking's routing code; the routing codes that bear on a finding are quoted under [Deviations from manual v5.26](#deviations-from-manual-v526).
@@ -100,6 +101,7 @@ The two-parcel booking 2906788993 was accepted on the first call, and the respon
 | 2026-10-05 | 601 | SE → RO 030031 | DAP, `UIT_FREE` `"false"` without a number | 2906761347 | [booking][b-347] |
 | 2026-10-05 | 109 | SE → DK 1620 | 022, ParcelShop 8009-115191 | 2906761354 | [booking][b-354], [label][lb-354] |
 | 2026-10-06 | 112 | SE → FR 75004 | 023 | 2906761867 | [booking][b-867], [label][lb-867] |
+| 2026-11-09 | 112 | SE → SK 81106 | 023 | 2906832668 | [booking][b-668], [label][lb-668] |
 | 2026-10-06 | 202 | SE → DK 1620 | DAP | 2906762121 | [booking][b-121] |
 | 2026-10-06 | 233 | SE → DK 1620 | DAP | 2906762147 | [booking][b-147] |
 | 2026-10-08 | 601 | SE → HU 1052 | DAP, `EKAER_FREE` `"true"` alone, the connector's default | 2906769555 | [booking][b-555] |
@@ -146,7 +148,7 @@ No booking was sent to LI, and no CH booking used 202, 233, HDI, or customs hand
 
 ## Labels
 
-All eleven labels with evidence files were printed with page type `Label`.
+All twelve labels with evidence files were printed with page type `Label`.
 Every suite booking sent the consignor phone +46 8 123 456 and a consignee phone.
 The 2026-10-05 103 booking sent no AccessPoint phone, and the 2026-10-15 103 booking probe added the AccessPoint phone +46 8 982 000 to the serialized request.
 
@@ -163,6 +165,7 @@ The 2026-10-05 103 booking sent no AccessPoint phone, and the 2026-10-15 103 boo
 | 2906788324 | 103 SE → SE, service point terminal id 9820 | one page, 105 × 210 mm | a `Phn.` line with no number, and not the AccessPoint phone +46 8 982 000 the booking probe sent | [label-2906788324][lb-324] |
 | 2906788449 | 109 SE → DK, the lookup's ParcelShop with the AccessPoint id replaced by the invented 777777 | one page, 105 × 210 mm | SHOP 777777 in the access point block, where the `servicePointId` booking 2906761354 printed SHOP 8009-115191; the sender's +46 8 123 456 as the only `Phn.` line, and the same routing code 2LDK1620+70530000 | [label-2906788449][lb-449] |
 | 2906788993 | 102 SE → SE, two parcels | two pages, 105 × 210 mm each, in one report | Shipping mark SANDBOX-PIECE-1 with counter 1/2 and barcode text (00)373221512525060842 on the first page and SANDBOX-PIECE-2 with 2/2 and (00)373221512525060859 on the second; Weight: 1.0 / 2.0 and a `Phn.` line with no number on both pages | [label-2906788993][lb-993] |
+| 2906832668 | 112 SE → SK | one page, 297.638 × 595.276 pt (105 × 210 mm) | the routing code (2L)SK81106+74000000; a `Phn.` line with neither the sender phone nor the consignee phone +421 2 1234 5678 | [label-2906832668][lb-668] |
 
 The print calls for 2906762477 (601 to CH) and 2906762592 (109 to Åland) each returned one PDF label, the first as one report of type `Label`.
 
@@ -172,7 +175,7 @@ It does not allow printing the receiver phone for 109 and 112 to AT, BE, BG, CZ,
 It makes the receiver's mobile phone number mandatory in the shipment data for 118 (§5.16 p68) and the consignee phone number and e-mail address mandatory for 601 (§5.19 p81).
 The 109 labels to DK and NO, the 112 labels to FR and HU, and the 118 label match the field 9 rules, and the missing sender phone on the 112 and 118 labels matches the conditional field 6.
 On the 102 and 601 labels fields 6 and 9 are conditional.
-The 103 labels are the one deviation, listed under [Deviations from manual v5.26](#deviations-from-manual-v526).
+The 103 labels and the 112 label to SK, which leaves out the receiver phone field 9 makes mandatory, are the deviations, listed under [Deviations from manual v5.26](#deviations-from-manual-v526).
 
 ## Rejections
 
@@ -299,6 +302,7 @@ Every product matches call answered HTTP 200 without an error message, each with
 | SE → LI 9490, Vaduz | 2 kg, 30 × 20 × 15 cm | 202 | 2026-10-06 | [se-li-9490][l-li-9490] |
 | SE → HU 1052 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-08 | [se-hu-1052][l-pm-hu] |
 | SE → RO 030031 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-10-08 | [se-ro-030031][l-pm-ro] |
+| SE → SK 81106 | 1 kg, 30 × 20 × 10 cm | HDI, 109, 202, 112, 601, 233 | 2026-11-09 | [se-sk-81106][l-pm-sk] |
 
 No lane matched 205 or SPI, so the booking-export 205 cases to DK 1620 and NO 0154 skip, and the EKAER and UIT entries could not be tried on 205 or SPI to HU or RO.
 No GB postal code matched 109 or 112, so the booking-export 112 GB case skipped until it was sent without the check (see [Rejections](#rejections)).
@@ -356,6 +360,7 @@ Rows whose topic a published page covers point to that page; the bookings, rejec
 | Joint declaration to CH | Customs, joint declaration lists NO as its only valid country and needs a separate agreement (§6.8 p98) | product matches list `customsJointDeclaration` among 601's customs services on all five CH lookups ([8001][l-ch-8001], [8001 20 kg][l-ch-8001-20kg], [1201][l-ch-1201], [3011][l-ch-3011], [6900][l-ch-6900]) and for 601, 109, and 112 to NO 0154 ([se-no-0154-customs][l-no-0154-customs]); 601, 202, 233, and HDI list the same customs services to NO 0154 as to CH, which suggests the lists do not vary by destination; no booking sent the service | allows NO, which the manual lists, and CH, for which DHL's Product API product matches list the service, and refuses the service to other recipient countries before booking | [README.md#customs-services](../../../README.md#customs-services) |
 | Routing code reference | send the label's routing code as a reference in the IFTMIN shipment instruction for 112 (§5.3 p18) and 109 (§5.14 p62) | the API bookings sent no routing code, and every response returned `routingCode` (for example [2906761131][b-131] and [2906761123][b-123]) | sends no routing code | none |
 | Phone numbers on labels | the receiving parcelshop's phone is mandatory on the 103 label (§9.4.2 p170) | the 103 labels print a `Phn.` line with no number, both the request that sent no AccessPoint phone ([label-2906761230][lb-230]) and the request with the probe's AccessPoint phone +46 8 982 000 ([label-2906788324][lb-324]); the other labels match (see [Labels](#labels)) | transmits the consignee phone on every booking and no AccessPoint phone; whether DHL fills the parcelshop phone at production print time is an open question for DHL API Farm | [labels.md#phone-numbers](../../concepts/labels.md#phone-numbers) |
+| Receiver phone on 112 labels to SK | the receiver phone is mandatory on the 109 and 112 labels to SK (§9.4.2 p170) | the 112 label to SK prints a `Phn.` line with no number, although the booking sent the consignee phone +421 2 1234 5678 ([label-2906832668][lb-668]); no 109 booking went to SK | transmits the consignee phone on every booking; whether DHL prints the receiver phone on 109 and 112 labels to SK at production print time is an open question for DHL API Farm | [labels.md#phone-numbers](../../concepts/labels.md#phone-numbers) |
 | International customer number characters | up to 35 alphanumeric characters for 202, 205, 233, SPI, and 601 (§5.4 p24, §5.9 p43, §5.10 p48, §5.11 p53, §5.19 p83) | rejected the three-digit 103 and the six-character alphanumeric ABC123 Consignor party ids with 22014 ([103][r-22014-103], [ABC123][r-22014-abc]) and accepted the five-digit 12345 and the seven-digit 1234567 on 202 ([12345][b-463], [1234567][b-471]) | requires digits only, with the TransportInstruction 2.10.0 spec's 15-character party id cap, since 2026-10-13 | [booking-rules.md#customer-numbers](../../concepts/booking-rules.md#customer-numbers) |
 
 ## Pending verification
@@ -393,6 +398,10 @@ The same request with 999999 moved from the Consignor to the Pickup party was ac
 In which party does a pickup request carry the customer number, and may the Consignor party carry it too?
 The sandbox also rejected 999999 on the Consignor together with the same id on the Pickup party ([pickup-102-se-se-consignor-and-pickup-party-id-customer-number-unknown][p-102-both]).
 
+One further question for DHL API Farm, from 2026-11-09: the manual makes the receiver phone mandatory on the 109 and 112 labels to SK (§9.4.2 p170).
+The sandbox label of a 112 booking to SK that sent the consignee phone +421 2 1234 5678 printed a `Phn.` line with no number ([label-2906832668][lb-668]).
+Does DHL print the receiver phone on these labels at production print time, and does it take the number from the Consignee party's `phone`?
+
 The answer to a valid client key whose DHL application lacks the PostalCode API is not captured; the connector treats 401 and 403 alike, on the strength of the 401 the sandbox gives an unknown key ([lookup-postal-code-se-11151-401-unknown-client-key.json][l-pc-401]).
 
 ## Coverage
@@ -408,7 +417,7 @@ Every cell's evidence is in the tables above.
 | 104 | untested, matched to SE 41101 | not offered | not offered |
 | 107 | not offered | untested; returns from the EU countries the manual lists to SE | untested; returns from NO to SE |
 | 109 | not offered | booked to PL, RO, HU, and DK; rejected and later booked to PL without SENT entries | booked to NO and FI 22100; rejected to GB |
-| 112 | not offered | booked to PL, RO, HU, and FR; rejected to PL with an AccessPoint and with payer code 1 | booked to NO; rejected to GB and FI 22100 |
+| 112 | not offered | booked to PL, RO, HU, FR, and SK; rejected to PL with an AccessPoint and with payer code 1 | booked to NO; rejected to GB and FI 22100 |
 | 118 | booked; rejected to 98138 Kiruna with 22036 | not offered | not offered |
 | 202 | not offered | booked to DK, HU, and RO | booked to NO and GB BT1 1AA |
 | 205 | not offered | untested, not matched to DK 1620, HU 1052, or RO 030031 | rejected to NO below the chargeable-weight minimum |
@@ -545,6 +554,9 @@ These were never exercised:
 [p-421-212-dp]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/pickup-421-2026-10-19-12.54.33.337335-212-se-se-delivery-place.json
 [b-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906788993-102-se-se-two-parcels.json
 [lb-993]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906788993-102-se-se-two-parcels.json
+[b-668]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/booking-2906832668-112-se-sk.json
+[lb-668]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906832668-112-se-sk.json
+[l-pm-sk]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-sk-81106.json
 [l-t-fi-00100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-00100.json
 [l-t-fi-22100]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-fi-22100.json
 [l-t-ax]: ../../../tests/dhl_freight_sweden/fixtures/sandbox/lookup-product-matches-se-ax-22100.json
