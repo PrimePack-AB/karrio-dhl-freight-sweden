@@ -23,6 +23,19 @@ class ServabilityMode(lib.StrEnum):
     enforce = "enforce"
 
 
+class PhoneNumberPolicy(lib.StrEnum):
+    """Which party phone numbers a booking sends.
+
+    ``always`` sends each party's phone number as given.
+    ``omit_when_email_suffices`` omits the shipper's (Consignor) phone when
+    the shipper has an e-mail address and the product does not require the
+    sender phone (SHIPPER_CONTACT_FIELDS); the Consignee phone is always sent.
+    """
+
+    always = "always"
+    omit_when_email_suffices = "omit_when_email_suffices"
+
+
 class ConnectionConfig(lib.Enum):
     """DHL Freight connection configuration options."""
 
@@ -49,6 +62,11 @@ class ConnectionConfig(lib.Enum):
     # refuses the booking before the transport instruction is sent.
     notification_check = lib.OptionEnum(
         "notification_check", ServabilityMode, default="enforce"
+    )
+    # Booking party phones, see PhoneNumberPolicy; the
+    # dhl_freight_sweden_phone_number_policy shipment option overrides it.
+    phone_number_policy = lib.OptionEnum(
+        "phone_number_policy", PhoneNumberPolicy, default="always"
     )
     shipping_options = lib.OptionEnum("shipping_options", list)
     shipping_services = lib.OptionEnum("shipping_services", list)
@@ -998,6 +1016,11 @@ class ShippingOption(lib.Enum):
     dhl_freight_sweden_product_matches_check = lib.OptionEnum(
         "product_matches_check", ServabilityMode
     )
+    # Per-shipment override of the phone_number_policy connection setting,
+    # read by shipment_request; never sent to DHL.
+    dhl_freight_sweden_phone_number_policy = lib.OptionEnum(
+        "phone_number_policy", PhoneNumberPolicy
+    )
 
     """ Unified Option type mapping """
     sms_notification = dhl_freight_sweden_notification
@@ -1073,21 +1096,30 @@ CHECK_MODE_OPTIONS: typing.Tuple[str, ...] = (
 )
 
 
+PHONE_NUMBER_POLICY_OPTION = "dhl_freight_sweden_phone_number_policy"
+
+# Every option read strictly as a member name of its StrEnum.
+CHOICE_OPTIONS: typing.Dict[str, typing.Type[lib.StrEnum]] = {
+    **{key: ServabilityMode for key in CHECK_MODE_OPTIONS},
+    PHONE_NUMBER_POLICY_OPTION: PhoneNumberPolicy,
+}
+
+
 @attr.s(auto_attribs=True, frozen=True)
-class InvalidCheckMode:
-    """A raw check-mode option value that names no ServabilityMode."""
+class InvalidChoice:
+    """A raw option value that names no member of the option's StrEnum."""
 
     value: typing.Any
 
 
-def parse_check_mode(
-    value: typing.Any,
-) -> typing.Union[str, None, InvalidCheckMode]:
-    """Read a raw check-mode option value strictly.
+def parse_choice(
+    value: typing.Any, choices: typing.Type[lib.StrEnum]
+) -> typing.Union[str, None, InvalidChoice]:
+    """Read a raw option value strictly as a member name of ``choices``.
 
-    Strings naming off, warn, or enforce (trimmed, case-insensitive) read as
-    that mode; None and a blank string read as None (unset). Any other value
-    is an InvalidCheckMode.
+    Strings naming a member (trimmed, case-insensitive) read as that name;
+    None and a blank string read as None (unset). Any other value is an
+    InvalidChoice.
     """
     if value is None:
         return None
@@ -1097,21 +1129,62 @@ def parse_check_mode(
 
         if not spelling:
             return None
-        if spelling in ServabilityMode.__members__:
+        if spelling in choices.__members__:
             return spelling
 
-    return InvalidCheckMode(value)
+    return InvalidChoice(value)
+
+
+def parse_check_mode(value: typing.Any) -> typing.Union[str, None, InvalidChoice]:
+    """Read a raw check-mode option value strictly as off, warn, or enforce."""
+    return parse_choice(value, ServabilityMode)
+
+
+def _invalid_choices(
+    options: typing.Dict[str, typing.Any], keys: typing.Iterable[str]
+) -> typing.Dict[str, typing.Any]:
+    return {
+        key: options[key]
+        for key in keys
+        if key in options
+        and isinstance(parse_choice(options[key], CHOICE_OPTIONS[key]), InvalidChoice)
+    }
 
 
 def invalid_check_modes(
     options: typing.Dict[str, typing.Any],
 ) -> typing.Dict[str, typing.Any]:
-    """The raw value of each check-mode option key that reads as an InvalidCheckMode."""
-    return {
-        key: options[key]
-        for key in CHECK_MODE_OPTIONS
-        if key in options and isinstance(parse_check_mode(options[key]), InvalidCheckMode)
-    }
+    """The raw value of each check-mode option key that names no ServabilityMode."""
+    return _invalid_choices(options, CHECK_MODE_OPTIONS)
+
+
+def invalid_phone_number_policy(
+    options: typing.Dict[str, typing.Any],
+) -> typing.Dict[str, typing.Any]:
+    """The raw phone number policy option value, keyed by option, when it names no PhoneNumberPolicy."""
+    return _invalid_choices(options, [PHONE_NUMBER_POLICY_OPTION])
+
+
+def phone_number_policy(requested: typing.Any, configured: typing.Any) -> PhoneNumberPolicy:
+    """Resolve the phone number policy: shipment option, then connection setting, then always.
+
+    ``requested`` is the shipment option, already refused by shipment_request
+    when invalid. ``configured`` is the free-form connection setting, and a
+    value naming no policy resolves to always, so an unrecognized setting
+    never omits a phone.
+    """
+    resolved = next(
+        (
+            choice
+            for choice in (
+                parse_choice(requested, PhoneNumberPolicy),
+                parse_choice(configured, PhoneNumberPolicy),
+            )
+            if isinstance(choice, str)
+        ),
+        PhoneNumberPolicy.always.value,
+    )
+    return PhoneNumberPolicy[resolved]
 
 
 def shipping_options_initializer(
@@ -1120,11 +1193,12 @@ def shipping_options_initializer(
 ) -> units.ShippingOptions:
     """Apply default values to the given options.
 
-    Bool-typed options are read with ``parse_flag`` and check-mode options
-    with ``parse_check_mode``: unset and invalid values are dropped, so the
-    option reads as absent, and the initializer never raises.
+    Bool-typed options are read with ``parse_flag`` and CHOICE_OPTIONS with
+    ``parse_choice``: unset and invalid values are dropped, so the option
+    reads as absent, and the initializer never raises.
     ``shipment_request`` refuses the invalid values it finds through
-    ``invalid_flags`` and ``invalid_check_modes``.
+    ``invalid_flags``, ``invalid_check_modes``, and
+    ``invalid_phone_number_policy``.
     """
 
     if package_options is not None:
@@ -1132,8 +1206,8 @@ def shipping_options_initializer(
 
     flags = _flag_values(options)
     modes = {
-        key: parse_check_mode(options[key])
-        for key in CHECK_MODE_OPTIONS
+        key: parse_choice(options[key], choices)
+        for key, choices in CHOICE_OPTIONS.items()
         if key in options
     }
     readable = {

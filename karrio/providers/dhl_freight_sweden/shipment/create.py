@@ -20,7 +20,9 @@ import karrio.providers.dhl_freight_sweden.units as provider_units
 
 class OptionValueError(errors.ShippingSDKDetailedError):
     """Raised when a bool-typed option spells neither true, false, nor unset,
-    or a check-mode option names neither off, warn, enforce, nor unset."""
+    a check-mode option names neither off, warn, enforce, nor unset, or the
+    phone number policy option names neither always,
+    omit_when_email_suffices, nor unset."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -56,6 +58,24 @@ def _check_mode_options(payload: models.ShipmentRequest) -> None:
             option: dict(
                 code="invalid",
                 message=f"expected off, warn, or enforce, got {value!r}",
+            )
+            for option, value in invalid.items()
+        },
+    )
+
+
+def _check_phone_number_policy_option(payload: models.ShipmentRequest) -> None:
+    invalid = provider_units.invalid_phone_number_policy(payload.options or {})
+
+    if not any(invalid):
+        return
+
+    raise OptionValueError(
+        f"Options {', '.join(invalid)} must be always or omit_when_email_suffices",
+        details={
+            option: dict(
+                code="invalid",
+                message=f"expected always or omit_when_email_suffices, got {value!r}",
             )
             for option, value in invalid.items()
         },
@@ -441,6 +461,7 @@ def shipment_request(
     _check_label_type(payload, settings)
     _check_flag_options(payload)
     _check_mode_options(payload)
+    _check_phone_number_policy_option(payload)
     _check_territory_postal_codes(dict(shipper=payload.shipper, recipient=payload.recipient))
     shipper = lib.to_address(provider_units.with_parent_country(payload.shipper))
     recipient = lib.to_address(provider_units.with_parent_country(payload.recipient))
