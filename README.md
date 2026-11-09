@@ -70,6 +70,7 @@ The `config` dict holds these settings.
 | `product_matches_check` | `enforce` | `off`, `warn`, or `enforce` the product matches check before every booking, which refuses or warns when DHL does not offer the product for the lane, as [Booking rules](docs/concepts/booking-rules.md#product-matches) describes; the `dhl_freight_sweden_product_matches_check` shipment option overrides it. |
 | `address_validation` | `off` | `off`, `warn`, or `enforce` the PostalCodes check for 118 bookings, which needs the PostalCode API on the DHL application, as described under home delivery below. |
 | `notification_check` | `enforce` | `off`, `warn`, or `enforce` the notification flag check before every booking, which refuses or drops the notification additional service when the product's matches answer does not list it, as [Booking rules](docs/concepts/booking-rules.md#notification-guard) describes; the `dhl_freight_sweden_notification_check` shipment option overrides it. |
+| `phone_number_policy` | `always` | `always` sends the shipper's phone on bookings, and `omit_when_email_suffices` leaves it out when the shipper has an e-mail address, except for 402 and 502, as [Booking rules](docs/concepts/booking-rules.md#parties) describes; the recipient's phone is always sent, and the `dhl_freight_sweden_phone_number_policy` shipment option overrides it. |
 | `server_url` | | Overrides the host that `test_mode` selects. |
 | `shipping_services` | all | A list of karrio service codes; karrio returns only rates for these services. |
 | `shipping_options` | all | A list of option codes that the Karrio server offers on the connection; neither the connector nor the SDK reads it. |
@@ -132,7 +133,7 @@ The Karrio server accepts the same fields at `POST /api/v1/shipments`.
 
 The connector prints the label right after booking and returns the first printed report.
 The `dhl_freight_sweden_label_page_type` option overrides the `label_page_type` setting for one shipment.
-The connector sends `phone_number` as given, and the manual allows exactly one prefix followed by digits, dashes, and spaces only (Appendix E §10.6 p197).
+The connector sends `phone_number` as given, unless the `omit_when_email_suffices` phone number policy leaves out the shipper's, and the manual allows exactly one prefix followed by digits, dashes, and spaces only (Appendix E §10.6 p197).
 Products 118 and 401 need the recipient's `phone_number` (§5.16 p68, §5.17 p72) and 601 needs its `phone_number` and `email` (§5.19 p81), and the connector refuses a booking without them with `RecipientContactError`.
 Products 402 and 502 need the shipper's `phone_number` (§5.18 p76), and the connector refuses a booking without it with `ShipperContactError`.
 Most labels do not print the receiver's phone number, which the manual forbids for 118 and 401 and for 109 and 112 except to SK (§9.4.2 p170); [Labels](docs/concepts/labels.md) has the evidence per product.
@@ -430,11 +431,13 @@ An excluded booking fails with `ExcludedDestinationError` keyed by the party's `
 | `dhl_freight_sweden_pickup_instruction`, `..._delivery_instruction` | string, 140 characters | Driver instructions; karrio's `shipper_instructions` and `recipient_instructions` map to them |
 | `dhl_freight_sweden_notification`, `..._pre_advice`, `..._tail_lift_unloading` | boolean | DHL additional services; karrio's `email_notification` and `sms_notification` map to the first |
 | `dhl_freight_sweden_product_matches_check`, `dhl_freight_sweden_notification_check` | string | `off`, `warn`, or `enforce` the product matches check or the notification guard for one shipment, overriding the connection setting of the same name; never sent to DHL |
+| `dhl_freight_sweden_phone_number_policy` | string | `always` or `omit_when_email_suffices` for the shipper's phone on one booking, overriding the `phone_number_policy` connection setting; never sent to DHL |
 | `dhl_freight_sweden_insurance` | number | Insurance value in the `currency` option; karrio's `insurance` maps to it |
 | `shipment_date` | date | The shipping date, also the invoice date fallback |
 
 A boolean option accepts true, `"true"`, `"1"`, 1, or `"yes"` and false, `"false"`, `"0"`, 0, or `"no"` (strings in any case), treats null or an empty string as unset, and fails with `OptionValueError` on any other value.
 A check option accepts `off`, `warn`, or `enforce` in any case, treats null or an empty string as unset, and fails with `OptionValueError` on any other value.
+The phone number policy option does the same with `always` and `omit_when_email_suffices`.
 `customs.options` takes `eori_number` for Standard and `voec_number` for VOEC.
 No additional service other than the customs services has been sent to the sandbox ([findings](docs/notes/sandbox/sandbox-findings.md#coverage)).
 

@@ -210,9 +210,16 @@ The EKAER thresholds for risky products, a fiscal-risk product list that is dist
 
 The connector maps each karrio address to a DHL party in the same way, on bookings the shipper as Consignor and the recipient as Consignee, and on pickups the pickup address as Consignor and Pickup party (see [Pickups](../guides/pickups.md)).
 The party's `name` is the address's `company_name`, else its `person_name`, and its `contactName` is the `person_name`, else the `company_name`.
-The party's `phone` is `phone_number` and its `email` is `email`, both sent as given.
+The party's `phone` is `phone_number` and its `email` is `email`, both sent as given, except that the phone number policy below can omit the Consignor `phone` on bookings.
 On bookings the party's `vatEoriSocialSecurityNumber` is the `federal_tax_id`, else the `state_tax_id`; pickups send no tax identifier.
-The connector drops no party field per product, so a field DHL does not use for a product, such as the receiver phone on a label that may not print it, is still sent; what a label prints is DHL's rendering, compared with the manual in [Labels](labels.md#phone-numbers).
+
+The `phone_number_policy` connection setting takes `always`, the default, or `omit_when_email_suffices`, and the `dhl_freight_sweden_phone_number_policy` shipment option overrides it for one booking: the shipment option applies first, then the connection setting, then `always`.
+Under `omit_when_email_suffices` a booking sends no Consignor `phone` when the shipper's `email` is not blank, unless the product requires the sender phone, as 402 and 502 do (see [Sender phone](#sender-phone)); the Consignor `email` is still sent.
+The policy covers the shipper only: the Consignee `phone` is sent as given under either value, and pickups send the pickup address's phone on every party.
+The shipment option accepts either value trimmed and in any case, treats null or an empty string as unset, and fails with `OptionValueError` on any other value, while a connection setting naming neither value resolves to `always`, so an unrecognized setting never omits a phone.
+[Labels](labels.md#phone-numbers) gives the motivation.
+
+Apart from that policy, the connector drops no party field per product, so a field DHL does not use for a product, such as the receiver phone on a label that may not print it, is still sent; what a label prints is DHL's rendering, compared with the manual in [Labels](labels.md#phone-numbers).
 
 ## VAT number/TIN for GR
 

@@ -47,6 +47,10 @@ The 103 label's `Phn.` line stays empty with and without an AccessPoint party ph
 The 112 label to SK prints a `Phn.` line with no number although the booking sent the consignee phone +421 2 1234 5678, and whether DHL prints the receiver phone on 109 and 112 labels to SK at production print time is an open question for DHL API Farm.
 The sender phone, field 6, is conditional, and printing it is not allowed for 104, for 402/502, or for 107 from every listed country except SK (§9.4.2 p168), so the labels without it do not contradict the manual.
 
+The sandbox labels of 109 to DK and NO printed the shipper's phone as their only `Phn.` line ([DK](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json), [NO](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761305-109-se-no-parcelshop.json); [sandbox findings](../notes/sandbox/sandbox-findings.md#labels)).
+A shipper that does not want its phone number on such labels can set the `phone_number_policy` connection setting, or the `dhl_freight_sweden_phone_number_policy` shipment option for one booking, to `omit_when_email_suffices`, which leaves the Consignor phone out of the booking when the shipper has an e-mail address, except for 402 and 502, whose sender phone is mandatory (§5.18 p76), as [Booking rules](booking-rules.md#parties) describes.
+The consignee phone has not printed on any sandbox label, so the policy leaves it alone, and every booking sends it as given.
+
 The phone format follows product manual v5.26 Appendix E (§10.6 p197): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only; dots, letters, and slash are forbidden.
 The connector transmits `phone_number` as given, so callers should pre-format numbers to those constraints.
 
