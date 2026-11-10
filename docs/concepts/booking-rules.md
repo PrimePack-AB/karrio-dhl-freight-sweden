@@ -210,13 +210,25 @@ The EKAER thresholds for risky products, a fiscal-risk product list that is dist
 
 The connector maps each karrio address to a DHL party in the same way, on bookings the shipper as Consignor and the recipient as Consignee, and on pickups the pickup address as Consignor and Pickup party (see [Pickups](../guides/pickups.md)).
 The party's `name` is the address's `company_name`, else its `person_name`, and its `contactName` is the `person_name`, else the `company_name`.
-The party's `phone` is `phone_number` and its `email` is `email`, both sent as given, except that the phone number policy below can omit the Consignor `phone` on bookings.
+The party's `phone` is `phone_number` and its `email` is `email`, both sent as given, except that the phone number policy below can omit the Consignor and Consignee `phone` on bookings.
 On bookings the party's `vatEoriSocialSecurityNumber` is the `federal_tax_id`, else the `state_tax_id`; pickups send no tax identifier.
 
-The `phone_number_policy` connection setting takes `always`, the default, or `omit_when_email_suffices`, and the `dhl_freight_sweden_phone_number_policy` shipment option overrides it for one booking: the shipment option applies first, then the connection setting, then `always`.
-Under `omit_when_email_suffices` a booking sends no Consignor `phone` when the shipper's `email` is not blank, unless the product requires the sender phone, as 402 and 502 do (see [Sender phone](#sender-phone)); the Consignor `email` is still sent.
-The policy covers the shipper only: the Consignee `phone` is sent as given under either value, and pickups send the pickup address's phone on every party.
-The shipment option accepts either value trimmed and in any case, treats null or an empty string as unset, and fails with `OptionValueError` on any other value, while a connection setting naming neither value resolves to `always`, so an unrecognized setting never omits a phone.
+The `phone_number_policy` connection setting takes `always`, the default, `omit_when_email_suffices`, or `omit_unless_required`, and the `dhl_freight_sweden_phone_number_policy` shipment option overrides it for one booking: the shipment option applies first, then the connection setting, then `always`.
+Under `omit_when_email_suffices` a booking sends no Consignor `phone` when the shipper's `email` is not blank, unless the product requires the sender phone, as 402 and 502 do (see [Sender phone](#sender-phone)); the Consignor `email` is still sent, and the Consignee `phone` is sent as given.
+Under `omit_unless_required` a booking sends no Consignor `phone` unless the product requires the sender phone (402 and 502), whether or not the shipper has an e-mail address, and no Consignee `phone` unless one of the rules below requires it; both parties' `email` is still sent.
+
+| The Consignee `phone` is kept for | Because | Manual |
+|-----------------------------------|---------|--------|
+| 118, 401, and 601 | the shipment information must carry the receiver phone (see [Recipient phone and e-mail](#recipient-phone-and-e-mail)) | §5.16 p68, §5.17 p72, §5.19 p81 |
+| 103 when the recipient's `email` is blank | the consignee is notified by sms or e-mail, so a mobile phone number or an e-mail address must be sent | §5.12 p56 |
+| 109 and 112 to SK | the label must print the receiver phone (see [Labels](labels.md#phone-numbers)) | §9.4.2 p170 |
+| any product with `notification` true | the notification service requires the consignee or delivery party phone | §6.38 p134 |
+| any product with `preAdvice` true | the pre-advice delivery service requires the consignee or delivery party phone | §6.46 p144 |
+
+The notification row covers karrio's `email_notification` and `sms_notification`, which set the same flag; a flag the [notification guard](#notification-guard) later drops in `warn` mode still keeps the phone.
+The manual also requires the consignee or delivery party phone for cash on delivery (§6.3 p88), collection at terminal (§6.4 p90), indoor delivery (§6.32 p128), and time slot booking for delivery and for pickup (§6.55 p157, §6.56 p158), additional services the connector does not send today; a connector change that sends one of them must add it to these rules.
+Pickups send the pickup address's phone on every party under every value.
+The shipment option accepts any of the three values trimmed and in any case, treats null or an empty string as unset, and fails with `OptionValueError` on any other value, while a connection setting naming none of them resolves to `always`, so an unrecognized setting never omits a phone.
 [Labels](labels.md#phone-numbers) gives the motivation.
 
 Apart from that policy, the connector drops no party field per product, so a field DHL does not use for a product, such as the receiver phone on a label that may not print it, is still sent; what a label prints is DHL's rendering, compared with the manual in [Labels](labels.md#phone-numbers).

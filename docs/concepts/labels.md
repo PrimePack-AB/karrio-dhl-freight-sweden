@@ -23,7 +23,7 @@ The booking's `meta.tracking_numbers` carries those piece ids, one per parcel in
 
 ## Phone numbers
 
-The connector always transmits the consignee `phone_number` on the booking, and no sandbox label printed it.
+The connector transmits the consignee `phone_number` on the booking unless the `omit_unless_required` phone number policy leaves it out, and no sandbox label printed it.
 The phone is required for 118, 401, and 601, and the shipper phone for 402 and 502, as described with the other party fields in [Booking rules](booking-rules.md#parties).
 The table compares the labels with the receiver phone, field 9, of the manual's label field description (§9.4.2 p170).
 
@@ -49,7 +49,7 @@ The sender phone, field 6, is conditional, and printing it is not allowed for 10
 
 The sandbox labels of 109 to DK and NO printed the shipper's phone as their only `Phn.` line ([DK](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761354-109-se-dk-parcelshop.json), [NO](../../tests/dhl_freight_sweden/fixtures/sandbox/label-2906761305-109-se-no-parcelshop.json); [sandbox findings](../notes/sandbox/sandbox-findings.md#labels)).
 A shipper that does not want its phone number on such labels can set the `phone_number_policy` connection setting, or the `dhl_freight_sweden_phone_number_policy` shipment option for one booking, to `omit_when_email_suffices`, which leaves the Consignor phone out of the booking when the shipper has an e-mail address, except for 402 and 502, whose sender phone is mandatory (§5.18 p76), as [Booking rules](booking-rules.md#parties) describes.
-The consignee phone has not printed on any sandbox label, so the policy leaves it alone, and every booking sends it as given.
+The consignee phone has not printed on any sandbox label, so `omit_when_email_suffices` leaves it alone; `omit_unless_required` also leaves out the shipper phone without an e-mail address and the consignee phone wherever no manual rule requires it, keeping the consignee phone for 109 and 112 to SK, whose labels must print it (§9.4.2 p170), as [Booking rules](booking-rules.md#parties) lists.
 
 The phone format follows product manual v5.26 Appendix E (§10.6 p197): exactly one prefix (foreign country prefixes are fine), then digits, dash, and space only; dots, letters, and slash are forbidden.
 The connector transmits `phone_number` as given, so callers should pre-format numbers to those constraints.
