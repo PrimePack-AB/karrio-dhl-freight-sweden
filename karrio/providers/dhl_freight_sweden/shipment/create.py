@@ -22,7 +22,7 @@ class OptionValueError(errors.ShippingSDKDetailedError):
     """Raised when a bool-typed option spells neither true, false, nor unset,
     a check-mode option names neither off, warn, enforce, nor unset, or the
     phone number policy option names neither always,
-    omit_when_email_suffices, nor unset."""
+    omit_when_email_suffices, omit_unless_required, nor unset."""
 
     code = "SHIPPING_SDK_FIELD_ERROR"
 
@@ -71,11 +71,15 @@ def _check_phone_number_policy_option(payload: models.ShipmentRequest) -> None:
         return
 
     raise OptionValueError(
-        f"Options {', '.join(invalid)} must be always or omit_when_email_suffices",
+        f"Options {', '.join(invalid)} must be always, omit_when_email_suffices, "
+        "or omit_unless_required",
         details={
             option: dict(
                 code="invalid",
-                message=f"expected always or omit_when_email_suffices, got {value!r}",
+                message=(
+                    "expected always, omit_when_email_suffices, "
+                    f"or omit_unless_required, got {value!r}"
+                ),
             )
             for option, value in invalid.items()
         },
@@ -582,15 +586,29 @@ def shipment_request(
         else None
     )
 
-    omit_shipper_phone = (
-        provider_units.phone_number_policy(
-            options.dhl_freight_sweden_phone_number_policy.state,
-            settings.connection_config.phone_number_policy.state,
+    phone_policy = provider_units.phone_number_policy(
+        options.dhl_freight_sweden_phone_number_policy.state,
+        settings.connection_config.phone_number_policy.state,
+    )
+    shipper_phone_required = "phone_number" in provider_units.SHIPPER_CONTACT_FIELDS.get(
+        str(service), ()
+    )
+    omit_shipper_phone = not shipper_phone_required and (
+        phone_policy == provider_units.PhoneNumberPolicy.omit_unless_required
+        or (
+            phone_policy == provider_units.PhoneNumberPolicy.omit_when_email_suffices
+            and bool((shipper.email or "").strip())
         )
-        == provider_units.PhoneNumberPolicy.omit_when_email_suffices
-        and bool((shipper.email or "").strip())
-        and "phone_number"
-        not in provider_units.SHIPPER_CONTACT_FIELDS.get(str(service), ())
+    )
+    omit_recipient_phone = (
+        phone_policy == provider_units.PhoneNumberPolicy.omit_unless_required
+        and not provider_units.recipient_phone_required(
+            str(service),
+            recipient.country_code,
+            recipient.email,
+            options.dhl_freight_sweden_notification.state is True
+            or options.dhl_freight_sweden_pre_advice.state is True,
+        )
     )
 
     parties = [
@@ -602,7 +620,11 @@ def shipment_request(
             id=consignor_id,
             omit_phone=omit_shipper_phone,
         ),
-        _party(provider_units.PartyType.Consignee, recipient),
+        _party(
+            provider_units.PartyType.Consignee,
+            recipient,
+            omit_phone=omit_recipient_phone,
+        ),
         *lib.identity([service_point_party] if service_point_party else []),
     ]
 

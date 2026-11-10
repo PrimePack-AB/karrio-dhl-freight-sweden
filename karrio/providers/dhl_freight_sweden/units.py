@@ -30,10 +30,14 @@ class PhoneNumberPolicy(lib.StrEnum):
     ``omit_when_email_suffices`` omits the shipper's (Consignor) phone when
     the shipper has an e-mail address and the product does not require the
     sender phone (SHIPPER_CONTACT_FIELDS); the Consignee phone is always sent.
+    ``omit_unless_required`` omits the Consignor phone unless the product
+    requires the sender phone, and the Consignee phone unless
+    ``recipient_phone_required`` holds.
     """
 
     always = "always"
     omit_when_email_suffices = "omit_when_email_suffices"
+    omit_unless_required = "omit_unless_required"
 
 
 class ConnectionConfig(lib.Enum):
@@ -566,6 +570,47 @@ SHIPPER_CONTACT_FIELDS: typing.Dict[str, typing.Tuple[str, ...]] = {
     ShippingService.dhl_freight_sweden_home_delivery_c2b.value: ("phone_number",),
     ShippingService.dhl_freight_sweden_home_delivery_c2b_502.value: ("phone_number",),
 }
+
+
+# Products whose shipment information must carry the receiver phone unless
+# the recipient has an e-mail address. Product manual v5.26 §5.12 p56: 103
+# notifies the consignee by sms or e-mail, so a mobile phone number or an
+# e-mail address must be sent.
+RECIPIENT_PHONE_OR_EMAIL_PRODUCTS: typing.FrozenSet[str] = frozenset(
+    [ShippingService.dhl_freight_sweden_service_point_b2c.value]
+)
+
+# Destination countries whose labels must print the receiver phone, by
+# product. Product manual v5.26 §9.4.2 p170: mandatory for 109 and 112 to SK.
+RECIPIENT_PHONE_LABEL_COUNTRIES: typing.Dict[str, typing.FrozenSet[str]] = {
+    ShippingService.dhl_freight_sweden_parcel_connect_b2c.value: frozenset(["SK"]),
+    ShippingService.dhl_freight_sweden_parcel_connect_plus.value: frozenset(["SK"]),
+}
+
+
+def recipient_phone_required(
+    product: str,
+    recipient_country: typing.Optional[str],
+    recipient_email: typing.Optional[str],
+    services_needing_phone: bool,
+) -> bool:
+    """Whether a booking must send the Consignee phone.
+
+    True for the products RECIPIENT_CONTACT_FIELDS gives a phone, for
+    RECIPIENT_PHONE_OR_EMAIL_PRODUCTS without a recipient e-mail, for
+    RECIPIENT_PHONE_LABEL_COUNTRIES lanes, and when ``services_needing_phone``
+    reports a requested notification (§6.38 p134) or pre-advice delivery
+    (§6.46 p144), whose validations require the consignee phone.
+    """
+    return (
+        "phone_number" in RECIPIENT_CONTACT_FIELDS.get(product, ())
+        or (
+            product in RECIPIENT_PHONE_OR_EMAIL_PRODUCTS
+            and not (recipient_email or "").strip()
+        )
+        or recipient_country in RECIPIENT_PHONE_LABEL_COUNTRIES.get(product, frozenset())
+        or services_needing_phone
+    )
 
 
 # Products offering a QR code through the print API selection "qrCode":
